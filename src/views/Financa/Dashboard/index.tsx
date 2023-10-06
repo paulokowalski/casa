@@ -7,6 +7,7 @@ export function Dashboard() {
     return (
         <Container>
             <Summary/>
+            <Filtro/>
             <TabelaTransacao/>
         </Container>
     )

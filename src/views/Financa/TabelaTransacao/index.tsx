@@ -5,7 +5,7 @@ import { FinancaContext } from "../../../contexts/FinancaContext";
 
 export function TabelaTransacao () {
 
-    const data = useContext(FinancaContext);
+    const { compras } = useContext(FinancaContext);
 
     return (
         <Container>
@@ -25,7 +25,7 @@ export function TabelaTransacao () {
                     </tr>
                 </thead>
                 <tbody>
-                {data?.map(row =>
+                {compras?.map((row, index) =>
                     <tr>
                         <td>{row.nomeCompra}</td>
                         <td>{DateFormat(row.dataParcela)}</td>

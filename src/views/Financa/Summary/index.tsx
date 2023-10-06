@@ -5,13 +5,13 @@ import { FinancaContext } from "../../../contexts/FinancaContext";
 
 export function Summary () {
 
-    const data = useContext(FinancaContext);
+    const { compras } = useContext(FinancaContext);
 
-    const valorTotal = data.reduce((acc, compra) => {
+    const valorTotal = compras.reduce((acc, compra) => {
         return acc + compra.valorParcela;
     }, 0);
 
-    const valorProximoMes = data.reduce((acc, compra) => {
+    const valorProximoMes = compras.reduce((acc, compra) => {
         if(compra.ultimaParcela === 'Não'){
             return acc + compra.valorParcela;
         }

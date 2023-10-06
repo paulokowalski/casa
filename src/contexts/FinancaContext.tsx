@@ -18,7 +18,14 @@ interface FinancaProviderProps {
     children: React.ReactNode;
 }
 
-export const FinancaContext = createContext<Compra[]>([]);
+interface FinancaContextData {
+    compras: Compra[],
+    buscarFinancas: (ano: string, mes: string, pessoa: string) => void;
+}
+
+export const FinancaContext = createContext<FinancaContextData>(
+    {} as FinancaContextData
+);
 
 export function FinancaProvider({ children }: FinancaProviderProps) {
 
@@ -29,8 +36,13 @@ export function FinancaProvider({ children }: FinancaProviderProps) {
         .then(response => setCompras(response.data.compras))
     }, []);
 
+    function buscarFinancas(ano: string, mes: string, pessoa: string){
+        api.get('/v1/compra/'+ano+'/'+mes+'/'+pessoa)
+        .then(response => setCompras(response.data.compras))
+    }
+
     return (
-        <FinancaContext.Provider value={compras}>
+        <FinancaContext.Provider value={{compras, buscarFinancas}}>
         { children }
         </FinancaContext.Provider>
     )

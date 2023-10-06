@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Container } from "./styles";
 import { api } from "../../../services/api";
+import { FinancaContext } from "../../../contexts/FinancaContext";
 
 export function Filtro() {
+
+    const { buscarFinancas } = useContext(FinancaContext);
 
     interface Item {
         codigo: string,
@@ -30,30 +33,43 @@ export function Filtro() {
 
     function selecionarMes(value: string){
         setMesSelecionado(value);
-        api.get('/v1/filtro/pessoas/'+ anoSelecionado + '/' + mesSelecionado)
+        api.get('/v1/filtro/pessoas/'+ anoSelecionado + '/' + value)
         .then(response => setItemsPessoas(response.data));
+    }
+
+    function selecionarPessoa(value: string){
+        setPessoaSelecionado(value);
+    }
+
+    function buscarFinanca(){
+        buscarFinancas(anoSelecionado, mesSelecionado, pessoaSelecionado);
     }
 
     return (
         <>
             <Container>
                 <select value={anoSelecionado} onChange={e => {selecionarAno(e.target.value)}}>
+                <option>SELECIONE</option>
                     {itemsAnos?.map(item =>
                         <option value={item.codigo}>{item.descricao}</option>
                     )}
                 </select>
 
                 <select value={mesSelecionado} onChange={e => {selecionarMes(e.target.value)}}>
+                <option>SELECIONE</option>
                     {itemsMeses?.map(item =>
                         <option value={item.codigo}>{item.descricao}</option>
                     )}
                 </select>
 
-                <select value={pessoaSelecionado} onChange={e => {setPessoaSelecionado(e.target.value)}}>
+                <select value={pessoaSelecionado} onChange={e => {selecionarPessoa(e.target.value)}}>
+                <option>SELECIONE</option>
                     {itemsPessoas?.map(item =>
                         <option value={item.codigo}>{item.descricao}</option>
                     )}
                 </select>
+
+                <button onClick={buscarFinanca}>Pesquisar</button>
             </Container>
         </>
     )

@@ -5,7 +5,7 @@ export const Container = styled.div`
     margin: 0 auto;
     padding: 2.5rem 0rem;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 2rem;
 
     select {
