@@ -1,14 +1,14 @@
-FROM node:17-alpine
+FROM node:17
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-COPY package.json .
+COPY package*.json ./
 
-USER root
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN npm install
 
 COPY . .
+
+RUN npm run build
 
 EXPOSE 3000
 
