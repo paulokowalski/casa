@@ -1,5 +1,7 @@
 FROM node:17
 
+RUN mkdir -p /usr/src/app
+
 WORKDIR /usr/src/app
 
 COPY package*.json ./
@@ -10,8 +12,6 @@ COPY . .
 
 RUN npm run build
 
-RUN chmod +x /app/docker-entrypoint.sh
-
 EXPOSE 3000
 
-CMD ["npm", "start", "/app/docker-entrypoint.sh"]
+CMD ["npm", "start"]
