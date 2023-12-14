@@ -8,12 +8,10 @@ RUN npm install
 
 COPY . .
 
-RUN npm config set timeout 60000
-
-RUN npm cache clean --force
-
 RUN npm run build
+
+RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["npm", "start", "/app/docker-entrypoint.sh"]
