@@ -1,3 +1,13 @@
-FROM --platform=linux/arm64/v8 nginx:latest
-COPY build /app/casa
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
+FROM node:17
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
