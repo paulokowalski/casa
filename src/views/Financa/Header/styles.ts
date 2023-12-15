@@ -31,4 +31,9 @@ export const Content = styled.div`
             filter: brightness(0.9);
         }
     }
+
+        @media screen and (max-width: 768px) {
+            /* Estilos específicos para telas menores que 768 pixels de largura (celulares) */
+            padding: 1.5rem 0.5rem;
+        }
 `

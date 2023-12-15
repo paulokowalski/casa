@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import { api } from "../services/api";
+import { format, addMonths } from 'date-fns';
 
 interface CompraCartao {
     nomeCartao: string,
@@ -34,12 +35,18 @@ export const FinancaContext = createContext<FinancaContextData>(
     {} as FinancaContextData
 );
 
-export function FinancaProvider({ children }: FinancaProviderProps) {
+export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
 
     const [compras, setCompras] = useState<Compra[]>([]);
+    const currentDate = new Date();
+
+     // Adiciona um mês à data atual
+    const nextMonthDate = addMonths(currentDate, 1);
+    const month = format(nextMonthDate, 'MM');
+    const year = format(nextMonthDate, 'yyyy');
 
     useEffect(() => {
-        api.get('/v1/compra/2023/11/paulo')
+        api.get('/v1/compra/'+year+'/'+month+'/paulo')
         .then(response => {
             setCompras(response.data.compras);
             console.log(response.data);
