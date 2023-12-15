@@ -8,6 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
+RUN npm install date-fns
 RUN npm install
 
 # Copy the rest of the application code
