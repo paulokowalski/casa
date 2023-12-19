@@ -27,7 +27,7 @@ interface FinancaProviderProps {
 
 interface FinancaContextData {
     compras: Compra[],
-    buscarFinancas: (ano: string, mes: string, pessoa: string) => void;
+    buscarFinancas: (ano: string, mes: string, pessoa: string, ultimaParcelaSelecionado: string) => void;
     cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
 }
 
@@ -46,16 +46,15 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
     const year = format(nextMonthDate, 'yyyy');
 
     useEffect(() => {
-        api.get('/v1/compra/'+year+'/'+month+'/paulo')
+        api.get('/v1/compra/'+year+'/'+month+'/paulo/SELECIONE')
         .then(response => {
             setCompras(response.data.compras);
-            console.log(response.data);
         })
         
     }, []);
 
-    function buscarFinancas(ano: string, mes: string, pessoa: string){
-        api.get('/v1/compra/'+ano+'/'+mes+'/'+pessoa)
+    function buscarFinancas(ano: string, mes: string, pessoa: string, ultimaParcelaSelecionado: string){
+        api.get('/v1/compra/'+ano+'/'+mes+'/'+pessoa+'/'+ultimaParcelaSelecionado)
         .then(response => setCompras(response.data.compras))
     }
 
@@ -76,5 +75,5 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
         { children }
         </FinancaContext.Provider>
     )
-    
+   
 }

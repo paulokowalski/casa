@@ -2,10 +2,12 @@ import { useEffect, useState, useContext } from "react";
 import { Container } from "./styles";
 import { api } from "../../../services/api";
 import { FinancaContext } from "../../../contexts/FinancaContext";
+import { DespesaContext } from "../../../contexts/DespesaContext";
 
 export function Filtro() {
 
     const { buscarFinancas } = useContext(FinancaContext);
+    const { buscarDespesa } = useContext(DespesaContext);
 
     interface Item {
         codigo: string,
@@ -15,6 +17,7 @@ export function Filtro() {
     const [anoSelecionado, setAnoSelecionado] = useState('');
     const [mesSelecionado, setMesSelecionado] = useState('');
     const [pessoaSelecionado, setPessoaSelecionado] = useState('');
+    const [ultimaParcelaSelecionado, setUltimaParcelaSelecionado] = useState('');
 
     const [itemsAnos, setItemsAnos] = useState<Item[]>([]);
     const [itemsMeses, setItemsMeses] = useState<Item[]>([]);
@@ -41,35 +44,54 @@ export function Filtro() {
         setPessoaSelecionado(value);
     }
 
-    function buscarFinanca(){
-        buscarFinancas(anoSelecionado, mesSelecionado, pessoaSelecionado);
+    function selecionarUltimaParcela(value: string){
+        setUltimaParcelaSelecionado(value);
+    }
+
+    function findFunction(){
+        buscarFinancas(anoSelecionado, mesSelecionado, pessoaSelecionado, ultimaParcelaSelecionado);
+        buscarDespesa(anoSelecionado, mesSelecionado, pessoaSelecionado);
     }
 
     return (
         <>
             <Container>
-                <select value={anoSelecionado} onChange={e => {selecionarAno(e.target.value)}}>
-                <option>SELECIONE</option>
-                    {itemsAnos?.map(item =>
-                        <option value={item.codigo}>{item.descricao}</option>
-                    )}
-                </select>
+                <label>Ano:{' '}
+                    <select value={anoSelecionado} onChange={e => {selecionarAno(e.target.value)}} required>
+                    <option>SELECIONE</option>
+                        {itemsAnos?.map(item =>
+                            <option value={item.codigo}>{item.descricao}</option>
+                        )}
+                    </select>
+                </label>
 
-                <select value={mesSelecionado} onChange={e => {selecionarMes(e.target.value)}}>
-                <option>SELECIONE</option>
-                    {itemsMeses?.map(item =>
-                        <option value={item.codigo}>{item.descricao}</option>
-                    )}
-                </select>
+                <label>Mês:{' '}
+                    <select value={mesSelecionado} onChange={e => {selecionarMes(e.target.value)}} required>
+                    <option>SELECIONE</option>
+                        {itemsMeses?.map(item =>
+                            <option value={item.codigo}>{item.descricao}</option>
+                        )}
+                    </select>
+                </label>
 
-                <select value={pessoaSelecionado} onChange={e => {selecionarPessoa(e.target.value)}}>
-                <option>SELECIONE</option>
-                    {itemsPessoas?.map(item =>
-                        <option value={item.codigo}>{item.descricao}</option>
-                    )}
-                </select>
+                <label>Pessoa:{' '}
+                    <select value={pessoaSelecionado} onChange={e => {selecionarPessoa(e.target.value)}} required>
+                    <option>SELECIONE</option>
+                        {itemsPessoas?.map(item =>
+                            <option value={item.codigo}>{item.descricao}</option>
+                        )}
+                    </select>
+                </label>
 
-                <button onClick={buscarFinanca}>Pesquisar</button>
+                <label>Última Parcela ?:{' '}
+                    <select value={ultimaParcelaSelecionado} onChange={e => {selecionarUltimaParcela(e.target.value)}}>
+                        <option>SELECIONE</option>
+                        <option>SIM</option>
+                        <option>NÃO</option>
+                    </select>
+                </label>
+
+                <button onClick={findFunction}>Pesquisar</button>
             </Container>
         </>
     )

@@ -5,11 +5,11 @@ export const Container = styled.div`
     margin: 0 auto;
     padding: 2.5rem 0rem;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 2rem;
 
     select {
-        padding: 1.5rem 2rem;
+        padding: 0.5rem 1rem;
         border-radius: 0.25rem;
     }
     @media screen and (max-width: 768px) {

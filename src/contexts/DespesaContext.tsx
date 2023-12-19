@@ -24,14 +24,14 @@ export function DespesaProvider({ children }: Readonly<DespesaProviderProps>) {
 
     const [despesa, setDespesa] = useState<Despesa>();
 
-    function buscarDespesa(ano: string, mes: string, pessoa: string){
+    function buscarDespesa(ano: string, mes: string, pessoa: string) {
         api.get('/v1/despesa/'+ano+'/'+mes+'/'+pessoa)
         .then(response => setDespesa(response.data))
     }
 
     return (
         <DespesaContext.Provider value={{despesa, buscarDespesa}}>
-        { children }
+            { children }
         </DespesaContext.Provider>
     )
     

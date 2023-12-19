@@ -37,8 +37,6 @@ export function Cadastro() {
                 <input value={cartao} onChange={e => setCartao(e.target.value)}/>
             </label>
             <button onClick={cadastraCompra}>Cadastrar</button>
-            </Container>
+        </Container>
     )
-
-
 }
