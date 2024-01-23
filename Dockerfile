@@ -8,6 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
+RUN npm config set registry https://registry.npmjs.org/
 RUN npm install date-fns
 RUN npm install
 
