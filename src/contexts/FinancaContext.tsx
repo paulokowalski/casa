@@ -38,15 +38,15 @@ export const FinancaContext = createContext<FinancaContextData>(
 export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
 
     const [compras, setCompras] = useState<Compra[]>([]);
-    const currentDate = new Date();
-
-     // Adiciona um mês à data atual
-    const nextMonthDate = addMonths(currentDate, 1);
-    const month = format(nextMonthDate, 'MM');
-    const year = format(nextMonthDate, 'yyyy');
 
     useEffect(() => {
-        api.get('/v1/compra/'+year+'/'+month+'/paulo/SELECIONE')
+
+        const currentDate = new Date();
+        const proximoMes = addMonths(currentDate, 1);
+        const mes = format(proximoMes, 'MM');
+        const ano = format(proximoMes, 'yyyy');
+
+        api.get('/v1/compra/'+ano+'/'+mes+'/paulo/SELECIONE')
         .then(response => {
             setCompras(response.data.compras);
         })
@@ -66,8 +66,7 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
             numeroParcelas: numeroParcelas,
             nomePessoaCompra: nomePessoaCompra,
             nomeCartao:nomeCartao
-        })
-        .then(response => console.log(response.data.compras))
+        });
     }
 
     return (

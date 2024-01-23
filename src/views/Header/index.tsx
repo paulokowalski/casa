@@ -1,3 +1,4 @@
+import Navbar from "../../components/Navbar";
 import { Container, Content } from "./styles";
 
 export function Header() {
@@ -5,6 +6,7 @@ export function Header() {
         <Container>
             <Content>
                 <h1>Kowalski House</h1>
+                <Navbar/>
             </Content>
         </Container>
     )

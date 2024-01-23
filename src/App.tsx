@@ -1,9 +1,15 @@
-import { Financa } from "./views/Financa";
+import { Outlet } from "react-router-dom";
+import { Header } from "./views/Header";
+import { GlobalStyle } from "./styles/global";
 
-export function App() {
+function App() {
   return (
     <>
-      <Financa/>
+      <GlobalStyle/>
+      <Header/>
+      <Outlet/>
     </>
-  );
+  )
 }
+
+export default App;
