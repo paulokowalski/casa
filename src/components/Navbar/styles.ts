@@ -1,10 +1,70 @@
+import { Link } from "react-router-dom";
 import styled from "styled-components";
-
-export const StyledNav = styled.nav`
-  background-color: #333;
-  padding: 10px;
+type NavbarProps = {
+  extend: boolean;
+};
+export const NavbarContainer = styled("nav")<NavbarProps>`
+  width: 100%;
+  height: ${(props) => (props.extend ? "100vh" : "60px")};
+  background-color: purple;
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  @media (min-width: 700px) {
+    height: 60px;
+  }
 `;
-
-export default StyledNav;
+export const NavbarLinkContainer = styled("div")`
+  display: flex;
+`;
+export const NavbarLink = styled(Link)`
+  color: white;
+  font-size: x-large;
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
+  margin: 10px;
+  &:hover,
+  &:focus {
+    color: #fff;
+    border-bottom: 2px solid black;
+  }
+  &:active {
+    color: #fff;
+  }
+  @media (max-width: 700px) {
+    display: none;
+  }
+`;
+export const NavbarLinkExtended = styled(Link)`
+  color: white;
+  font-size: x-large;
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
+  margin: 10px;
+  &:hover,
+  &:focus {
+    color: blue;
+  }
+  &:active {
+    color: red;
+  }
+`;
+export const ButtonLink = styled("button")`
+  width: 70px;
+  height: 50px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 45px;
+  cursor: pointer;
+  @media (min-width: 700px) {
+    display: none;
+  }
+`;
+export const ExtendedNavbar = styled("div")`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  @media (min-width: 700px) {
+    display: none;
+  }
+`;

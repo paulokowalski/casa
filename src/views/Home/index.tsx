@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { GeracaoContext, GeracaoProvider } from "../../contexts/GeracaoContext";
 import { Meio } from "./Meio";
+import { GlobalStyle } from "../../styles/global";
 
 export function Home() {
 
@@ -11,6 +12,7 @@ export function Home() {
     <>
       <GeracaoProvider>
         <Meio/>
+        <GlobalStyle/>
       </GeracaoProvider>
     </>
   )

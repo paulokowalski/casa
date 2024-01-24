@@ -1,7 +1,8 @@
 import { useContext } from "react";
-import { Container } from "./styles";
 import { FormatNumber } from '../../../functions/global';
 import { DespesaContext } from "../../../contexts/DespesaContext";
+import Card from "../../../components/Card/Card";
+import { Container } from "./styles";
 
 export function Summary () {
 
@@ -9,26 +10,9 @@ export function Summary () {
 
     return (
         <Container>
-            <div className="highlight-background">
-                <header>
-                    <p>Total</p>
-                </header>
-                <strong>{FormatNumber(despesa?.valorMes as number)}</strong>
-            </div>
-
-            <div>
-                <header>
-                    <p>Valor Próximo Mês</p>
-                </header>
-                <strong>{FormatNumber(despesa?.valorProximoMes as number)}</strong>
-            </div>
-
-            <div>
-                <header>
-                    <p>Valor Saindo</p>
-                </header>
-                <strong>- {FormatNumber(despesa?.valorSaindo as number)}</strong>
-            </div>
+            <div><Card title="Total" content={FormatNumber(despesa?.valorMes as number)} className="highlight-background-green"/></div>
+            <div><Card title="Valor Próximo Mês" content={FormatNumber(despesa?.valorProximoMes as number)} className="highlight-background-green"/></div>
+            <div><Card title="Valor Saindo" content={FormatNumber(despesa?.valorSaindo as number)} className="highlight-background-red"/></div>
         </Container>
     )
 }

@@ -33,7 +33,7 @@ export const Container = styled.div`
             color: #fff;
         }
 
-        &.highlight-background {
+        &.highlight-background-green {
             background: var(--green);
             color: #fff;
         }

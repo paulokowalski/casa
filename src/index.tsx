@@ -8,6 +8,8 @@ import App from './App';
 import { ErrorPage } from './views/ErrorPage';
 import { Geracao } from './views/Geracao';
 
+import { ThemeProvider } from "@material-tailwind/react";
+
 const router = createBrowserRouter([
   { 
     path: "/",        
@@ -27,6 +29,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <RouterProvider  router={router}/>
+    <ThemeProvider>
+      <RouterProvider  router={router}/>
+    </ThemeProvider>
   </React.StrictMode>
 );

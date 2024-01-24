@@ -8,7 +8,7 @@ export const Content = styled.div`
     
     margin: 0 auto;
 
-    padding: 0 0rem 2rem;
+    padding: 2200 1rem 1rem;
     display: flex;
     justify-content: space-between;
 
