@@ -3,6 +3,7 @@ import { Container } from "./styles";
 import { api } from "../../../services/api";
 import { FinancaContext } from "../../../contexts/FinancaContext";
 import { DespesaContext } from "../../../contexts/DespesaContext";
+import Select from "../../../components/Select";
 
 export function Filtro() {
 
@@ -14,14 +15,16 @@ export function Filtro() {
         descricao: string
     };
 
-    const [anoSelecionado, setAnoSelecionado] = useState('');
-    const [mesSelecionado, setMesSelecionado] = useState('');
-    const [pessoaSelecionado, setPessoaSelecionado] = useState('');
-    const [ultimaParcelaSelecionado, setUltimaParcelaSelecionado] = useState('');
+    const [anoSelecionado, setAnoSelecionado] = useState('SELECIONE');
+    const [mesSelecionado, setMesSelecionado] = useState('SELECIONE');
+    const [pessoaSelecionado, setPessoaSelecionado] = useState('SELECIONE');
+    const [cartaoSelecionado, setCartaoSelecionado] = useState('SELECIONE');
+    const [ultimaParcelaSelecionado, setUltimaParcelaSelecionado] = useState('SELECIONE');
 
     const [itemsAnos, setItemsAnos] = useState<Item[]>([]);
     const [itemsMeses, setItemsMeses] = useState<Item[]>([]);
     const [itemsPessoas, setItemsPessoas] = useState<Item[]>([]);
+    const [itemsCartoes, setItemsCartoes] = useState<Item[]>([]);
 
     useEffect(() => {
         api.get('/v1/filtro/anos')
@@ -42,6 +45,12 @@ export function Filtro() {
 
     function selecionarPessoa(value: string){
         setPessoaSelecionado(value);
+        api.get('/v1/filtro/cartao/'+ anoSelecionado + '/' + mesSelecionado + '/' + value)
+        .then(response => setItemsCartoes(response.data));
+    }
+
+    function selecionarCartao(value: string) {
+        setCartaoSelecionado(value);
     }
 
     function selecionarUltimaParcela(value: string){
@@ -49,49 +58,49 @@ export function Filtro() {
     }
 
     function findFunction(){
-        buscarFinancas(anoSelecionado, mesSelecionado, pessoaSelecionado, ultimaParcelaSelecionado);
+        buscarFinancas(anoSelecionado, mesSelecionado, pessoaSelecionado, cartaoSelecionado, ultimaParcelaSelecionado);
         buscarDespesa(anoSelecionado, mesSelecionado, pessoaSelecionado);
     }
 
     return (
         <>
             <Container>
-                <label>Ano:{' '}
-                    <select value={anoSelecionado} onChange={e => {selecionarAno(e.target.value)}} required>
-                    <option>SELECIONE</option>
-                        {itemsAnos?.map(item =>
-                            <option value={item.codigo}>{item.descricao}</option>
-                        )}
-                    </select>
-                </label>
+                    <Select
+                        label="Ano"
+                        value={anoSelecionado}
+                        onChange={selecionarAno}
+                        items={itemsAnos}
+                        required
+                    />
+                    <Select
+                        label="Mês"
+                        value={mesSelecionado}
+                        onChange={selecionarMes}
+                        items={itemsMeses}
+                        required
+                    />
+                    <Select
+                        label="Pessoa"
+                        value={pessoaSelecionado}
+                        onChange={selecionarPessoa}
+                        items={itemsPessoas}
+                        required
+                    />
+                    <Select
+                        label="Cartão"
+                        value={cartaoSelecionado}
+                        onChange={selecionarCartao}
+                        items={itemsCartoes}
+                        required
+                    />
+                    <Select
+                        label="Última Parcela ?"
+                        value={ultimaParcelaSelecionado}
+                        onChange={selecionarUltimaParcela}
+                        options={['SIM', 'NÃO']}
+                    />
 
-                <label>Mês:{' '}
-                    <select value={mesSelecionado} onChange={e => {selecionarMes(e.target.value)}} required>
-                    <option>SELECIONE</option>
-                        {itemsMeses?.map(item =>
-                            <option value={item.codigo}>{item.descricao}</option>
-                        )}
-                    </select>
-                </label>
-
-                <label>Pessoa:{' '}
-                    <select value={pessoaSelecionado} onChange={e => {selecionarPessoa(e.target.value)}} required>
-                    <option>SELECIONE</option>
-                        {itemsPessoas?.map(item =>
-                            <option value={item.codigo}>{item.descricao}</option>
-                        )}
-                    </select>
-                </label>
-
-                <label>Última Parcela ?:{' '}
-                    <select value={ultimaParcelaSelecionado} onChange={e => {selecionarUltimaParcela(e.target.value)}}>
-                        <option>SELECIONE</option>
-                        <option>SIM</option>
-                        <option>NÃO</option>
-                    </select>
-                </label>
-
-                <button onClick={findFunction}>Pesquisar</button>
+                    <button  className="button" onClick={findFunction}>Pesquisar</button>
             </Container>
         </>
     )

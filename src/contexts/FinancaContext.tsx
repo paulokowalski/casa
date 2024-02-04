@@ -27,7 +27,7 @@ interface FinancaProviderProps {
 
 interface FinancaContextData {
     compras: Compra[],
-    buscarFinancas: (ano: string, mes: string, pessoa: string, ultimaParcelaSelecionado: string) => void;
+    buscarFinancas: (ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string) => void;
     cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
 }
 
@@ -46,15 +46,15 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
         const mes = format(proximoMes, 'MM');
         const ano = format(proximoMes, 'yyyy');
 
-        api.get('/v1/compra/'+ano+'/'+mes+'/paulo/SELECIONE')
+        api.get('/v1/compra/'+ano+'/'+mes+'/paulo/SELECIONE/SELECIONE')
         .then(response => {
             setCompras(response.data.compras);
         })
         
     }, []);
 
-    function buscarFinancas(ano: string, mes: string, pessoa: string, ultimaParcelaSelecionado: string){
-        api.get('/v1/compra/'+ano+'/'+mes+'/'+pessoa+'/'+ultimaParcelaSelecionado)
+    function buscarFinancas(ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string){
+        api.get('/v1/compra/'+ano+'/'+mes+'/'+pessoa+'/'+cartao+'/'+ultimaParcelaSelecionado)
         .then(response => setCompras(response.data.compras))
     }
 
