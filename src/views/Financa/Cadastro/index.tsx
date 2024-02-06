@@ -13,8 +13,19 @@ export function Cadastro() {
     const [pessoa, setPessoa] = useState('');
     const [cartao, setCartao] = useState('');
 
+    function limparFormulario(){
+        setProduto('');
+        setValorProduto('');
+        setDataCompra('');
+        setDataCompra('');
+        setParcela('');
+        setPessoa('');
+        setCartao('');
+    }
+
     function cadastraCompra(){
         cadastrarCompra(produto, valorProduto, dataCompra, parcela, pessoa, cartao);
+        limparFormulario();
     }
 
     return (
