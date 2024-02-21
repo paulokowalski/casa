@@ -3,112 +3,95 @@ import { Container } from "./styles";
 import { api } from "../../../services/api";
 import { FinancaContext } from "../../../contexts/FinancaContext";
 import { DespesaContext } from "../../../contexts/DespesaContext";
-import Select from "../../../components/Select";
+import { Dropdown } from 'primereact/dropdown';
+import Item from "../../../interface/Item";
+import { Button } from "primereact/button";
+
+const itemVazio: Item = { codigo: 'TODOS', descricao: 'TODOS' };
 
 export function Filtro() {
-
-    interface Item {
-        codigo: string,
-        descricao: string
-    };
-
-    const SELECIONE = 'SELECIONE';
 
     const { buscarFinancas } = useContext(FinancaContext);
     const { buscarDespesa } = useContext(DespesaContext);
 
-    const [anoSelecionado, setAnoSelecionado] = useState(SELECIONE);
-    const [mesSelecionado, setMesSelecionado] = useState(SELECIONE);
-    const [pessoaSelecionado, setPessoaSelecionado] = useState(SELECIONE);
-    const [cartaoSelecionado, setCartaoSelecionado] = useState(SELECIONE);
-    const [ultimaParcelaSelecionado, setUltimaParcelaSelecionado] = useState(SELECIONE);
+    const [anoSelecionado, setAnoSelecionado] = useState<Item>();
+    const [mesSelecionado, setMesSelecionado] = useState<Item>();
+    const [pessoaSelecionado, setPessoaSelecionado] = useState<Item>();
+    const [cartaoSelecionado, setCartaoSelecionado] = useState<Item>();
+    const [ultimaParcelaSelecionado, setUltimaParcelaSelecionado] = useState<Item>();
 
     const [itemsAnos, setItemsAnos] = useState<Item[]>([]);
     const [itemsMeses, setItemsMeses] = useState<Item[]>([]);
     const [itemsPessoas, setItemsPessoas] = useState<Item[]>([]);
     const [itemsCartoes, setItemsCartoes] = useState<Item[]>([]);
 
+    const itemsUltimaParcela : Item[] = [
+        { codigo: 'SIM', descricao: 'SIM' },
+        { codigo: 'NAO', descricao: 'NÃO' }
+    ]
+
+    itemsUltimaParcela.push(itemVazio);    
+
     useEffect(() => {
         api.get('/v1/filtro/anos')
         .then(response => setItemsAnos(response.data))
     }, []);
 
-    function selecionarAno(value: string){
-        setAnoSelecionado(value);
-        setMesSelecionado(SELECIONE);
-        setPessoaSelecionado(SELECIONE);
-        setCartaoSelecionado(SELECIONE);
-        api.get('/v1/filtro/meses/'+ value)
+    function selecionarAno(item: Item){
+        setAnoSelecionado(item);
+        api.get('/v1/filtro/meses/'+ item.codigo)
         .then(response => setItemsMeses(response.data));
     }
 
-    function selecionarMes(value: string){
-        setMesSelecionado(value);
-        setPessoaSelecionado(SELECIONE);
-        setCartaoSelecionado(SELECIONE);
-        api.get('/v1/filtro/pessoas/'+ anoSelecionado + '/' + value)
-        .then(response => setItemsPessoas(response.data));
+    function selecionarMes(item: Item){
+        setMesSelecionado(item);
+        api.get('/v1/filtro/pessoas/'+ anoSelecionado?.codigo + '/' + item.codigo)
+        .then(response => setItemsPessoas(response.data))
+        .catch(err => console.log(err));
     }
 
-    function selecionarPessoa(value: string){
-        setPessoaSelecionado(value);
-        setCartaoSelecionado(SELECIONE);
-        api.get('/v1/filtro/cartao/'+ anoSelecionado + '/' + mesSelecionado + '/' + value)
-        .then(response => setItemsCartoes(response.data));
+    function selecionarPessoa(item: Item){
+        setPessoaSelecionado(item);
+        api.get('/v1/filtro/cartao/'+ anoSelecionado?.codigo + '/' + mesSelecionado?.codigo + '/' + item.codigo)
+        .then(response => setItemsCartoes(response.data))
+        .catch(err => console.log(err));
+        itemsCartoes.push(itemVazio);
     }
 
-    function selecionarCartao(value: string) {
-        setCartaoSelecionado(value);
+    function selecionarCartao(item: Item) {
+        setCartaoSelecionado(item);
     }
 
-    function selecionarUltimaParcela(value: string){
-        setUltimaParcelaSelecionado(value);
+    function selecionarUltimaParcela(item: Item){
+        setUltimaParcelaSelecionado(item);
     }
 
-    function findFunction(){
-        buscarFinancas(anoSelecionado, mesSelecionado, pessoaSelecionado, cartaoSelecionado, ultimaParcelaSelecionado);
-        buscarDespesa(anoSelecionado, mesSelecionado, pessoaSelecionado);
+    function buscar(){
+        if (
+            anoSelecionado &&
+            mesSelecionado &&
+            pessoaSelecionado
+        ) {
+            buscarFinancas(
+                anoSelecionado,
+                mesSelecionado,
+                pessoaSelecionado,
+                cartaoSelecionado || itemVazio, // Se cartaoSelecionado for nulo, passa um objeto com código nulo
+                ultimaParcelaSelecionado || itemVazio // Se ultimaParcelaSelecionado for nulo, passa um objeto com código nulo
+            );
+            buscarDespesa(anoSelecionado, mesSelecionado, pessoaSelecionado);
+        }
     }
 
     return (
         <>
             <Container>
-                <Select
-                    label="Ano"
-                    value={anoSelecionado}
-                    onChange={selecionarAno}
-                    items={itemsAnos}
-                    required
-                />
-                <Select
-                    label="Mês"
-                    value={mesSelecionado}
-                    onChange={selecionarMes}
-                    items={itemsMeses}
-                    required
-                />
-                <Select
-                    label="Pessoa"
-                    value={pessoaSelecionado}
-                    onChange={selecionarPessoa}
-                    items={itemsPessoas}
-                    required
-                />
-                <Select
-                    label="Cartão"
-                    value={cartaoSelecionado}
-                    onChange={selecionarCartao}
-                    items={itemsCartoes}
-                    required
-                />
-                <Select
-                    label="Última Parcela ?"
-                    value={ultimaParcelaSelecionado}
-                    onChange={selecionarUltimaParcela}
-                    options={['SIM', 'NÃO']}
-                />
-
-                <button  className="button" onClick={findFunction}>Pesquisar</button>
+                <Dropdown options={itemsAnos} value={anoSelecionado} onChange={(e) => selecionarAno(e.value)} optionLabel="descricao" placeholder="Selecione o ano"/>
+                <Dropdown options={itemsMeses} value={mesSelecionado} onChange={(e) => selecionarMes(e.value)} optionLabel="descricao" placeholder="Selecione o Mês"/>
+                <Dropdown options={itemsPessoas} value={pessoaSelecionado} onChange={(e) => selecionarPessoa(e.value)} optionLabel="descricao" placeholder="Selecione Pessoa"/>
+                <Dropdown options={itemsCartoes} value={cartaoSelecionado} onChange={(e) => selecionarCartao(e.value)} optionLabel="descricao" placeholder="Selecione Cartão"/>
+                <Dropdown options={itemsUltimaParcela} value={ultimaParcelaSelecionado} onChange={(e) => selecionarUltimaParcela(e.value)} optionLabel="descricao" placeholder="Selecione Ultima Parcela"/>
+                <Button label="Pesquisar" onClick={buscar}></Button>
             </Container>
         </>
     )

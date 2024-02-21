@@ -1,11 +1,14 @@
 import { createContext, useEffect, useState } from "react";
 import { api } from "../services/api";
 import { format, addMonths } from 'date-fns';
+import Item from "../interface/Item";
 
 interface Despesa {
     valorMes: number,
     valorProximoMes: number,
-    valorSaindo: number
+    valorSaindo: number,
+    valorParcelaSaindo: number,
+    valorSaindoTotal: number
 }
 
 interface DespesaProviderProps {
@@ -14,7 +17,7 @@ interface DespesaProviderProps {
 
 interface DespesaContextData {
     despesa: Despesa | undefined,
-    buscarDespesa: (ano: string, mes: string, pessoa: string) => void;
+    buscarDespesa: (ano: Item, mes: Item, pessoa: Item) => void;
 }
 
 export const DespesaContext = createContext<DespesaContextData>(
@@ -39,8 +42,8 @@ export function DespesaProvider({ children }: Readonly<DespesaProviderProps>) {
         })        
     }, []);
 
-    function buscarDespesa(ano: string, mes: string, pessoa: string) {
-        api.get('/v1/despesa/'+ano+'/'+mes+'/'+pessoa)
+    function buscarDespesa(ano: Item, mes: Item, pessoa: Item) {
+        api.get(`/v1/despesa/${ano.codigo}/${mes.codigo}/${pessoa.codigo}`)
         .then(response => setDespesa(response.data))
     }
 

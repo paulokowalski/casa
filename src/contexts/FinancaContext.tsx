@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { api } from "../services/api";
 import { format, addMonths } from 'date-fns';
+import Item from "../interface/Item";
 
 interface CompraCartao {
     nomeCartao: string,
@@ -27,7 +28,8 @@ interface FinancaProviderProps {
 
 interface FinancaContextData {
     compras: Compra[],
-    buscarFinancas: (ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string) => void;
+    chartData: any,
+    buscarFinancas: (ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) => void;
     cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
 }
 
@@ -38,6 +40,7 @@ export const FinancaContext = createContext<FinancaContextData>(
 export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
 
     const [compras, setCompras] = useState<Compra[]>([]);
+    const [chartData, setChartData] = useState(null);
 
     useEffect(() => {
 
@@ -53,9 +56,12 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
         
     }, []);
 
-    function buscarFinancas(ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string){
-        api.get('/v1/compra/'+ano+'/'+mes+'/'+pessoa+'/'+cartao+'/'+ultimaParcelaSelecionado)
-        .then(response => setCompras(response.data.compras))
+    function buscarFinancas(ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item){
+        api.get(`/v1/compra/${ano.codigo}/${mes.codigo}/${pessoa.codigo}/${cartao.codigo}/${ultimaParcelaSelecionado.codigo}`)
+        .then(response => {
+            setCompras(response.data.compras);
+            setChartData(response.data.data);
+        })
     }
 
     function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string){
@@ -70,7 +76,7 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
     }
 
     return (
-        <FinancaContext.Provider value={{compras, buscarFinancas, cadastrarCompra}}>
+        <FinancaContext.Provider value={{compras, chartData, buscarFinancas, cadastrarCompra}}>
         { children }
         </FinancaContext.Provider>
     )

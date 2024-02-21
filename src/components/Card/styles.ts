@@ -3,13 +3,13 @@ import styled from "styled-components";
 export const Container = styled.div`
 
     display: grid;
-    gap: 2rem;
+    gap: 0rem;
 
     div {
         background: var(--shape);
         border-radius: 0.25rem;
         color: var(--text-title);
-        width: 400px;
+        width: 300px;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -26,6 +26,11 @@ export const Container = styled.div`
             font-size: 2rem;
             font-weight: 500;
             line-height: 3rem;
+        }
+
+        &.highlight-background-blue {
+            background: var(--blue);
+            color: #fff;
         }
 
         &.highlight-background-red {

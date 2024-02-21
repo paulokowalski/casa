@@ -1,14 +1,16 @@
+import "primereact/resources/themes/lara-light-cyan/theme.css";
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import App from './App';
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Home } from './views/Home';
 import { Financa } from './views/Financa';
-import App from './App';
 import { ErrorPage } from './views/ErrorPage';
 import { Geracao } from './views/Geracao';
 
-import { ThemeProvider } from "@material-tailwind/react";
+import { PrimeReactProvider } from 'primereact/api';
 
 const router = createBrowserRouter([
   { 
@@ -29,8 +31,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <ThemeProvider>
+    <PrimeReactProvider>
       <RouterProvider  router={router}/>
-    </ThemeProvider>
+    </PrimeReactProvider>
   </React.StrictMode>
 );

@@ -1,3 +1,5 @@
+import { InputText } from "primereact/inputtext";
+
 interface InputTextProps {
     label: string;
     value: string;
@@ -5,18 +7,13 @@ interface InputTextProps {
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const InputText: React.FC<InputTextProps> = ({ label, value, type, onChange }) => {
+const InputTextPersonalizado: React.FC<InputTextProps> = ({ label, value, type, onChange }) => {
     return (
-        <div className="input-container">
-        <label className="label">{label}</label>
-        <input
-            type={type}
-            className="input-text"
-            value={value}
-            onChange={onChange}
-        />
-        </div>
+        <span className="p-float-label">
+            <InputText id="username" value={value} onChange={onChange}/>
+            <label htmlFor="username">{label}</label>
+        </span>
     );
 };
 
-export default InputText;
+export default InputTextPersonalizado;
