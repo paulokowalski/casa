@@ -1,6 +1,5 @@
 import React from 'react';
 import { Card } from "primereact/card";
-import { Container } from './styles';
 
 interface CardProps {
     title: string;

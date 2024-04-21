@@ -1,6 +1,7 @@
 import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { Button } from 'primereact/button';
 import { DateFormat, FormatNumber } from '../../functions/global';
 
 interface TabelaProps {
@@ -10,11 +11,13 @@ interface TabelaProps {
 
 const Tabela: React.FC<TabelaProps> = ({ columns, data }) => {
 
-    const renderizarColuna = (coluna: any, value: any) => {
+    const renderizarColuna = (coluna: any, value: any, rowData: any) => {
         if (coluna.tipo === 'data') {
             return <span>{DateFormat(value)}</span>;
         } else if (coluna.tipo === 'numero') {
             return <span>{FormatNumber(value)}</span>;
+        } else if (coluna.tipo === 'btnRemover') {
+            return <Button onClick={() => coluna.onAction(rowData.id)} severity="danger" raised>Remover</Button>;
         } else {
             return <span>{value}</span>;
         }
@@ -28,7 +31,7 @@ const Tabela: React.FC<TabelaProps> = ({ columns, data }) => {
                         key={coluna.field} 
                         field={coluna.field} 
                         header={coluna.name} 
-                        body={(rowData: any) => renderizarColuna(coluna, rowData[coluna.field])} />
+                        body={(rowData: any) => renderizarColuna(coluna, rowData[coluna.field], rowData)} />
                 ))
             }            
         </DataTable>

@@ -9,6 +9,7 @@ interface CompraCartao {
 }
 
 interface Compra {
+    id: string,
     dataParcela: string,
     nomeCompra: string,
     nomeCartao: string,
@@ -29,6 +30,7 @@ interface FinancaProviderProps {
 interface FinancaContextData {
     compras: Compra[],
     chartData: any,
+    removerCompra: (idCompra: string) => void;
     buscarFinancas: (ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) => void;
     cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
 }
@@ -75,8 +77,12 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
         });
     }
 
+    function removerCompra(idCompra: String){
+        api.delete(`/v1/compra/${idCompra}`)
+    }
+
     return (
-        <FinancaContext.Provider value={{compras, chartData, buscarFinancas, cadastrarCompra}}>
+        <FinancaContext.Provider value={{compras, chartData, buscarFinancas, cadastrarCompra, removerCompra}}>
         { children }
         </FinancaContext.Provider>
     )

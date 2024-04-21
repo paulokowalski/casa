@@ -4,7 +4,11 @@ import Tabela from "../../../components/Tabela";
 
 export function TabelaTransacao () {
 
-    const { compras } = useContext(FinancaContext);
+    const { compras, removerCompra } = useContext(FinancaContext);
+
+    const handleRemoverCompra = (id:any) => {
+        removerCompra(id);
+    };
 
     const COLUNAS = [
         { name: 'Compra', field: 'nomeCompra'},
@@ -14,7 +18,8 @@ export function TabelaTransacao () {
         { name: 'Última Parcela ?', field: 'ultimaParcela' },
         { name: 'Cartão', field: 'nomeCartao' },
         { name: 'Valor da Parcela', field: 'valorParcela', tipo: 'numero' },
-        { name: 'Valor Faltante', field: 'valorFaltante', tipo: 'numero'  }
+        { name: 'Valor Faltante', field: 'valorFaltante', tipo: 'numero'  },
+        { name: '', tipo: 'btnRemover', onAction: handleRemoverCompra }
     ]
 
     return (   
