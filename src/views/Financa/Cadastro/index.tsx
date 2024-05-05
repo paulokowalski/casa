@@ -6,7 +6,7 @@ import { Button } from "primereact/button";
 
 export function Cadastro() {
 
-    const { cadastrarCompra } = useContext(FinancaContext);
+    const { cadastrarCompra, consultar } = useContext(FinancaContext);
     const [produto, setProduto] = useState('');
     const [valorProduto, setValorProduto] = useState('');
     const [dataCompra, setDataCompra] = useState('');
@@ -26,6 +26,7 @@ export function Cadastro() {
 
     function cadastraCompra(){
         cadastrarCompra(produto, valorProduto, dataCompra, parcela, pessoa, cartao);
+        consultar('2024', '06', pessoa, 'TODOS', 'TODOS');
         limparFormulario();
     }
 

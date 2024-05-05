@@ -31,6 +31,7 @@ interface FinancaContextData {
     compras: Compra[],
     chartData: any,
     removerCompra: (idCompra: string) => void;
+    consultar: (ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string) => void;
     buscarFinancas: (ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) => void;
     cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
 }
@@ -45,21 +46,19 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
     const [chartData, setChartData] = useState(null);
 
     useEffect(() => {
-
         const currentDate = new Date();
         const proximoMes = addMonths(currentDate, 1);
         const mes = format(proximoMes, 'MM');
         const ano = format(proximoMes, 'yyyy');
-
-        api.get('/v1/compra/'+ano+'/'+mes+'/paulo/SELECIONE/SELECIONE')
-        .then(response => {
-            setCompras(response.data.compras);
-        })
-        
+        consultar(ano, mes, 'paulo', 'SELECIONE', 'SELECIONE');        
     }, []);
 
     function buscarFinancas(ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item){
-        api.get(`/v1/compra/${ano.codigo}/${mes.codigo}/${pessoa.codigo}/${cartao.codigo}/${ultimaParcelaSelecionado.codigo}`)
+        consultar(ano.codigo, mes.codigo, pessoa.codigo, cartao.codigo, ultimaParcelaSelecionado.codigo);
+    }
+
+    function consultar(ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string){
+        api.get(`/v1/compra/${ano}/${mes}/${pessoa}/${cartao}/${ultimaParcelaSelecionado}`)
         .then(response => {
             setCompras(response.data.compras);
             setChartData(response.data.data);
@@ -82,8 +81,8 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
     }
 
     return (
-        <FinancaContext.Provider value={{compras, chartData, buscarFinancas, cadastrarCompra, removerCompra}}>
-        { children }
+        <FinancaContext.Provider value={{compras, chartData, buscarFinancas, cadastrarCompra, removerCompra, consultar}}>
+            { children }
         </FinancaContext.Provider>
     )
    
