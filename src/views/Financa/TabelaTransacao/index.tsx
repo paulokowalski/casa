@@ -12,13 +12,14 @@ export function TabelaTransacao () {
 
     const COLUNAS = [
         { name: 'Compra', field: 'nomeCompra'},
-        { name: 'Data da Parcela', field: 'dataParcela', tipo: 'data' },
+        { name: 'Data da Compra', field: 'dataCompra', tipo: 'data' },
         { name: 'Número da Parcela', field: 'numeroParcela' },
         { name: 'Número Total de Parcelas', field: 'numeroTotalParcela' },
         { name: 'Última Parcela ?', field: 'ultimaParcela', tipo: 'ultimaParcela' },
         { name: 'Cartão', field: 'nomeCartao' },
         { name: 'Valor da Parcela', field: 'valorParcela', tipo: 'numero' },
         { name: 'Valor Faltante', field: 'valorFaltante', tipo: 'numero'  },
+        { name: 'Valor Total', field: 'valorTotal', tipo: 'numero'  },
         { name: '', tipo: 'btnRemover', onAction: handleRemoverCompra }
     ]
 

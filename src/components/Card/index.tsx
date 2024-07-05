@@ -7,7 +7,7 @@ interface CardProps {
     backGroundColor: string;
   }
 
-const CardPeronalizado: React.FC<CardProps> = ({ title, content, backGroundColor }) => {
+const CardPersonalizado: React.FC<CardProps> = ({ title, content, backGroundColor }) => {
 
     function mudarBackGround(value:string){
         const cardStyle = {
@@ -28,4 +28,4 @@ const CardPeronalizado: React.FC<CardProps> = ({ title, content, backGroundColor
         </Card>
     )
 }
-export default CardPeronalizado;
+export default CardPersonalizado;

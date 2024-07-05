@@ -36,6 +36,10 @@ const Tabela: React.FC<TabelaProps> = ({ columns, data }) => {
         return data.reduce((total:any, item:any) => total + item.valorFaltante, 0);
     };
 
+    const calcularSomaTotal = (data:any) => {
+        return data.reduce((total:any, item:any) => total + item.valorTotal, 0);
+    };
+
     const getSeverity = (status:any) => {
         switch (status) {
             case 'NÃO':
@@ -49,6 +53,7 @@ const Tabela: React.FC<TabelaProps> = ({ columns, data }) => {
     // Chamada da função para calcular a soma
     const somaTotalParcela = calcularSomaParcela(data);
     const somaTotalParcelaTotal = calcularSomaParcelaTotal(data);
+    const somaTotalTotal = calcularSomaTotal(data);
 
     const footerGroup = (
         <ColumnGroup>
@@ -56,6 +61,7 @@ const Tabela: React.FC<TabelaProps> = ({ columns, data }) => {
                 <Column footer="Total:" colSpan={6} footerStyle={{ textAlign: 'right' }} />
                 <Column footer={FormatNumber(somaTotalParcela)} />
                 <Column footer={FormatNumber(somaTotalParcelaTotal)} />
+                 <Column footer={FormatNumber(somaTotalTotal)} />
                 <Column footer="" colSpan={1} footerStyle={{ textAlign: 'right' }} />
             </Row>
         </ColumnGroup>

@@ -11,6 +11,7 @@ interface CompraCartao {
 interface Compra {
     id: string,
     dataParcela: string,
+    dataCompra: string,
     nomeCompra: string,
     nomeCartao: string,
     nomePessoa: string,
