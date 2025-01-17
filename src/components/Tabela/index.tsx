@@ -16,7 +16,8 @@ const Tabela: React.FC<TabelaProps> = ({ columns, data }) => {
 
     const renderizarColuna = (coluna: any, value: any, rowData: any) => {
         if (coluna.tipo === 'data') {
-            return <span>{DateFormat(value)}</span>;
+            //return <span>{DateFormat(value)}</span>;
+            return <span>{value}</span>;
         } else if (coluna.tipo === 'ultimaParcela') {
             return <Tag value={rowData.ultimaParcela} severity={getSeverity(rowData.ultimaParcela)} />;
         } else if (coluna.tipo === 'numero') {
