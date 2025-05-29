@@ -1,56 +1,86 @@
-
-import Container from "../../styles/global";
+import { Paper, Typography, Box, Fab, Icon } from '@mui/material';
+import Container from "@mui/material/Container";
 import { FinancaProvider } from "../../contexts/FinancaContext";
 import { DespesaProvider } from "../../contexts/DespesaContext";
 import { Summary } from "./Summary";
-import { Cadastro } from "./Cadastro";
+import { CadastroModal } from "./CadastroModal";
 import { Filtro } from "./Filtro";
 import { TabelaTransacao } from "./TabelaTransacao";
-import styled from 'styled-components';
-import GraficoPizza from "./GraficoPizza";
+import { GraficoBarras } from "./GraficoBarras";
+import { useState } from "react";
 
 export function Financa() {
+    const [openCadastroModal, setOpenCadastroModal] = useState(false);
 
-  interface HalfScreenProps {
-    width?: string;
-  }
-
-  const HalfScreen = styled.div<HalfScreenProps>`
-    padding: 0rem 0rem 1rem;
-    width:  ${({ width }) => width || '50%'};
-    height: 100%;
-    float: left;
-  `;
-
-  // Define o componente principal da tela dividida
-  const SplitScreen = styled.div`
-    width: 100%;
-    height: 100vh; /* Usar a altura total da janela de visualização */
-  `;
+    const handleOpenCadastroModal = () => setOpenCadastroModal(true);
+    const handleCloseCadastroModal = () => setOpenCadastroModal(false);
 
     return (
-      <FinancaProvider>
-          <DespesaProvider>
+        <FinancaProvider>
+            <DespesaProvider>
+                <Container 
+                    maxWidth="xl" 
+                    sx={{ 
+                        py: 4,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'stretch'
+                    }}
+                >
+                    <Box sx={{ display: 'grid', gap: 3 }}>
+                        {/* Seção de Resumo */}
+                        <Box>
+                            <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+                                <Summary/>
+                            </Paper>
+                        </Box>
 
-            <Container>
-                <Summary/>
-                <Cadastro/>
-                <Filtro/>
+                        {/* Seção de Filtros */}
+                        <Box>
+                            <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+                                <Typography variant="h6" gutterBottom>
+                                    Filtros
+                                </Typography>
+                                <Filtro/>
+                            </Paper>
+                        </Box>
 
-                <SplitScreen>
-                  <HalfScreen width="70%">
-                    <TabelaTransacao/>
-                  </HalfScreen>
-                  <HalfScreen width="30%">
-                    <GraficoPizza/>
-                  </HalfScreen>
-                </SplitScreen>
+                        {/* Seção de Tabela */}
+                        <Box>
+                            <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+                                <Typography variant="h6" gutterBottom>
+                                    Transações
+                                </Typography>
+                                <TabelaTransacao/>
+                            </Paper>
+                        </Box>
 
-            </Container>
+                        {/* Seção do Gráfico */}
+                        <Box>
+                            <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+                                <GraficoBarras />
+                            </Paper>
+                        </Box>
+                    </Box>
 
-          </DespesaProvider>
+                    <CadastroModal 
+                        open={openCadastroModal}
+                        onClose={handleCloseCadastroModal}
+                    />
+
+                    <Box sx={{ position: 'fixed', bottom: 16, right: 16 }}>
+                        <Fab 
+                            color="primary" 
+                            aria-label="add"
+                            onClick={handleOpenCadastroModal}
+                        >
+                            <Icon>add</Icon>
+                        </Fab>
+                    </Box>
+                </Container>
+            </DespesaProvider>
         </FinancaProvider>
-    )
+    );
 }
 
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Chart } from 'primereact/chart';
+// import { Chart } from 'primereact/chart';
 import { FinancaContext } from '../../../contexts/FinancaContext';
 
 export default function GraficoPizza() {
@@ -25,35 +25,13 @@ export default function GraficoPizza() {
         return <div>Carregando...</div>;
     }
 
-    const documentStyle = getComputedStyle(document.documentElement);
-
-    // Montagem dos dados do gráfico e definição das cores
-    const data = {
-        labels: chartData.labels,
-        datasets: chartData.datasets.map((dataset:any, index:any) => ({
-            ...dataset,
-            backgroundColor: [
-                documentStyle.getPropertyValue('--blue-500'), 
-                documentStyle.getPropertyValue('--yellow-500'), 
-                documentStyle.getPropertyValue('--green-500'),
-                documentStyle.getPropertyValue('--bluegray-500'),
-                documentStyle.getPropertyValue('--orange-500'),
-                documentStyle.getPropertyValue('--red-500')
-            ],
-            hoverBackgroundColor: [
-                documentStyle.getPropertyValue('--blue-400'), 
-                documentStyle.getPropertyValue('--yellow-400'), 
-                documentStyle.getPropertyValue('--green-400'),
-                documentStyle.getPropertyValue('--bluegray-400'),
-                documentStyle.getPropertyValue('--orange-400'),
-                documentStyle.getPropertyValue('--red-400')
-            ]
-        }))
-    };
+    // const documentStyle = getComputedStyle(document.documentElement);
+    // const data = { ... } // manter código, mas comentar o uso do Chart
 
     return (
         <div className="card flex justify-content-center">
-            <Chart type="pie" data={data} options={chartOptions} />
+            {/* <Chart type="pie" data={data} options={chartOptions} /> */}
+            <div>Gráfico removido temporariamente</div>
         </div>
     );
 }

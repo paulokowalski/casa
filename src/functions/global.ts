@@ -32,7 +32,3 @@ export function DateFormat(value: string | Date | null | undefined): string {
         return "Erro ao formatar data";
     }
 }
-
-export function DiminuirValor(value1: number, value2: number) {
-    return value1 - value2;
-}

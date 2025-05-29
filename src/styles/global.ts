@@ -1,4 +1,4 @@
-import { createGlobalStyle, styled } from 'styled-components'
+import { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`
     :root {
@@ -48,18 +48,3 @@ export const GlobalStyle = createGlobalStyle`
         cursor: not-allowed;
     }
 `
-
-export const Container = styled.div`
-
-    display: grid;
-    gap: 2rem;
-    padding: 20px;
-
-    @media screen and (max-width: 768px) {
-        /* Estilos específicos para telas menores que 768 pixels de largura (celulares) */
-        padding: 1.5rem 0.5rem;
-    }
-    
-`
-
-export default Container

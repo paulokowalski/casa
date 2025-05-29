@@ -1,32 +1,31 @@
-# Stage 1: Build React App
-FROM node:14-alpine AS build
+# Build stage
+FROM node:18-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the container
+# Copiar arquivos de dependências
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Instalar dependências
+RUN npm ci
 
-# Copy the rest of the application code
+# Copiar código fonte
 COPY . .
 
-# Build the React app
+# Construir aplicação
 RUN npm run build
 
-# Stage 2: Serve the built React app with Nginx
-FROM nginx:1.21-alpine
+# Run stage
+FROM nginx:alpine
 
-# Copy the built React app from the build stage to the nginx web root
+# Copiar configuração do nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copiar build do React
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy custom Nginx configuration if needed
-# COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port 3000
+# Expor porta
 EXPOSE 3000
 
-# Start Nginx
+# Comando para iniciar o nginx
 CMD ["nginx", "-g", "daemon off;"]
