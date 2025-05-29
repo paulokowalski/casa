@@ -4,13 +4,11 @@ import { Box } from "@mui/material";
 import { 
     DataGrid, 
     GridColDef, 
-    GridRenderCellParams,
-    GridFooterContainer,
-    GridFooter
+    GridRenderCellParams
 } from "@mui/x-data-grid";
 import { FormatNumber } from '../../../functions/global';
 import { format } from 'date-fns';
-import { IconButton, Icon, Typography, Snackbar } from "@mui/material";
+import { IconButton, Icon, Snackbar } from "@mui/material";
 import { ExclusaoModal } from '../ExclusaoModal';
 
 interface CompraRow {
@@ -24,32 +22,6 @@ interface CompraRow {
     valorParcela: number;
     valorFaltante: number;
     valorTotal: number;
-}
-
-function CustomFooter() {
-    const { compras } = useContext(FinancaContext);
-
-    const getFooterValue = (field: 'valorTotal' | 'valorParcela') => {
-        if (!compras || compras.length === 0) return 0;
-        return compras.reduce((sum, row) => {
-            const value = Number(row[field]);
-            return sum + (isNaN(value) ? 0 : value);
-        }, 0);
-    };
-
-    return (
-        <GridFooterContainer>
-            <Box sx={{ p: 1, display: 'flex', gap: 2, borderTop: 1, borderColor: 'divider' }}>
-                <Typography variant="body2" color="text.secondary">
-                    Total: {FormatNumber(getFooterValue('valorTotal'))}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                    Total Parcelas: {FormatNumber(getFooterValue('valorParcela'))}
-                </Typography>
-            </Box>
-            <GridFooter />
-        </GridFooterContainer>
-    );
 }
 
 export function TabelaTransacao() {
@@ -94,47 +66,123 @@ export function TabelaTransacao() {
         },
         { 
             field: 'dataCompra', 
-            headerName: 'Data', 
+            headerName: 'Data da Compra', 
             width: 120,
-            renderCell: (params) => formatDate(params.row.dataCompra)
+            headerAlign: 'center',
+            renderCell: (params) => (
+                <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: '100%'
+                }}>
+                    {formatDate(params.row.dataCompra)}
+                </Box>
+            )
+        },
+        { 
+            field: 'ultimaParcela', 
+            headerName: 'Última Parcela ?', 
+            minWidth: 120,
+            headerAlign: 'center',
+            renderCell: (params) => (
+                <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: '100%',
+                    gap: 1 
+                }}>
+                    {params.value === 'SIM' && <Icon fontSize="small" color="success">done</Icon>}
+                    {params.value === 'NÃO' && <Icon fontSize="small" color="error">close</Icon>}
+                </Box>
+            )
         },
         { 
             field: 'numeroParcela', 
             headerName: 'Parcela', 
             width: 100,
-            renderCell: (params) => 
-                `${params.row.numeroParcela}/${params.row.numeroTotalParcela}`
+            headerAlign: 'center',
+            renderCell: (params) => (
+                <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: '100%'
+                }}>
+                    {`${params.row.numeroParcela}/${params.row.numeroTotalParcela}`}
+                </Box>
+            )
+        },
+        { 
+            field: 'valorParcela', 
+            headerName: 'Valor da Parcela', 
+            width: 130,
+            headerAlign: 'center',
+            renderCell: (params) => (
+                <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: '100%'
+                }}>
+                    {FormatNumber(params.row.valorParcela)}
+                </Box>
+            )
+        },
+        { 
+            field: 'valorTotal', 
+            headerName: 'Valor da Compra', 
+            width: 130,
+            headerAlign: 'center',
+            renderCell: (params) => (
+                <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: '100%'
+                }}>
+                    {FormatNumber(params.row.valorTotal)}
+                </Box>
+            )
         },
         { 
             field: 'nomeCartao', 
             headerName: 'Cartão', 
-            width: 150 
-        },
-        { 
-            field: 'valorParcela', 
-            headerName: 'Valor Parcela', 
-            width: 130,
-            renderCell: (params) => FormatNumber(params.row.valorParcela)
-        },
-        { 
-            field: 'valorTotal', 
-            headerName: 'Valor Total', 
-            width: 130,
-            renderCell: (params) => FormatNumber(params.row.valorTotal)
+            width: 150,
+            headerAlign: 'center',
+            renderCell: (params) => (
+                <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: '100%'
+                }}>
+                    {params.value}
+                </Box>
+            )
         },
         {
             field: 'acoes',
             headerName: 'Ações',
             width: 100,
+            headerAlign: 'center',
             sortable: false,
             renderCell: (params: GridRenderCellParams<CompraRow>) => (
-                <IconButton
-                    color="error"
-                    onClick={() => handleExcluir(params.row)}
-                    size="small"
-                >
-                    <Icon>delete</Icon>
-                </IconButton>
+                <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: '100%'
+                }}>
+                    <IconButton
+                        color="error"
+                        onClick={() => handleExcluir(params.row)}
+                        size="small"
+                    >
+                        <Icon>delete</Icon>
+                    </IconButton>
+                </Box>
             )
         }
     ], []);
@@ -168,9 +216,6 @@ export function TabelaTransacao() {
                 pageSizeOptions={[10, 25, 50, 100]}
                 pagination
                 disableRowSelectionOnClick
-                slots={{
-                    footer: CustomFooter
-                }}
                 density="compact"
                 autoHeight
                 sx={{
