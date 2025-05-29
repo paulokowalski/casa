@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || 'http://192.168.68.116:8080/casa-api/'
+    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080/casa-api/'
 });
 
 // Interceptor para adicionar token de autenticação
