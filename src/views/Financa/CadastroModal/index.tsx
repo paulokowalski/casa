@@ -128,16 +128,13 @@ export function CadastroModal({ open, onClose }: CadastroModalProps) {
                     </Typography>
                 </DialogTitle>
 
-                <DialogContent sx={{ p: 3 }}>
-                    <Box sx={{ 
+                <DialogContent sx={{ p: { xs: 2, md: 3 } }}>
+                    <Box sx={{
                         display: 'grid',
-                        gridTemplateColumns: {
-                            xs: '1fr',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)'
-                        },
-                        gap: 2,
-                        mt: 1
+                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                        gap: { xs: 1, md: 2 },
+                        mt: 1,
+                        width: '100%',
                     }}>
                         <TextField
                             fullWidth

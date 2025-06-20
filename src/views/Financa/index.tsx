@@ -21,23 +21,25 @@ export function Financa() {
                 <Container 
                     maxWidth="xl" 
                     sx={{ 
-                        py: 4,
+                        py: { xs: 2, md: 4 },
+                        px: { xs: 1, sm: 2, md: 0 },
                         display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'stretch'
+                        alignItems: 'stretch',
+                        width: '100%',
                     }}
                 >
-                    <Box sx={{ display: 'grid', gap: 3 }}>
+                    <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, width: '100%' }}>
                         {/* Seção de Resumo */}
                         <Box>
-                            <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+                            <Paper elevation={3} sx={{ p: { xs: 1.5, md: 2 }, borderRadius: 2 }}>
                                 <Summary/>
                             </Paper>
                         </Box>
 
                         {/* Seção de Filtros */}
                         <Box>
-                            <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+                            <Paper elevation={3} sx={{ p: { xs: 1.5, md: 2 }, borderRadius: 2 }}>
                                 <Typography variant="h6" gutterBottom>
                                     Filtros
                                 </Typography>
@@ -47,7 +49,7 @@ export function Financa() {
 
                         {/* Seção de Tabela */}
                         <Box>
-                            <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+                            <Paper elevation={3} sx={{ p: { xs: 1.5, md: 2 }, borderRadius: 2 }}>
                                 <Typography variant="h6" gutterBottom>
                                     Transações
                                 </Typography>
@@ -57,7 +59,7 @@ export function Financa() {
 
                         {/* Seção do Gráfico */}
                         <Box>
-                            <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+                            <Paper elevation={3} sx={{ p: { xs: 1.5, md: 2 }, borderRadius: 2 }}>
                                 <GraficoBarras />
                             </Paper>
                         </Box>

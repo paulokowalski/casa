@@ -85,7 +85,7 @@ export function Filtro() {
     }
 
     return (
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(6, 1fr)' }, gap: { xs: 1, md: 2 }, width: '100%' }}>
             <FormControl fullWidth size="small">
                 <InputLabel>Ano</InputLabel>
                 <Select
@@ -181,7 +181,7 @@ export function Filtro() {
                 color="primary" 
                 onClick={buscar}
                 fullWidth
-                sx={{ height: '40px' }}
+                sx={{ height: '40px', gridColumn: { xs: '1', sm: 'span 2', md: 'span 6' } }}
             >
                 Pesquisar
             </Button>

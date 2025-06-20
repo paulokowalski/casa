@@ -91,8 +91,8 @@ export function GraficoBarras() {
             <Typography variant="h6" gutterBottom>
                 Despesas Mensais - {ultimosFiltros.pessoa}
             </Typography>
-            <Box sx={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
+            <Box sx={{ width: '100%', height: { xs: 220, md: 300 }, overflowX: { xs: 'auto', md: 'visible' }, p: { xs: 1, md: 0 } }}>
+                <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={dados}
                         margin={{

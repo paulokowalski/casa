@@ -206,7 +206,9 @@ export function TabelaTransacao() {
             flexDirection: 'column',
             width: '100%',
             flex: 1,
-            minHeight: 0
+            minHeight: 0,
+            overflowX: { xs: 'auto', md: 'visible' },
+            pb: { xs: 2, md: 0 },
         }}>
             <DataGrid<CompraRow>
                 rows={rows}
@@ -219,6 +221,8 @@ export function TabelaTransacao() {
                 density="compact"
                 autoHeight
                 sx={{
+                    minWidth: 600,
+                    maxWidth: '100%',
                     '& .MuiDataGrid-cell:focus': {
                         outline: 'none'
                     },

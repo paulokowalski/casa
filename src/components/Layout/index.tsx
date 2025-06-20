@@ -5,16 +5,17 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { Link, useLocation } from 'react-router-dom';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const drawerWidth = 240;
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const theme = useTheme();
   const location = useLocation();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const handleDrawerOpen = () => setOpen(true);
-  const handleDrawerClose = () => setOpen(false);
+  const handleDrawerToggle = () => setOpen((prev) => !prev);
 
   const navItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, to: '/' },
@@ -28,24 +29,29 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            aria-label="toggle drawer"
+            onClick={handleDrawerToggle}
             edge="start"
-            sx={{ mr: 2, ...(open && { display: 'none' }) }}
+            sx={{ mr: 2 }}
           >
-            <MenuIcon />
+            {open ? <ChevronLeftIcon /> : <MenuIcon />}
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography
+            variant="h6"
+            noWrap
+            component={Link}
+            to="/"
+            sx={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+          >
             Kowalski House
           </Typography>
         </Toolbar>
       </AppBar>
       <Drawer
-        variant="temporary"
+        variant="persistent"
         open={open}
-        onClose={handleDrawerClose}
-        ModalProps={{ keepMounted: true }}
         sx={{
+          display: open ? 'block' : 'none',
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
@@ -53,9 +59,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', p: 1, justifyContent: 'flex-end' }}>
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronLeftIcon />
-          </IconButton>
+          {/* Drawer não precisa de botão de fechar, pois o toggle está na AppBar */}
         </Box>
         <Divider />
         <List>
@@ -65,7 +69,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 component={Link}
                 to={item.to}
                 selected={location.pathname === item.to}
-                onClick={handleDrawerClose}
+                onClick={() => setOpen(false)}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
@@ -83,6 +87,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           width: '100%',
           minHeight: '100vh',
           bgcolor: 'background.default',
+          transition: 'margin 0.3s',
+          ml: open ? `${drawerWidth}px` : 0,
         }}
       >
         {children}

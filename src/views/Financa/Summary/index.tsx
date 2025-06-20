@@ -42,19 +42,21 @@ export function Summary() {
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(5, 1fr)'
             },
-            gap: 3 
+            gap: { xs: 2, md: 3 },
+            width: '100%',
         }}>
             {summaryItems.map((item, index) => (
                 <Paper 
                     key={index}
                     elevation={3}
                     sx={{
-                        p: 3,
+                        p: { xs: 2, md: 3 },
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         borderRadius: 2,
-                        borderTop: `4px solid ${item.color}`
+                        borderTop: `4px solid ${item.color}`,
+                        width: '100%',
                     }}
                 >
                     <Typography variant="h6" component="h2" gutterBottom>

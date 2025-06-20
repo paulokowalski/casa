@@ -266,8 +266,26 @@ function CurrencyCard({ url, icon, label, color }: { url: string; icon: React.Re
 
 export function Home() {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '60vh', justifyContent: 'flex-start', mt: 6 }}>
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} justifyContent="center" alignItems="stretch" width="100%" maxWidth={1200}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        minHeight: '60vh',
+        justifyContent: 'flex-start',
+        mt: { xs: 2, md: 6 },
+        px: { xs: 1, sm: 2, md: 0 },
+        width: '100%',
+      }}
+    >
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={{ xs: 2, md: 3 }}
+        justifyContent="center"
+        alignItems="stretch"
+        width="100%"
+        maxWidth={1200}
+      >
         <CearaTableCard />
         <CarFipeCard url={FIPE_URL} />
         <CurrencyCard url={USD_API} icon={<AttachMoneyIcon sx={{ color: '#388e3c' }} />} label="Dólar" color="linear-gradient(120deg, #e0f7fa 0%, #b2ebf2 100%)" />

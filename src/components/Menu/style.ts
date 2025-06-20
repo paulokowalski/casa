@@ -11,7 +11,15 @@ export const ContainerMenu = styled.div`
     -webkit-box-shadow: 1px 0px 8px 0px rgba(0, 0, 0, 0.71);
     -moz-box-shadow: 1px 0px 8px 0px rgba(0, 0, 0, 0.71);
     box-shadow: 1px 0px 8px 0px rgba(0, 0, 0, 0.71);
-
+    z-index: 1200;
+    @media (max-width: 900px) {
+        position: absolute;
+        left: -240px;
+        transition: left 0.3s;
+        &.open {
+            left: 0;
+        }
+    }
 `
 
 export default ContainerMenu;
