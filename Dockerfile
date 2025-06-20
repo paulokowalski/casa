@@ -1,5 +1,5 @@
-# Build stage
-FROM node:18-alpine AS build
+# Etapa de build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar dependências
-RUN npm ci
+RUN npm ci --omit=dev
 
 # Copiar código fonte
 COPY . .
@@ -15,10 +15,10 @@ COPY . .
 # Construir aplicação
 RUN npm run build
 
-# Run stage
-FROM nginx:alpine
+# Etapa de produção
+FROM nginx:1.25-alpine
 
-# Copiar configuração do nginx
+# Copiar configuração customizada do nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copiar build do React

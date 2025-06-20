@@ -35,7 +35,8 @@ export const GlobalStyle = createGlobalStyle`
     }
 
     body {
-        background: var(--background);
+        background: #DAE6F7 !important;
+        min-height: 100vh;
         -webkit-font-smoothing: antialiased;
     }
 

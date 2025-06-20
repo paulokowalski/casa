@@ -1,34 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import { theme } from './styles/theme';
 import App from './App';
-import { Home } from './views/Home';
-import { Financa } from './views/Financa';
 
-const router = createBrowserRouter([
-  { 
-    path: "/", 
-    element: <App />,
-    errorElement: <div>Página não encontrada</div>,
-    children: [
-      {
-        path: "/",
-        element: <Home />
-      },
-      {
-        path: "/financa",
-        element: <Financa />
-      }
-    ]
-  }
-]);
-
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ThemeProvider>
   </React.StrictMode>
 );

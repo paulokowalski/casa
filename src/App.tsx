@@ -1,13 +1,19 @@
-import { Outlet } from "react-router-dom";
-import { Header } from "./views/Header";
+import { Routes, Route } from "react-router-dom";
 import { GlobalStyle } from "./styles/global";
+import { Layout } from "./components/Layout";
+import { Home } from "./views/Home";
+import { Financa } from "./views/Financa";
 
 function App() {
   return (
     <>
       <GlobalStyle/>
-      <Header/>
-      <Outlet/>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/financa" element={<Financa />} />
+        </Routes>
+      </Layout>
     </>
   )
 }
