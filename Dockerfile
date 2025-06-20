@@ -3,13 +3,13 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copiar arquivos de dependências
-COPY package*.json ./
+# Copiar arquivos de manifesto primeiro
+COPY package.json package-lock.json ./
 
 # Instalar dependências
 RUN npm ci --omit=dev --legacy-peer-deps
 
-# Copiar código fonte
+# Copiar o restante do código fonte
 COPY . .
 
 # Construir aplicação
