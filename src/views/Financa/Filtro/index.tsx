@@ -181,7 +181,7 @@ export function Filtro() {
                 color="primary" 
                 onClick={buscar}
                 fullWidth
-                sx={{ height: '40px', gridColumn: { xs: '1', sm: 'span 2', md: 'span 6' } }}
+                sx={{ height: '40px' }}
             >
                 Pesquisar
             </Button>
