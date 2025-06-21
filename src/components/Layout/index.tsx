@@ -23,6 +23,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import PeopleIcon from '@mui/icons-material/People';
 import { Link, useLocation } from 'react-router-dom';
 
 const drawerWidth = 280;
@@ -42,10 +43,16 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       description: 'Visão geral do sistema'
     },
     { 
-      text: 'Finanças', 
+      text: 'Gestão de Cartão', 
       icon: <AccountBalanceWalletIcon />, 
-      to: '/financa',
-      description: 'Gestão financeira'
+      to: '/gestao-cartao',
+      description: 'Gestão de cartões e transações'
+    },
+    {
+      text: 'Pessoas',
+      icon: <PeopleIcon />,
+      to: '/pessoa',
+      description: 'Cadastro de pessoas'
     },
   ];
 

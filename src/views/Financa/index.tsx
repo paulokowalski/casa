@@ -13,7 +13,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import BarChartIcon from '@mui/icons-material/BarChart';
 
-export function Financa() {
+export function GestaoCartao() {
     const [openCadastroModal, setOpenCadastroModal] = useState(false);
 
     const handleOpenCadastroModal = () => setOpenCadastroModal(true);
@@ -78,7 +78,7 @@ export function Financa() {
                                     textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
                                 }}
                             >
-                                Gestão Financeira
+                                Gestão de Cartão
                             </Typography>
                             <Typography 
                                 variant="h6" 
@@ -88,7 +88,7 @@ export function Financa() {
                                     textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
                                 }}
                             >
-                                Controle total das suas finanças com insights inteligentes
+                                Controle total dos seus cartões e transações
                             </Typography>
                         </Box>
 

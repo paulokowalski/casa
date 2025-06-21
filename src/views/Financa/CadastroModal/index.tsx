@@ -1,4 +1,4 @@
-import { useContext, useState, ChangeEvent } from "react";
+import { useContext, useState, ChangeEvent, useEffect } from "react";
 import { FinancaContext } from "../../../contexts/FinancaContext";
 import { 
     Box, 
@@ -17,10 +17,16 @@ import {
     Alert,
 } from '@mui/material';
 import { format } from 'date-fns';
+import { api } from '../../../services/api';
 
 interface CadastroModalProps {
     open: boolean;
     onClose: () => void;
+}
+
+interface Pessoa {
+    id: number;
+    nome: string;
 }
 
 export function CadastroModal({ open, onClose }: CadastroModalProps) {
@@ -32,6 +38,22 @@ export function CadastroModal({ open, onClose }: CadastroModalProps) {
     const [pessoa, setPessoa] = useState('');
     const [cartao, setCartao] = useState('');
     const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [pessoas, setPessoas] = useState<Pessoa[]>([]);
+
+    const cartoes = [
+        'VIRTUAL C6',
+        'PAULO C6',
+        'SABRINE C6',
+        'INTER',
+        'NUBANK',
+        'AMAZON',
+    ];
+
+    useEffect(() => {
+        if (open) {
+            api.get<Pessoa[]>('/v1/pessoas').then(res => setPessoas(res.data));
+        }
+    }, [open]);
 
     function limparFormulario() {
         setProduto('');
@@ -54,12 +76,14 @@ export function CadastroModal({ open, onClose }: CadastroModalProps) {
         const valor = valorNumerico;
         const dataFormatada = format(new Date(dataCompra), 'yyyy-MM-dd');
 
+        const pessoaSelecionada = pessoas.find(p => p.nome === pessoa);
+        const nomePessoa = pessoaSelecionada ? pessoaSelecionada.nome : pessoa;
         cadastrarCompra(
             produto.trim(),
             valor,
             dataFormatada,
             parcela,
-            pessoa.trim(),
+            nomePessoa,
             cartao.trim()
         );
         
@@ -192,21 +216,35 @@ export function CadastroModal({ open, onClose }: CadastroModalProps) {
                             ))}
                         </TextField>
                         <TextField
+                            select
                             fullWidth
                             label="Pessoa"
                             value={pessoa}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setPessoa(e.target.value)}
                             variant="outlined"
                             size="small"
-                        />
+                        >
+                            {pessoas.map((p) => (
+                                <MenuItem key={p.id} value={p.nome}>
+                                    {p.nome.toUpperCase()}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                         <TextField
+                            select
                             fullWidth
                             label="Cartão"
                             value={cartao}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setCartao(e.target.value)}
                             variant="outlined"
                             size="small"
-                        />
+                        >
+                            {cartoes.map((c) => (
+                                <MenuItem key={c} value={c}>
+                                    {c.toUpperCase()}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                     </Box>
                 </DialogContent>
 
