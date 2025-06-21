@@ -22,7 +22,6 @@ interface CompraRow {
     valorParcela: number;
     valorFaltante: number;
     valorTotal: number;
-    categoria?: string;
 }
 
 export function TabelaTransacao() {
@@ -214,32 +213,6 @@ export function TabelaTransacao() {
             )
         },
         {
-            field: 'categoria',
-            headerName: 'Categoria',
-            minWidth: 120,
-            flex: 0.7,
-            headerAlign: 'center',
-            align: 'center',
-            renderCell: (params) => (
-                <Chip
-                    label={params.value || '—'}
-                    size="small"
-                    sx={{
-                        background: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)',
-                        color: '#fff',
-                        fontWeight: 600,
-                        fontSize: '0.65rem',
-                        borderRadius: '6px',
-                        height: '18px',
-                        boxShadow: '0 2px 4px rgba(54, 209, 220, 0.2)',
-                        '& .MuiChip-label': {
-                            padding: '0 6px',
-                        },
-                    }}
-                />
-            )
-        },
-        {
             field: 'acoes',
             headerName: 'Ações',
             width: 80,
@@ -279,7 +252,6 @@ export function TabelaTransacao() {
         valorParcela: compra.valorParcela,
         valorFaltante: compra.valorFaltante,
         valorTotal: compra.valorTotal,
-        categoria: compra.categoria
     })), [compras]);
 
     return (
