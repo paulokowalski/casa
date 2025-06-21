@@ -1,296 +1,315 @@
-import { useEffect, useState } from 'react';
-import { Box, Typography, Card, CardContent, Chip, Alert, Skeleton, Avatar, Stack, Tooltip } from '@mui/material';
+import React from 'react';
+import { Box, Typography, Avatar, Chip, Stack, Tooltip, Container } from '@mui/material';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import EuroIcon from '@mui/icons-material/Euro';
+import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 
-const CEARA_API = 'https://www.thesportsdb.com/api/v1/json/3/lookuptable.php?l=4351&s=2025';
-const FIPE_URL = 'https://parallelum.com.br/fipe/api/v2/cars/brands/23/models/9048/years/2021-1';
-const USD_API = 'https://economia.awesomeapi.com.br/last/USD-BRL';
-const EUR_API = 'https://economia.awesomeapi.com.br/last/EUR-BRL';
+// Hooks personalizados
+import { useCearaData, useFipeData, useCurrencyData } from '../../hooks/useApiData';
+
+// Componentes profissionais
+import { LoadingCard } from '../../components/ui/LoadingCard';
+import { ErrorCard } from '../../components/ui/ErrorCard';
+import { Card } from '../../components/Card';
+
+// Configurações
+import { API_URLS, DESIGN_CONFIG } from '../../config/constants';
+
+// Tipos
+// import { CearaData, FipeData, CurrencyData } from '../../types/api';
 
 function CearaTableCard() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error, refetch } = useCearaData(API_URLS.CEARA);
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch(CEARA_API)
-      .then(async (res) => {
-        if (!res.ok) throw new Error('Erro ao buscar dados da tabela');
-        const d = await res.json();
-        const ceara = d.table.find((t: any) => t.strTeam === 'Ceará');
-        setData(ceara);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <Card sx={{ minWidth: 300, maxWidth: 360, width: '100%', height: 260, borderRadius: 4, boxShadow: 4, p: 3, background: 'linear-gradient(120deg, #e3f2fd 0%, #fff 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <CardContent sx={{ p: 3 }}>
-          <Skeleton variant="circular" width={48} height={48} sx={{ mb: 1 }} />
-          <Skeleton variant="text" width="60%" height={28} />
-          <Skeleton variant="text" width="40%" height={20} />
-        </CardContent>
-      </Card>
-    );
+  if (loading === 'loading') {
+    return <LoadingCard title="Ceará" variant="detailed" />;
   }
+
   if (error) {
-    return <Alert severity="error">{error}</Alert>;
+    return <ErrorCard error={error} onRetry={refetch} title="Erro ao carregar dados do Ceará" />;
   }
-  if (!data) return null;
+
+  if (!data) {
+    return <ErrorCard error="Nenhum dado disponível" title="Dados não encontrados" />;
+  }
 
   return (
     <Card
-      sx={{
-        minWidth: 300,
-        maxWidth: 360,
-        width: '100%',
-        height: 260,
-        borderRadius: 4,
-        boxShadow: 4,
-        background: 'linear-gradient(120deg, #e3f2fd 0%, #fff 100%)',
-        p: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}
+      title="Ceará"
+      description="Brasileirão 2025"
+      icon={<SportsSoccerIcon />}
+      gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      badge={`${data.intPoints} pts`}
+      badgeColor="success"
     >
-      <CardContent sx={{ p: 3 }}>
-        <Box display="flex" alignItems="center" mb={1} gap={1}>
-          <Avatar src={data.strBadge} alt="Ceará" sx={{ width: 48, height: 48, bgcolor: '#222' }} />
-          <Box>
-            <Typography variant="subtitle1" fontWeight={700}>
-              Ceará
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Brasileirão 2025
-            </Typography>
-          </Box>
+      <Box sx={{ textAlign: 'center', py: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+          <Avatar 
+            src={data.strBadge} 
+            alt="Ceará" 
+            sx={{ 
+              width: 64, 
+              height: 64, 
+              bgcolor: '#222',
+              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+            }} 
+          />
         </Box>
-        <Typography variant="caption" color="text.secondary">
-          Posição
-        </Typography>
-        <Typography variant="h3" fontWeight={700} color="primary" mb={0.5}>
+        
+        <Typography variant="h2" fontWeight={800} sx={{ 
+          mb: 1,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+        }}>
           {data.intRank}º
         </Typography>
-        <Chip label={`Pontos: ${data.intPoints}`} color="success" sx={{ fontSize: 15, height: 28, mb: 1 }} />
-        <Stack direction="row" spacing={1} alignItems="center" mt={0.5}>
-          <Tooltip title="Jogos"><Chip label={`J: ${data.intPlayed}`} size="small" /></Tooltip>
-          <Tooltip title="Vitórias"><Chip label={`V: ${data.intWin}`} size="small" color="success" /></Tooltip>
-          <Tooltip title="Empates"><Chip label={`E: ${data.intDraw}`} size="small" color="warning" /></Tooltip>
-          <Tooltip title="Derrotas"><Chip label={`D: ${data.intLoss}`} size="small" color="error" /></Tooltip>
+        
+        <Typography variant="body2" color="#7f8c8d" sx={{ mb: 2 }}>
+          Posição na tabela
+        </Typography>
+        
+        <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap" useFlexGap>
+          <Tooltip title="Jogos">
+            <Chip 
+              label={`J: ${data.intPlayed}`} 
+              size="small" 
+              sx={{ 
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                color: '#2c3e50',
+                fontWeight: 600,
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="Vitórias">
+            <Chip 
+              label={`V: ${data.intWin}`} 
+              size="small" 
+              sx={{ 
+                background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                color: '#ffffff',
+                fontWeight: 600,
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="Empates">
+            <Chip 
+              label={`E: ${data.intDraw}`} 
+              size="small" 
+              sx={{ 
+                background: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)',
+                color: '#ffffff',
+                fontWeight: 600,
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="Derrotas">
+            <Chip 
+              label={`D: ${data.intLoss}`} 
+              size="small" 
+              sx={{ 
+                background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+                color: '#ffffff',
+                fontWeight: 600,
+              }}
+            />
+          </Tooltip>
         </Stack>
-      </CardContent>
+      </Box>
     </Card>
   );
 }
 
-function CarFipeCard({ url }: { url: string }) {
-  const [data, setData] = useState<any>(null);
-  const [previous, setPrevious] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function CarFipeCard() {
+  const { data, loading, error, refetch } = useFipeData(API_URLS.FIPE);
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch(url)
-      .then(async (res) => {
-        if (!res.ok) throw new Error('Erro ao buscar dados da FIPE');
-        const d = await res.json();
-        setData(d);
-        // Buscar valor do mês anterior corretamente
-        fetch('https://parallelum.com.br/fipe/api/v2/cars/brands/23/models/9048/years')
-          .then(async (res) => {
-            if (!res.ok) throw new Error('Erro ao buscar anos FIPE');
-            const anos = await res.json();
-            if (anos && anos.length > 1) {
-              // Encontrar o índice do ano/mês atual
-              const idxAtual = anos.findIndex((a: any) => a.code === url.split('/').pop());
-              if (idxAtual > 0) {
-                const anterior = anos[idxAtual - 1];
-                fetch(`https://parallelum.com.br/fipe/api/v2/cars/brands/23/models/9048/years/${anterior.code}`)
-                  .then(async (res) => {
-                    if (!res.ok) throw new Error('Erro ao buscar valor anterior FIPE');
-                    const prev = await res.json();
-                    setPrevious(prev);
-                  })
-                  .catch(() => setPrevious(null));
-              }
-            }
-          })
-          .catch(() => setPrevious(null));
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [url]);
-
-  if (loading) {
-    return (
-      <Card sx={{ minWidth: 300, maxWidth: 360, width: '100%', height: 260, borderRadius: 4, boxShadow: 4, p: 3, background: 'linear-gradient(120deg, #f8fafc 0%, #e3f2fd 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <CardContent sx={{ p: 3 }}>
-          <Skeleton variant="circular" width={48} height={48} sx={{ mb: 1 }} />
-          <Skeleton variant="text" width="80%" height={28} />
-          <Skeleton variant="text" width="60%" height={20} />
-          <Skeleton variant="rounded" width="100%" height={32} sx={{ mt: 1 }} />
-        </CardContent>
-      </Card>
-    );
+  if (loading === 'loading') {
+    return <LoadingCard title="Valor FIPE" variant="detailed" />;
   }
+
   if (error) {
-    return <Alert severity="error">{error}</Alert>;
+    return <ErrorCard error={error} onRetry={refetch} title="Erro ao carregar dados da FIPE" />;
   }
-  if (!data) return null;
+
+  if (!data) {
+    return <ErrorCard error="Nenhum dado disponível" title="Dados não encontrados" />;
+  }
 
   return (
     <Card
-      sx={{
-        minWidth: 300,
-        maxWidth: 360,
-        width: '100%',
-        height: 260,
-        borderRadius: 4,
-        boxShadow: 4,
-        background: 'linear-gradient(120deg, #f8fafc 0%, #e3f2fd 100%)',
-        p: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}
+      title={`${data.brand} ${data.model}`}
+      description={`Ano ${data.modelYear} • ${data.fuel}`}
+      icon={<DirectionsCarIcon />}
+      gradient="linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)"
+      badge="FIPE"
+      badgeColor="info"
     >
-      <CardContent sx={{ p: 3 }}>
-        <Box display="flex" alignItems="center" mb={1} gap={1}>
-          <Avatar sx={{ width: 48, height: 48, bgcolor: '#1976d2' }}>
-            <DirectionsCarIcon sx={{ fontSize: 28, color: '#fff' }} />
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle1" fontWeight={700}>
-              {data.brand} {data.model}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Ano {data.modelYear} • {data.fuel}
-            </Typography>
-          </Box>
-        </Box>
-        <Typography variant="caption" color="text.secondary">
-          Valor FIPE ({data.referenceMonth})
-        </Typography>
-        <Typography variant="h4" fontWeight={700} color="primary" mb={1}>
+      <Box sx={{ textAlign: 'center', py: 2 }}>
+        <Typography variant="h3" fontWeight={700} sx={{ 
+          mb: 1,
+          background: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+        }}>
           {data.price}
         </Typography>
-        <Chip label={`FIPE: ${data.codeFipe}`} color="info" sx={{ fontSize: 13, height: 24, mb: 1 }} />
-        <Box display="flex" justifyContent="flex-end">
+        
+        <Typography variant="body2" color="#7f8c8d" sx={{ mb: 2 }}>
+          Valor FIPE ({data.referenceMonth})
+        </Typography>
+        
+        <Chip 
+          label={`Código: ${data.codeFipe}`} 
+          sx={{ 
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)',
+            color: '#2c3e50',
+            fontWeight: 600,
+            mb: 2,
+          }} 
+        />
+        
+        <Box display="flex" justifyContent="center">
           <a
             href={`https://www.webmotors.com.br/carros-usados/${encodeURIComponent(data.brand.split(' - ')[1] || data.brand)}/${encodeURIComponent(data.model.split(' ')[0])}?ano=${data.modelYear}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ textDecoration: 'none' }}
           >
-            <Chip label="Mercado" color="primary" clickable sx={{ fontWeight: 600, fontSize: 13, height: 24 }} />
+            <Chip 
+              label="Ver no Mercado" 
+              sx={{ 
+                background: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)',
+                color: '#ffffff',
+                fontWeight: 600,
+                cursor: 'pointer',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                },
+                transition: 'transform 0.3s ease',
+              }} 
+            />
           </a>
         </Box>
-      </CardContent>
+      </Box>
     </Card>
   );
 }
 
-function CurrencyCard({ url, icon, label, color }: { url: string; icon: React.ReactNode; label: string; color: string }) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function CurrencyCard({ url, icon, label, gradient }: { url: string; icon: React.ReactNode; label: string; gradient: string }) {
+  const { data, loading, error, refetch } = useCurrencyData(url);
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch(url)
-      .then(async (res) => {
-        if (!res.ok) throw new Error('Erro ao buscar cotação');
-        const d = await res.json();
-        setData(Object.values(d)[0]);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [url]);
-
-  if (loading) {
-    return (
-      <Card sx={{ minWidth: 220, maxWidth: 240, width: '100%', height: 150, borderRadius: 4, boxShadow: 4, p: 3, background: color, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <CardContent sx={{ p: 3 }}>
-          <Skeleton variant="circular" width={36} height={36} sx={{ mb: 1 }} />
-          <Skeleton variant="text" width="60%" height={24} />
-        </CardContent>
-      </Card>
-    );
+  if (loading === 'loading') {
+    return <LoadingCard title={label} variant="compact" height={DESIGN_CONFIG.COMPACT_CARD_HEIGHT} />;
   }
+
   if (error) {
-    return <Alert severity="error">{error}</Alert>;
+    return <ErrorCard error={error} onRetry={refetch} title={`Erro ao carregar ${label}`} variant="compact" />;
   }
-  if (!data) return null;
+
+  if (!data) {
+    return <ErrorCard error="Nenhum dado disponível" title="Dados não encontrados" variant="compact" />;
+  }
 
   return (
     <Card
-      sx={{
-        minWidth: 220,
-        maxWidth: 240,
-        width: '100%',
-        height: 150,
-        borderRadius: 4,
-        boxShadow: 4,
-        background: color,
-        p: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}
+      title={label}
+      description="Cotação atual"
+      icon={icon}
+      gradient={gradient}
     >
-      <CardContent sx={{ p: 3 }}>
-        <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-          <Avatar sx={{ width: 36, height: 36, bgcolor: '#fff' }}>{icon}</Avatar>
-          <Typography variant="subtitle2" fontWeight={700} color="text.primary">
-            {label}
-          </Typography>
-        </Box>
-        <Typography variant="h5" fontWeight={700} color="primary" mb={0.5}>
+      <Box sx={{ textAlign: 'center', py: 2 }}>
+        <Typography variant="h4" fontWeight={700} sx={{ 
+          mb: 1,
+          background: gradient,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+        }}>
           R$ {Number(data.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}
         </Typography>
-        <Chip label={`${data.pctChange}%`} color="info" size="small" sx={{ fontSize: 12, height: 20 }} />
-      </CardContent>
+        
+        <Typography variant="body2" color="#7f8c8d">
+          Compra • Venda: R$ {Number(data.ask).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}
+        </Typography>
+      </Box>
     </Card>
   );
 }
 
 export function Home() {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        minHeight: '60vh',
-        justifyContent: 'flex-start',
-        mt: { xs: 2, md: 6 },
-        px: { xs: 1, sm: 2, md: 0 },
-        width: '100%',
-      }}
-    >
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={{ xs: 2, md: 3 }}
-        justifyContent="center"
-        alignItems="stretch"
-        width="100%"
-        maxWidth={1200}
-      >
-        <CearaTableCard />
-        <CarFipeCard url={FIPE_URL} />
-        <CurrencyCard url={USD_API} icon={<AttachMoneyIcon sx={{ color: '#388e3c' }} />} label="Dólar" color="linear-gradient(120deg, #e0f7fa 0%, #b2ebf2 100%)" />
-        <CurrencyCard url={EUR_API} icon={<EuroIcon sx={{ color: '#1976d2' }} />} label="Euro" color="linear-gradient(120deg, #e3e0fa 0%, #c5cae9 100%)" />
-      </Stack>
-    </Box>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      {/* Header da página */}
+      <Box sx={{ mb: 4, textAlign: 'center' }} className="fade-in">
+        <Typography 
+          variant="h3" 
+          sx={{ 
+            fontWeight: 800,
+            mb: 1,
+            color: '#ffffff',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          Dashboard Kowalski House
+        </Typography>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            color: 'rgba(255, 255, 255, 0.9)',
+            fontWeight: 400,
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+          }}
+        >
+          Informações em tempo real e insights inteligentes
+        </Typography>
+      </Box>
+
+      {/* Grid de cards */}
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: 'repeat(2, 1fr)',
+          md: 'repeat(3, 1fr)',
+          lg: 'repeat(4, 1fr)'
+        },
+        gap: 3,
+      }}>
+        {/* Card do Ceará */}
+        <Box className="fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <CearaTableCard />
+        </Box>
+
+        {/* Card da FIPE */}
+        <Box className="fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <CarFipeCard />
+        </Box>
+
+        {/* Card do Dólar */}
+        <Box className="fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <CurrencyCard 
+            url={API_URLS.DOLLAR} 
+            icon={<AttachMoneyIcon />} 
+            label="Dólar" 
+            gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+          />
+        </Box>
+
+        {/* Card do Euro */}
+        <Box className="fade-in-up" style={{ animationDelay: '0.4s' }}>
+          <CurrencyCard 
+            url={API_URLS.EURO} 
+            icon={<EuroIcon />} 
+            label="Euro" 
+            gradient="linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)"
+          />
+        </Box>
+      </Box>
+    </Container>
   );
 }
