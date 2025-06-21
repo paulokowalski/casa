@@ -1,6 +1,5 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import { api } from "../services/api";
-import { format, addMonths } from 'date-fns';
 import Item from "../interface/Item";
 
 interface CompraCartao {
@@ -21,7 +20,8 @@ interface Compra {
     valorFaltante: number,
     valorParcela: number,
     valorTotal: number,
-    comprasCartao: CompraCartao[]
+    comprasCartao: CompraCartao[],
+    categoria?: string
 }
 
 interface FinancaProviderProps {
@@ -60,21 +60,6 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
         ultimaParcela: 'TODOS'
     });
 
-    useEffect(() => {
-        const currentDate = new Date();
-        const proximoMes = addMonths(currentDate, 1);
-        const mes = format(proximoMes, 'MM');
-        const ano = format(proximoMes, 'yyyy');
-        consultar(ano, mes, 'paulo', 'SELECIONE', 'SELECIONE');
-        setUltimosFiltros({
-            ano,
-            mes,
-            pessoa: 'paulo',
-            cartao: 'SELECIONE',
-            ultimaParcela: 'SELECIONE'
-        });
-    }, []);
-
     function buscarFinancas(ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) {
         const novosFiltros = {
             ano: ano.codigo,
@@ -108,7 +93,7 @@ export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
             dataCompra: dataCompra,
             numeroParcelas: numeroParcelas,
             nomePessoaCompra: nomePessoaCompra,
-            nomeCartao:nomeCartao
+            nomeCartao: nomeCartao
         });
     }
 

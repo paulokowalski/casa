@@ -1,6 +1,5 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import { api } from "../services/api";
-import { format, addMonths } from 'date-fns';
 import Item from "../interface/Item";
 
 interface Despesa {
@@ -26,20 +25,13 @@ export const DespesaContext = createContext<DespesaContextData>(
 
 export function DespesaProvider({ children }: Readonly<DespesaProviderProps>) {
 
-    const [despesa, setDespesa] = useState<Despesa>();
-    const currentDate = new Date();
-
-    // Adiciona um mês à data atual
-    const proximoMes = addMonths(currentDate, 1);
-    const mes = format(proximoMes, 'MM');
-    const ano = format(proximoMes, 'yyyy');
-    
-    useEffect(() => {
-        api.get('/v1/despesa/'+ano+'/'+mes+'/paulo')
-        .then(response => {
-            setDespesa(response.data);
-        })        
-    }, [ano, mes]);
+    const [despesa, setDespesa] = useState<Despesa>({
+        valorMes: 0,
+        valorProximoMes: 0,
+        valorSaindo: 0,
+        valorParcelaSaindo: 0,
+        valorSaindoTotal: 0
+    });
 
     function buscarDespesa(ano: Item, mes: Item, pessoa: Item) {
         api.get(`/v1/despesa/${ano.codigo}/${mes.codigo}/${pessoa.codigo}`)
@@ -51,5 +43,4 @@ export function DespesaProvider({ children }: Readonly<DespesaProviderProps>) {
             { children }
         </DespesaContext.Provider>
     )
-    
 }

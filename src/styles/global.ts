@@ -60,12 +60,12 @@ export const GlobalStyle = createGlobalStyle`
 
     ::-webkit-scrollbar-track {
         background: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
+        border-radius: 8px;
     }
 
     ::-webkit-scrollbar-thumb {
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%);
-        border-radius: 4px;
+        border-radius: 8px;
         transition: background 0.3s ease;
     }
 
@@ -145,7 +145,7 @@ export const GlobalStyle = createGlobalStyle`
         background: rgba(255, 255, 255, 0.25);
         backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 16px;
+        border-radius: 8px;
     }
 
     /* Gradientes de texto */
@@ -208,7 +208,7 @@ export const GlobalStyle = createGlobalStyle`
     .modern-chip {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        border-radius: 6px;
+        border-radius: 4px;
         padding: 4px 12px;
         font-size: 0.75rem;
         font-weight: 600;

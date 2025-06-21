@@ -15,7 +15,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
       elevation={0}
       sx={{
         p: 3,
-        borderRadius: 3,
+        borderRadius: 2,
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -111,7 +111,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
       elevation={0}
       sx={{
         p: 3,
-        borderRadius: 3,
+        borderRadius: 2,
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -213,7 +213,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
           elevation={0}
           sx={{
             p: 3,
-            borderRadius: 4,
+            borderRadius: 2,
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -247,7 +247,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
               width={60} 
               height={24}
               sx={{
-                borderRadius: 12,
+                borderRadius: 4,
                 background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
                 backgroundSize: '200% 100%',
                 animation: 'shimmer 1.5s infinite',

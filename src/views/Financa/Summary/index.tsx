@@ -38,7 +38,7 @@ export function Summary() {
             gradient: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
             icon: <TrendingDownIcon />,
             trend: "down",
-            description: "Despesas do período"
+            description: "Valor saindo"
         },
         {
             title: "Parcelas Saindo",
@@ -47,7 +47,7 @@ export function Summary() {
             gradient: "linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)",
             icon: <PaymentIcon />,
             trend: "down",
-            description: "Parcelas a pagar"
+            description: "Valor parcela saindo"
         },
         {
             title: "Total Saindo",
@@ -81,7 +81,7 @@ export function Summary() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-start',
-                        borderRadius: 2,
+                        borderRadius: 1,
                         background: 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(20px)',
                         border: '1px solid rgba(255, 255, 255, 0.2)',

@@ -195,17 +195,20 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                   selected={location.pathname === item.to}
                   onClick={() => setOpen(false)}
                   sx={{
-                    borderRadius: 3,
+                    borderRadius: 2,
                     mx: 1,
+                    minHeight: 36,
+                    py: 0.5,
+                    px: 1.5,
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
                       background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                      transform: 'translateX(8px)',
+                      transform: 'translateX(6px)',
                     },
                     '&.Mui-selected': {
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       color: '#ffffff',
-                      boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                      boxShadow: '0 4px 16px rgba(102, 126, 234, 0.18)',
                       '&:hover': {
                         background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
                       },
@@ -217,8 +220,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 >
                   <ListItemIcon 
                     sx={{ 
-                      minWidth: 40,
+                      minWidth: 28,
                       color: location.pathname === item.to ? '#ffffff' : '#667eea',
+                      fontSize: 18,
+                      mr: 1,
                     }}
                   >
                     {item.icon}
@@ -228,13 +233,16 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                       primary={item.text} 
                       primaryTypographyProps={{
                         fontWeight: location.pathname === item.to ? 600 : 500,
+                        fontSize: '0.95rem',
+                        lineHeight: 1.1,
                       }}
                     />
                     <ListItemText 
                       secondary={item.description}
                       secondaryTypographyProps={{
-                        fontSize: '0.75rem',
+                        fontSize: '0.7rem',
                         color: location.pathname === item.to ? 'rgba(255,255,255,0.8)' : '#4a5568',
+                        lineHeight: 1.1,
                       }}
                     />
                   </Box>

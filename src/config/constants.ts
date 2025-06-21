@@ -1,11 +1,3 @@
-// URLs das APIs (mantidas exatamente como estavam)
-export const API_URLS = {
-  CEARA: 'https://www.thesportsdb.com/api/v1/json/3/lookuptable.php?l=4351&s=2025',
-  FIPE: 'https://parallelum.com.br/fipe/api/v2/cars/brands/23/models/9048/years/2021-1',
-  DOLLAR: 'https://economia.awesomeapi.com.br/last/USD-BRL',
-  EURO: 'https://economia.awesomeapi.com.br/last/EUR-BRL',
-} as const;
-
 // Configurações de tempo
 export const TIME_CONFIG = {
   REFETCH_INTERVAL: 300000, // 5 minutos
@@ -34,4 +26,18 @@ export const GRADIENTS = {
 export const ICON_COLORS = {
   DOLLAR: '#388e3c',
   EURO: '#1976d2',
-} as const; 
+} as const;
+
+export const CATEGORIAS_DESPESA_PADRAO = [
+  'Alimentação',
+  'Transporte',
+  'Moradia',
+  'Lazer',
+  'Saúde',
+  'Educação',
+  'Compras',
+  'Serviços',
+  'Impostos',
+  'Viagem',
+  'Outros',
+]; 

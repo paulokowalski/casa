@@ -6,13 +6,13 @@ WORKDIR /app
 # Copiar arquivos de manifesto primeiro
 COPY package.json package-lock.json ./
 
-# Instalar todas as dependências (incluindo devDependencies para o build)
-RUN npm ci --legacy-peer-deps
+# Instalar dependências
+RUN npm ci --legacy-peer-deps && npm install --save-dev @vitejs/plugin-react
 
 # Copiar o restante do código fonte
 COPY . .
 
-# Construir aplicação
+# Build de produção com Vite
 RUN npm run build
 
 # Etapa de produção
@@ -24,8 +24,8 @@ RUN apk add --no-cache curl
 # Copiar configuração customizada do nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copiar build do React
-COPY --from=build /app/build /usr/share/nginx/html
+# Copiar build do Vite (dist)
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Criar usuário não-root para segurança
 RUN addgroup -g 1001 -S nodejs && \
@@ -40,7 +40,7 @@ RUN chown -R nextjs:nodejs /usr/share/nginx/html && \
 # Mudar para usuário não-root
 USER nextjs
 
-# Expor porta
+# Expor porta 3000
 EXPOSE 3000
 
 # Healthcheck

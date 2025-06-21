@@ -37,7 +37,7 @@ export const Card: React.FC<CardProps> = ({
       onClick={onClick}
       sx={{
         p: { xs: 2, md: 3 },
-        borderRadius: 3,
+        borderRadius: 2,
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255, 255, 255, 0.3)',

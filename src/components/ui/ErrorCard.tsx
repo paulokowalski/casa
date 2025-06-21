@@ -79,7 +79,7 @@ export const ErrorCard: React.FC<ErrorCardProps> = ({
         maxWidth: 360,
         width: '100%',
         height: 260,
-        borderRadius: 3,
+        borderRadius: 2,
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(239, 68, 68, 0.3)',

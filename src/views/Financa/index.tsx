@@ -100,14 +100,13 @@ export function Financa() {
                                         elevation={0}
                                         sx={{
                                             p: { xs: 2, md: 3 },
-                                            borderRadius: 2,
+                                            borderRadius: 1,
                                             background: 'rgba(255, 255, 255, 0.95)',
                                             backdropFilter: 'blur(20px)',
                                             border: '1px solid rgba(255, 255, 255, 0.2)',
                                             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                             position: 'relative',
-                                            overflow: 'hidden',
                                             '&:hover': {
                                                 transform: 'translateY(-2px)',
                                                 boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',

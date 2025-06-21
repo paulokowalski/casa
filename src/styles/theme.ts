@@ -46,7 +46,7 @@ export const theme = createTheme({
     divider: 'rgba(102, 126, 234, 0.1)',
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 8,
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -100,7 +100,7 @@ export const theme = createTheme({
         root: {
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
-          borderRadius: 12,
+          borderRadius: 8,
           border: '1px solid rgba(255, 255, 255, 0.3)',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -135,7 +135,7 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 8,
           fontWeight: 600,
           textTransform: 'none',
           padding: '12px 24px',
@@ -178,7 +178,7 @@ export const theme = createTheme({
         root: {
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
-          borderRadius: 12,
+          borderRadius: 8,
           border: '1px solid rgba(255, 255, 255, 0.3)',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -192,7 +192,7 @@ export const theme = createTheme({
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 8,
           margin: '4px 8px',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
@@ -213,7 +213,7 @@ export const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 6,
+          borderRadius: 4,
           fontWeight: 600,
           fontSize: '0.75rem',
           transition: 'all 0.2s ease',
@@ -232,7 +232,7 @@ export const theme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 6,
           transition: 'all 0.2s ease',
           '&:hover': {
             transform: 'scale(1.05)',
@@ -245,7 +245,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 12,
+            borderRadius: 8,
             background: 'rgba(255, 255, 255, 0.9)',
             backdropFilter: 'blur(10px)',
             '&:hover': {
@@ -266,7 +266,7 @@ export const theme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          borderRadius: 16,
+          borderRadius: 10,
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -278,7 +278,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiSnackbarContent-root': {
-            borderRadius: 12,
+            borderRadius: 8,
             background: '#667eea',
             color: '#ffffff',
             boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',

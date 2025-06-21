@@ -22,6 +22,7 @@ interface CompraRow {
     valorParcela: number;
     valorFaltante: number;
     valorTotal: number;
+    categoria?: string;
 }
 
 export function TabelaTransacao() {
@@ -213,6 +214,32 @@ export function TabelaTransacao() {
             )
         },
         {
+            field: 'categoria',
+            headerName: 'Categoria',
+            minWidth: 120,
+            flex: 0.7,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params) => (
+                <Chip
+                    label={params.value || '—'}
+                    size="small"
+                    sx={{
+                        background: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)',
+                        color: '#fff',
+                        fontWeight: 600,
+                        fontSize: '0.65rem',
+                        borderRadius: '6px',
+                        height: '18px',
+                        boxShadow: '0 2px 4px rgba(54, 209, 220, 0.2)',
+                        '& .MuiChip-label': {
+                            padding: '0 6px',
+                        },
+                    }}
+                />
+            )
+        },
+        {
             field: 'acoes',
             headerName: 'Ações',
             width: 80,
@@ -251,7 +278,8 @@ export function TabelaTransacao() {
         nomeCartao: compra.nomeCartao,
         valorParcela: compra.valorParcela,
         valorFaltante: compra.valorFaltante,
-        valorTotal: compra.valorTotal
+        valorTotal: compra.valorTotal,
+        categoria: compra.categoria
     })), [compras]);
 
     return (
@@ -329,7 +357,7 @@ export function TabelaTransacao() {
                     minWidth: 600,
                     maxWidth: '100%',
                     border: 'none',
-                    borderRadius: 3,
+                    borderRadius: 2,
                     background: '#ffffff',
                     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                     borderTop: '4px solid #667eea',
@@ -357,7 +385,7 @@ export function TabelaTransacao() {
                         height: '36px !important',
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                         borderBottom: 'none',
-                        borderRadius: '12px 12px 0 0',
+                        borderRadius: '4px 4px 0 0',
                         '& .MuiDataGrid-columnHeader': {
                             fontWeight: 700,
                             color: '#ffffff',
@@ -392,7 +420,7 @@ export function TabelaTransacao() {
                     },
                     '& .MuiDataGrid-footerContainer': {
                         borderTop: '2px solid #f1f3f4',
-                        borderRadius: '0 0 12px 12px',
+                        borderRadius: '0 0 4px 4px',
                         background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%)',
                         minHeight: '36px !important',
                         maxHeight: '36px !important',
@@ -409,13 +437,13 @@ export function TabelaTransacao() {
                         },
                     },
                     '& .MuiDataGrid-virtualScroller': {
-                        borderRadius: '0 0 12px 12px',
+                        borderRadius: '0 0 4px 4px',
                     },
                     '& .MuiDataGrid-virtualScrollerContent': {
-                        borderRadius: '0 0 12px 12px',
+                        borderRadius: '0 0 4px 4px',
                     },
                     '& .MuiDataGrid-virtualScrollerRenderZone': {
-                        borderRadius: '0 0 12px 12px',
+                        borderRadius: '0 0 4px 4px',
                     },
                     flex: 1
                 }}

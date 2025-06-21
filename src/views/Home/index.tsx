@@ -14,7 +14,8 @@ import { ErrorCard } from '../../components/ui/ErrorCard';
 import { Card } from '../../components/Card';
 
 // Configurações
-import { API_URLS, DESIGN_CONFIG } from '../../config/constants';
+import { API_URLS } from '../../config/urls';
+import { DESIGN_CONFIG } from '../../config/constants';
 
 // Tipos
 // import { CearaData, FipeData, CurrencyData } from '../../types/api';

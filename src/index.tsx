@@ -4,7 +4,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './styles/theme';
 import App from './App';
-import * as serviceWorkerRegistration from './serviceWorker';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
@@ -16,5 +15,3 @@ root.render(
     </ThemeProvider>
   </React.StrictMode>
 );
-
-serviceWorkerRegistration.register();

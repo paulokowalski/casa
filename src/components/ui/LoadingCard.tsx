@@ -59,7 +59,7 @@ export const LoadingCard: React.FC<LoadingCardProps> = ({
         maxWidth: 360,
         width,
         height,
-        borderRadius: 3,
+        borderRadius: 2,
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255, 255, 255, 0.3)',
