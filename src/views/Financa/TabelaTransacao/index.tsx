@@ -1,6 +1,6 @@
 import { useContext, useState, useMemo } from "react";
 import { FinancaContext } from "../../../contexts/FinancaContext";
-import { Box, Chip } from "@mui/material";
+import { Box, Chip, Tooltip } from "@mui/material";
 import { 
     DataGrid, 
     GridColDef, 
@@ -23,6 +23,59 @@ interface CompraRow {
     valorFaltante: number;
     valorTotal: number;
 }
+
+const localeTextPtBR = {
+    noRowsLabel: 'Nenhuma compra encontrada',
+    noResultsOverlayLabel: 'Nenhum resultado encontrado',
+    toolbarColumns: 'Colunas',
+    toolbarColumnsLabel: 'Selecionar colunas',
+    toolbarFilters: 'Filtros',
+    toolbarFiltersLabel: 'Mostrar filtros',
+    toolbarDensity: 'Densidade',
+    toolbarDensityLabel: 'Densidade',
+    toolbarDensityCompact: 'Compacta',
+    toolbarDensityStandard: 'Padrão',
+    toolbarDensityComfortable: 'Confortável',
+    filterPanelAddFilter: 'Adicionar filtro',
+    filterPanelDeleteIconLabel: 'Excluir',
+    filterPanelOperatorAnd: 'E',
+    filterPanelOperatorOr: 'Ou',
+    filterPanelColumns: 'Colunas',
+    filterPanelInputLabel: 'Valor',
+    filterPanelInputPlaceholder: 'Valor do filtro...',
+    filterOperatorContains: 'contém',
+    filterOperatorEquals: 'igual a',
+    filterOperatorStartsWith: 'começa com',
+    filterOperatorEndsWith: 'termina com',
+    filterOperatorIs: 'é',
+    filterOperatorNot: 'não é',
+    filterOperatorAfter: 'depois de',
+    filterOperatorOnOrAfter: 'em ou depois de',
+    filterOperatorBefore: 'antes de',
+    filterOperatorOnOrBefore: 'em ou antes de',
+    filterOperatorIsEmpty: 'está vazio',
+    filterOperatorIsNotEmpty: 'não está vazio',
+    filterOperatorIsAnyOf: 'é qualquer um de',
+    columnMenuLabel: 'Menu',
+    columnMenuShowColumns: 'Mostrar colunas',
+    columnMenuFilter: 'Filtrar',
+    columnMenuHideColumn: 'Ocultar',
+    columnMenuUnsort: 'Desfazer ordenação',
+    columnMenuSortAsc: 'Ordenar crescente',
+    columnMenuSortDesc: 'Ordenar decrescente',
+    columnHeaderSortIconLabel: 'Ordenar',
+    footerRowSelected: (count: number) =>
+        count !== 1
+            ? `${count.toLocaleString()} linhas selecionadas`
+            : `${count.toLocaleString()} linha selecionada`,
+    footerTotalRows: 'Total de linhas:',
+    footerTotalVisibleRows: (visibleCount: number, totalCount: number) =>
+        `${visibleCount.toLocaleString()} de ${totalCount.toLocaleString()}`,
+    checkboxSelectionHeaderName: 'Seleção',
+    booleanCellTrueLabel: 'sim',
+    booleanCellFalseLabel: 'não',
+    labelRowsPerPage: 'Linhas por página',
+};
 
 export function TabelaTransacao() {
     const { compras } = useContext(FinancaContext);
@@ -154,37 +207,19 @@ export function TabelaTransacao() {
             headerAlign: 'center',
             align: 'center',
             renderCell: (params) => (
-                <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    width: '100%',
-                    fontWeight: 600,
-                    color: '#2c3e50',
-                    fontSize: '0.75rem',
-                }}>
-                    {FormatNumber(params.row.valorParcela)}
-                </Box>
-            )
-        },
-        { 
-            field: 'valorTotal', 
-            headerName: 'Valor Total', 
-            width: 140,
-            headerAlign: 'center',
-            align: 'center',
-            renderCell: (params) => (
-                <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    width: '100%',
-                    fontWeight: 700,
-                    color: '#667eea',
-                    fontSize: '0.75rem',
-                }}>
-                    {FormatNumber(params.row.valorTotal)}
-                </Box>
+                <Tooltip title={`Total: ${FormatNumber(params.row.valorTotal)} em ${params.row.numeroTotalParcela}x`} arrow>
+                  <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      width: '100%',
+                      fontWeight: 600,
+                      color: '#2c3e50',
+                      fontSize: '0.75rem',
+                  }}>
+                      {FormatNumber(params.row.valorParcela)}
+                  </Box>
+                </Tooltip>
             )
         },
         { 
@@ -274,57 +309,7 @@ export function TabelaTransacao() {
                 disableRowSelectionOnClick
                 density="compact"
                 autoHeight
-                localeText={{
-                    noRowsLabel: 'Nenhuma compra encontrada',
-                    noResultsOverlayLabel: 'Nenhum resultado encontrado',
-                    toolbarColumns: 'Colunas',
-                    toolbarColumnsLabel: 'Selecionar colunas',
-                    toolbarFilters: 'Filtros',
-                    toolbarFiltersLabel: 'Mostrar filtros',
-                    toolbarDensity: 'Densidade',
-                    toolbarDensityLabel: 'Densidade',
-                    toolbarDensityCompact: 'Compacta',
-                    toolbarDensityStandard: 'Padrão',
-                    toolbarDensityComfortable: 'Confortável',
-                    filterPanelAddFilter: 'Adicionar filtro',
-                    filterPanelDeleteIconLabel: 'Excluir',
-                    filterPanelOperatorAnd: 'E',
-                    filterPanelOperatorOr: 'Ou',
-                    filterPanelColumns: 'Colunas',
-                    filterPanelInputLabel: 'Valor',
-                    filterPanelInputPlaceholder: 'Valor do filtro...',
-                    filterOperatorContains: 'contém',
-                    filterOperatorEquals: 'igual a',
-                    filterOperatorStartsWith: 'começa com',
-                    filterOperatorEndsWith: 'termina com',
-                    filterOperatorIs: 'é',
-                    filterOperatorNot: 'não é',
-                    filterOperatorAfter: 'depois de',
-                    filterOperatorOnOrAfter: 'em ou depois de',
-                    filterOperatorBefore: 'antes de',
-                    filterOperatorOnOrBefore: 'em ou antes de',
-                    filterOperatorIsEmpty: 'está vazio',
-                    filterOperatorIsNotEmpty: 'não está vazio',
-                    filterOperatorIsAnyOf: 'é qualquer um de',
-                    columnMenuLabel: 'Menu',
-                    columnMenuShowColumns: 'Mostrar colunas',
-                    columnMenuFilter: 'Filtrar',
-                    columnMenuHideColumn: 'Ocultar',
-                    columnMenuUnsort: 'Desfazer ordenação',
-                    columnMenuSortAsc: 'Ordenar crescente',
-                    columnMenuSortDesc: 'Ordenar decrescente',
-                    columnHeaderSortIconLabel: 'Ordenar',
-                    footerRowSelected: (count) =>
-                        count !== 1
-                            ? `${count.toLocaleString()} linhas selecionadas`
-                            : `${count.toLocaleString()} linha selecionada`,
-                    footerTotalRows: 'Total de linhas:',
-                    footerTotalVisibleRows: (visibleCount, totalCount) =>
-                        `${visibleCount.toLocaleString()} de ${totalCount.toLocaleString()}`,
-                    checkboxSelectionHeaderName: 'Seleção',
-                    booleanCellTrueLabel: 'sim',
-                    booleanCellFalseLabel: 'não',
-                }}
+                localeText={localeTextPtBR}
                 sx={{
                     minWidth: 600,
                     maxWidth: '100%',
