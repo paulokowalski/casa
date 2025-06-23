@@ -1,6 +1,6 @@
 // Arquivo central de URLs do sistema
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://192.68.168.116:8080/casa-api/';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://192.168.68.116:8080/casa-api/';
 
 export const API_URLS = {
   CEARA: 'https://www.thesportsdb.com/api/v1/json/3/lookuptable.php?l=4351&s=2025',
