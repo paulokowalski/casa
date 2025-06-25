@@ -35,6 +35,8 @@ interface FinancaContextData {
   cartaoDespesasAgrupadas: { [nomeCartao: string]: any[] };
   transacoesProxMes: Transacao[];
   getDespesasProximasTodasPessoas: () => Promise<any[]>;
+  loading: boolean;
+  setLoading: (v: boolean) => void;
 }
 const FinancaContext = createContext<FinancaContextData>({} as any);
 export const useFinanca = () => useContext(FinancaContext);
@@ -47,6 +49,7 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
   const [mes, setMes] = useState('');
   const [cartaoDespesas, setCartaoDespesas] = useState<any[]>([]);
   const [gastosPorCartao, setGastosPorCartao] = useState<{ [nomeCartao: string]: number }>({});
+  const [loading, setLoading] = useState(false);
 
   const { pessoas, carregarPessoas } = usePessoa();
 
@@ -57,11 +60,30 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Função auxiliar para controle de loading
+  function makeLoadingController(setLoading: (v: boolean) => void) {
+    let transacoesProntas = false;
+    let cartaoPronto = false;
+    return {
+      transacoesOk() {
+        transacoesProntas = true;
+        if (transacoesProntas && cartaoPronto) setLoading(false);
+      },
+      cartaoOk() {
+        cartaoPronto = true;
+        if (transacoesProntas && cartaoPronto) setLoading(false);
+      }
+    };
+  }
+
   // Não carregar nada automaticamente. Só buscar quando o usuário selecionar pessoa, ano e mês explicitamente.
   useEffect(() => {
     if (pessoa && ano && mes) {
+      setLoading(true);
+      const loadingCtrl = makeLoadingController(setLoading);
       getTransacoes({ pessoaId: pessoa, ano, mes }).then(res => {
         setTransacoes(res.data);
+        loadingCtrl.transacoesOk();
       });
       // Buscar transações do próximo mês
       let proxMes = Number(mes) + 1;
@@ -73,30 +95,7 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
       getTransacoes({ pessoaId: pessoa, ano: String(proxAno), mes: String(proxMes).padStart(2, '0') }).then(res => {
         setTransacoesProxMes(res.data);
       });
-    } else {
-      setTransacoes([]);
-      setTransacoesProxMes([]);
-    }
-  }, [pessoa, ano, mes]);
-
-  function adicionar(t: Omit<Transacao, 'id'>) {
-    criarTransacao(t).then(res => {
-      setTransacoes(prev => [...prev, res.data]);
-    });
-  }
-  function editar(id: string, t: Omit<Transacao, 'id'>) {
-    atualizarTransacao(id, t).then(res => {
-      setTransacoes(prev => prev.map(item => item.id === id ? res.data : item));
-    });
-  }
-  function excluir(id: string) {
-    removerTransacao(id).then(() => {
-      setTransacoes(prev => prev.filter(item => item.id !== id));
-    });
-  }
-
-  useEffect(() => {
-    if (pessoa && ano && mes) {
+      // Buscar despesas de cartão de crédito
       const pessoaObj = pessoas.find(p => String(p.id) === String(pessoa));
       const nomePessoa = pessoaObj ? pessoaObj.nome : '';
       if (nomePessoa) {
@@ -132,16 +131,36 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
             setCartaoDespesas([]);
             setGastosPorCartao({});
           }
+          loadingCtrl.cartaoOk();
         })();
       } else {
         setCartaoDespesas([]);
         setGastosPorCartao({});
+        loadingCtrl.cartaoOk();
       }
     } else {
+      setTransacoes([]);
+      setTransacoesProxMes([]);
       setCartaoDespesas([]);
       setGastosPorCartao({});
     }
   }, [pessoa, ano, mes, pessoas]);
+
+  function adicionar(t: Omit<Transacao, 'id'>) {
+    criarTransacao(t).then(res => {
+      setTransacoes(prev => [...prev, res.data]);
+    });
+  }
+  function editar(id: string, t: Omit<Transacao, 'id'>) {
+    atualizarTransacao(id, t).then(res => {
+      setTransacoes(prev => prev.map(item => item.id === id ? res.data : item));
+    });
+  }
+  function excluir(id: string) {
+    removerTransacao(id).then(() => {
+      setTransacoes(prev => prev.filter(item => item.id !== id));
+    });
+  }
 
   const cartaoDespesasAgrupadas = useMemo(() => {
     const agrupado: { [nomeCartao: string]: any[] } = {};
@@ -203,7 +222,7 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
   }, [pessoas]);
 
   return (
-    <FinancaContext.Provider value={{ transacoes, adicionar, editar, excluir, recarregarTransacoes, pessoa, setPessoa, ano, setAno, mes, setMes, gastosPorCartao, cartaoDespesas, pessoas, cartaoDespesasAgrupadas, transacoesProxMes, getDespesasProximasTodasPessoas }}>
+    <FinancaContext.Provider value={{ transacoes, adicionar, editar, excluir, recarregarTransacoes, pessoa, setPessoa, ano, setAno, mes, setMes, gastosPorCartao, cartaoDespesas, pessoas, cartaoDespesasAgrupadas, transacoesProxMes, getDespesasProximasTodasPessoas, loading, setLoading }}>
       {children}
     </FinancaContext.Provider>
   );

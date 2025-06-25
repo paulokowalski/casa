@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem, FormControlLabel, Checkbox } from '@mui/material';
+import { Button, TextField, MenuItem, FormControlLabel, Checkbox, DialogTitle, DialogContent } from '@mui/material';
 import { useFinanca, TipoTransacao, Transacao as TransacaoBase } from '../../../contexts/FinancaContext';
 import { atualizarTransacaoSerie } from '../../../services/api';
 import { Dialog as MuiDialog } from '@mui/material';
 import { Typography } from '@mui/material';
+import { Modal } from '../../../components/ui/Modal';
 
 type Transacao = TransacaoBase & { idSerie?: string };
 
@@ -21,7 +22,7 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
   const [data, setData] = useState('');
   const [fixa, setFixa] = useState(false);
   const [modalSerie, setModalSerie] = useState(false);
-  const [payloadTemp, setPayloadTemp] = useState<any>(null);
+  const [payloadTemp, setPayloadTemp] = useState<Omit<Transacao, 'id'> | null>(null);
 
   useEffect(() => {
     if (transacao) {
@@ -55,11 +56,25 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
     }
   }, [transacao, open]);
 
-  function formatDateToISO(dateStr: string) {
+  // Utilitário para formatar valor como moeda brasileira
+  function formatarValorBR(valor: string): string {
+    if (!valor) return '';
+    const onlyNumbers = valor.replace(/\D/g, '');
+    const number = parseFloat(onlyNumbers) / 100;
+    return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  // Utilitário para converter valor formatado para número
+  function valorBRtoNumber(valor: string): number {
+    if (!valor) return 0;
+    const clean = valor.replace(/[^\d,]/g, '').replace(',', '.');
+    return parseFloat(clean) || 0;
+  }
+
+  // Utilitário para formatar data para yyyy-MM-dd
+  function formatDateToISO(dateStr: string): string {
     if (!dateStr) return '';
-    // Se já estiver no formato yyyy-MM-dd, retorna direto
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-    // Tenta converter para Date e formatar
     const d = new Date(dateStr);
     if (!isNaN(d.getTime())) {
       const year = d.getFullYear();
@@ -68,23 +83,6 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
       return `${year}-${month}-${day}`;
     }
     return dateStr;
-  }
-
-  // Função para formatar valor como moeda brasileira
-  function formatarValorBR(valor: string) {
-    if (!valor) return '';
-    // Remove tudo que não for número
-    const onlyNumbers = valor.replace(/\D/g, '');
-    const number = parseFloat(onlyNumbers) / 100;
-    return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
-
-  // Função para converter valor formatado para número
-  function valorBRtoNumber(valor: string) {
-    if (!valor) return 0;
-    // Remove tudo que não for número ou vírgula
-    const clean = valor.replace(/[^\d,]/g, '').replace(',', '.');
-    return parseFloat(clean) || 0;
   }
 
   // Handler para input de valor
@@ -144,9 +142,19 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-        <DialogTitle>{transacao ? 'Editar' : 'Cadastrar'} {tipo === 'despesa' ? 'Despesa' : 'Receita'}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={`${transacao ? 'Editar' : 'Cadastrar'} ${tipo === 'despesa' ? 'Despesa' : 'Receita'}`}
+        maxWidth="sm"
+        actions={
+          <>
+            <Button onClick={onClose}>Cancelar</Button>
+            <Button onClick={handleSubmit} variant="contained">Salvar</Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 8 }}>
           <TextField
             select
             label="Tipo"
@@ -184,12 +192,8 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
             control={<Checkbox checked={fixa} onChange={e => setFixa(e.target.checked)} />}
             label="Despesa/Receita fixa?"
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSubmit} variant="contained">Salvar</Button>
-        </DialogActions>
-      </Dialog>
+        </div>
+      </Modal>
       {/* Modal de confirmação para editar série */}
       <MuiDialog open={modalSerie} onClose={() => setModalSerie(false)}>
         <DialogTitle>Editar transação fixa</DialogTitle>

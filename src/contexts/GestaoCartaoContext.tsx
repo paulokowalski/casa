@@ -44,6 +44,8 @@ interface GestaoCartaoContextData {
     buscarGestaoCartao: (ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) => void;
     cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
     excluirCompra: (id: string) => void;
+    loading: boolean;
+    setLoading: (v: boolean) => void;
 }
 
 export const GestaoCartaoContext = createContext<GestaoCartaoContextData>(
@@ -60,6 +62,7 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
         cartao: 'TODOS',
         ultimaParcela: 'TODOS'
     });
+    const [loading, setLoading] = useState(false);
 
     function buscarGestaoCartao(ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) {
         const novosFiltros = {
@@ -82,11 +85,14 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
     function consultar(ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string) {
         const cartaoParam = !cartao || cartao === 'TODOS' ? 'TODOS' : cartao;
         const ultimaParcelaParam = !ultimaParcelaSelecionado || ultimaParcelaSelecionado === 'TODOS' ? 'TODOS' : ultimaParcelaSelecionado;
+        setLoading(true);
         api.get(API_URLS.COMPRA(ano, mes, pessoa, cartaoParam, ultimaParcelaParam))
             .then(response => {
                 setCompras(response.data.compras);
                 setChartData(response.data.data);
-            });
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
     }
 
     function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string){
@@ -127,7 +133,9 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             cadastrarCompra,
             removerCompra,
             consultar,
-            excluirCompra
+            excluirCompra,
+            loading,
+            setLoading
         }}>
             {children}
         </GestaoCartaoContext.Provider>

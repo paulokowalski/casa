@@ -1,5 +1,5 @@
-import { Box, TextField, MenuItem, Button } from '@mui/material';
 import { useState } from 'react';
+import { Filter } from '../../../components/ui/Filter';
 
 export function Filtro() {
   const [tipo, setTipo] = useState('todos');
@@ -10,52 +10,41 @@ export function Filtro() {
     // Lógica de busca
   }
 
+  const fields = [
+    {
+      id: 'tipo',
+      label: 'Tipo',
+      type: 'select',
+      value: tipo,
+      onChange: setTipo,
+      options: [
+        { value: 'todos', label: 'Todos' },
+        { value: 'despesa', label: 'Despesa' },
+        { value: 'receita', label: 'Receita' },
+      ],
+    },
+    {
+      id: 'descricao',
+      label: 'Descrição',
+      type: 'text',
+      value: descricao,
+      onChange: setDescricao,
+    },
+    {
+      id: 'fixa',
+      label: 'Fixa?',
+      type: 'select',
+      value: fixa,
+      onChange: setFixa,
+      options: [
+        { value: 'todos', label: 'Todos' },
+        { value: 'sim', label: 'Sim' },
+        { value: 'nao', label: 'Não' },
+      ],
+    },
+  ];
+
   return (
-    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-      <TextField
-        select
-        label="Tipo"
-        value={tipo}
-        onChange={e => setTipo(e.target.value)}
-        size="small"
-        sx={{ minWidth: 120, bgcolor: 'white', borderRadius: 1 }}
-      >
-        <MenuItem value="todos">Todos</MenuItem>
-        <MenuItem value="despesa">Despesa</MenuItem>
-        <MenuItem value="receita">Receita</MenuItem>
-      </TextField>
-      <TextField
-        label="Descrição"
-        value={descricao}
-        onChange={e => setDescricao(e.target.value)}
-        size="small"
-        sx={{ minWidth: 180, bgcolor: 'white', borderRadius: 1 }}
-      />
-      <TextField
-        select
-        label="Fixa?"
-        value={fixa}
-        onChange={e => setFixa(e.target.value)}
-        size="small"
-        sx={{ minWidth: 120, bgcolor: 'white', borderRadius: 1 }}
-      >
-        <MenuItem value="todos">Todos</MenuItem>
-        <MenuItem value="sim">Sim</MenuItem>
-        <MenuItem value="nao">Não</MenuItem>
-      </TextField>
-      <Button 
-        variant="contained" 
-        onClick={handleBuscar}
-        sx={{ 
-          bgcolor: 'white', 
-          color: '#5b86e5',
-          '&:hover': {
-            bgcolor: 'rgba(255, 255, 255, 0.9)',
-          }
-        }}
-      >
-        Buscar
-      </Button>
-    </Box>
+    <Filter fields={fields} onFilter={handleBuscar} filterLabel="Buscar" />
   );
 } 

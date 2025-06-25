@@ -29,32 +29,32 @@ api.interceptors.response.use(
                     break;
                 case 403:
                     // Acesso negado
-                    console.error('Acesso negado');
+                    // TODO: tratar acesso negado
                     break;
                 case 404:
                     // Recurso não encontrado
-                    console.error('Recurso não encontrado');
+                    // TODO: tratar recurso não encontrado
                     break;
                 case 500:
                     // Erro interno do servidor
-                    console.error('Erro interno do servidor');
+                    // TODO: tratar erro interno do servidor
                     break;
                 default:
-                    console.error('Erro na requisição:', error.response.data);
+                    // TODO: tratar erro na requisição
             }
         } else if (error.request) {
             // Erro na requisição sem resposta do servidor
-            console.error('Servidor não respondeu');
+            // TODO: tratar servidor não respondeu
         } else {
-            // Erro na configuração da requisição
-            console.error('Erro ao configurar requisição:', error.message);
+            // Erro ao configurar requisição
+            // TODO: tratar erro ao configurar requisição
         }
         return Promise.reject(error);
     }
 );
 
 // Funções para transações
-export function getTransacoes(params: Record<string, any>) {
+export function getTransacoes(params: Record<string, unknown>) {
   return api.get(API_URLS.TRANSACOES, { params });
 }
 
@@ -62,11 +62,11 @@ export function getTransacaoById(id: string | number) {
   return api.get(API_URLS.TRANSACAO_ID(id));
 }
 
-export function criarTransacao(transacao: Record<string, any>) {
+export function criarTransacao(transacao: Record<string, unknown>) {
   return api.post(API_URLS.TRANSACOES, transacao);
 }
 
-export function atualizarTransacao(id, transacao) {
+export function atualizarTransacao(id: string | number, transacao: Record<string, unknown>) {
   return api.put(`/v1/transacoes/${id}`, transacao);
 }
 
@@ -74,7 +74,7 @@ export function removerTransacao(id: string | number) {
   return api.delete(API_URLS.TRANSACAO_ID(id));
 }
 
-export function atualizarTransacaoSerie(idSerie: string, transacao: any, aPartirDe?: string) {
+export function atualizarTransacaoSerie(idSerie: string, transacao: Record<string, unknown>, aPartirDe?: string) {
   const params = aPartirDe ? { params: { aPartirDe } } : {};
   return api.put(`/v1/transacoes/serie/${idSerie}`, transacao, params);
 }

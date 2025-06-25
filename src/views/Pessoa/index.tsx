@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Box, Button, Container, Typography, Paper, IconButton, TextField } from '@mui/material';
+import { Table } from '../../components/ui/Table';
+import { Modal } from '../../components/ui/Modal';
 import CadastroModal from './CadastroModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { red } from '@mui/material/colors';
 import { usePessoa } from '../../contexts/PessoaContext';
+import { LoadingOverlay } from '../../components/ui/LoadingOverlay';
+import { Card } from '../../components/Card';
 
 interface Pessoa {
   id: number;
   nome: string;
   email: string;
+  acoes?: never;
 }
 
 const PessoaView: React.FC = () => {
@@ -60,6 +64,27 @@ const PessoaView: React.FC = () => {
     }
   };
 
+  const columns = [
+    { id: 'id', label: 'ID' },
+    { id: 'nome', label: 'Nome' },
+    { id: 'email', label: 'Email' },
+    {
+      id: 'acoes',
+      label: 'Ações',
+      align: 'right' as const,
+      render: (_: Pessoa['acoes'], row: Pessoa) => (
+        <>
+          <IconButton color="primary" onClick={() => handleEdit(row)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton color="error" onClick={() => handleDelete(row)}>
+            <DeleteIcon />
+          </IconButton>
+        </>
+      ),
+    },
+  ];
+
   return (
     <Container maxWidth="md">
       <Box display="flex" justifyContent="space-between" alignItems="center" mt={4} mb={2}>
@@ -68,102 +93,79 @@ const PessoaView: React.FC = () => {
           Nova Pessoa
         </Button>
       </Box>
-      <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Nome</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell align="right">Ações</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {pessoas.map((pessoa) => (
-              <TableRow key={pessoa.id}>
-                <TableCell>{pessoa.id}</TableCell>
-                <TableCell>{pessoa.nome}</TableCell>
-                <TableCell>{pessoa.email}</TableCell>
-                <TableCell align="right">
-                  <IconButton color="primary" onClick={() => handleEdit(pessoa)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(pessoa)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Paper>
+      <Card title="Lista de Pessoas">
+        <LoadingOverlay loading={loading} text="Carregando...">
+          <Table<Pessoa>
+            columns={columns}
+            data={pessoas}
+            emptyMessage="Nenhuma pessoa cadastrada."
+            rowsPerPageOptions={[5, 10, 25]}
+            defaultRowsPerPage={10}
+          />
+        </LoadingOverlay>
+      </Card>
       <CadastroModal
         open={openModal}
         onClose={() => setOpenModal(false)}
         onSuccess={carregarPessoas}
       />
       {/* Modal de edição */}
-      <Dialog open={!!editPessoa} onClose={() => setEditPessoa(null)}>
-        <DialogTitle>Editar Pessoa</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Nome"
-            value={editNome}
-            onChange={e => setEditNome(e.target.value)}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Email"
-            value={editEmail}
-            onChange={e => setEditEmail(e.target.value)}
-            fullWidth
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditPessoa(null)} color="secondary">Cancelar</Button>
-          <Button onClick={handleEditSave} color="primary" variant="contained" disabled={loading}>
-            Salvar
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Modal
+        open={!!editPessoa}
+        onClose={() => setEditPessoa(null)}
+        title="Editar Pessoa"
+        maxWidth="xs"
+        actions={
+          <>
+            <Button onClick={() => setEditPessoa(null)} color="secondary">Cancelar</Button>
+            <Button onClick={handleEditSave} color="primary" variant="contained" disabled={loading}>
+              Salvar
+            </Button>
+          </>
+        }
+      >
+        <TextField
+          label="Nome"
+          value={editNome}
+          onChange={e => setEditNome(e.target.value)}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Email"
+          value={editEmail}
+          onChange={e => setEditEmail(e.target.value)}
+          fullWidth
+          margin="normal"
+        />
+      </Modal>
       {/* Modal de confirmação de exclusão */}
-      <Dialog 
-        open={!!deletePessoa} 
+      <Modal
+        open={!!deletePessoa}
         onClose={() => setDeletePessoa(null)}
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-            boxShadow: '0 8px 40px rgba(255,0,0,0.18)',
-            background: 'linear-gradient(135deg, #fff 80%, #ffeaea 100%)',
-            minWidth: 380,
-            maxWidth: '90vw',
-            p: 0,
-          }
-        }}
-        >
-        <DialogTitle sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, color: red[700], fontWeight: 700, pt: 4, pb: 1 }}>
-          <WarningAmberIcon sx={{ color: red[700], fontSize: 48, mb: 1 }} />
-          Confirmar Exclusão
-        </DialogTitle>
-        <DialogContent sx={{ pb: 2, pt: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Typography variant="body1" sx={{ color: red[700], fontWeight: 500, mb: 2, textAlign: 'center' }}>
+        title="Confirmar Exclusão"
+        maxWidth="xs"
+        actions={
+          <>
+            <Button onClick={() => setDeletePessoa(null)} color="secondary" variant="outlined">
+              Cancelar
+            </Button>
+            <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={loading}>
+              Excluir
+            </Button>
+          </>
+        }
+      >
+        <Box display="flex" flexDirection="column" alignItems="center" gap={2} mt={2} mb={2}>
+          <WarningAmberIcon sx={{ color: 'error.main', fontSize: 48 }} />
+          <Typography variant="body1" sx={{ color: 'error.main', fontWeight: 500, textAlign: 'center' }}>
             Tem certeza que deseja excluir a pessoa <b>"{deletePessoa?.nome}"</b>?
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
             Esta ação não poderá ser desfeita.
           </Typography>
-        </DialogContent>
-        <DialogActions sx={{ pb: 4, pr: 4, pl: 4, justifyContent: 'center', gap: 2 }}>
-          <Button onClick={() => setDeletePessoa(null)} color="secondary" variant="outlined" sx={{ minWidth: 120, borderRadius: 2 }}>
-            Cancelar
-          </Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={loading} sx={{ minWidth: 140, borderRadius: 2, fontWeight: 700, boxShadow: '0 2px 12px rgba(255,0,0,0.12)' }}>
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
+      </Modal>
     </Container>
   );
 };

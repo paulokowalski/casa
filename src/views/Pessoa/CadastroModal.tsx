@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { API_URLS } from '../../config/urls';
-import { Box, Button, Modal, TextField, Typography } from '@mui/material';
+import { Box, Button, TextField, Typography } from '@mui/material';
+import { Modal } from '../../components/ui/Modal';
 
 interface CadastroModalProps {
   open: boolean;
@@ -45,11 +46,17 @@ const CadastroModal: React.FC<CadastroModalProps> = ({ open, onClose, onSuccess 
   };
 
   return (
-    <Modal open={open} onClose={onClose} aria-labelledby="modal-cadastro-pessoa">
-      <Box sx={style} component="form" onSubmit={handleSubmit}>
-        <Typography id="modal-cadastro-pessoa" variant="h6" component="h2" gutterBottom>
-          Cadastrar Pessoa
-        </Typography>
+    <Modal open={open} onClose={onClose} title="Cadastrar Pessoa" maxWidth="xs" actions={
+      <>
+        <Button onClick={onClose} color="secondary" disabled={loading} sx={{ mr: 1 }}>
+          Cancelar
+        </Button>
+        <Button type="submit" variant="contained" color="primary" disabled={loading} form="form-cadastro-pessoa">
+          {loading ? 'Salvando...' : 'Salvar'}
+        </Button>
+      </>
+    }>
+      <Box component="form" id="form-cadastro-pessoa" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
         <TextField
           label="Nome"
           value={nome}
@@ -68,14 +75,6 @@ const CadastroModal: React.FC<CadastroModalProps> = ({ open, onClose, onSuccess 
           required
         />
         {error && <Typography color="error">{error}</Typography>}
-        <Box mt={2} display="flex" justifyContent="flex-end">
-          <Button onClick={onClose} color="secondary" disabled={loading} sx={{ mr: 1 }}>
-            Cancelar
-          </Button>
-          <Button type="submit" variant="contained" color="primary" disabled={loading}>
-            {loading ? 'Salvando...' : 'Salvar'}
-          </Button>
-        </Box>
       </Box>
     </Modal>
   );

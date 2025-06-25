@@ -1,4 +1,4 @@
-import { Paper, Typography, Box, Fab, Icon, Container } from '@mui/material';
+import { Typography, Box, Fab, Icon, Container } from '@mui/material';
 import { GestaoCartaoProvider } from "../../contexts/GestaoCartaoContext";
 import { DespesaProvider } from "../../contexts/DespesaContext";
 import { Summary } from "./Summary";
@@ -12,6 +12,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import { Card } from '../../components/Card';
 
 export function GestaoCartao() {
     const [openCadastroModal, setOpenCadastroModal] = useState(false);
@@ -96,84 +97,17 @@ export function GestaoCartao() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                             {sections.map((section, index) => (
                                 <Box key={section.title}>
-                                    <Paper 
-                                        elevation={0}
-                                        sx={{
-                                            p: { xs: 2, md: 3 },
-                                            borderRadius: 1,
-                                            background: 'rgba(255, 255, 255, 0.95)',
-                                            backdropFilter: 'blur(20px)',
-                                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            position: 'relative',
-                                            '&:hover': {
-                                                transform: 'translateY(-2px)',
-                                                boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
-                                            },
-                                            '&::before': {
-                                                content: '""',
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                right: 0,
-                                                height: '3px',
-                                                background: section.color,
-                                            },
-                                        }}
+                                    <Card
+                                        title={section.title}
+                                        description={section.description}
+                                        icon={section.icon}
+                                        gradient={section.color}
                                         className="fade-in-up"
-                                        style={{ animationDelay: `${index * 0.1}s` }}
                                     >
-                                        {/* Header da seção */}
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            mb: 3,
-                                            gap: 2
-                                        }}>
-                                            <Box sx={{ 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center',
-                                                width: 48,
-                                                height: 48,
-                                                borderRadius: 2,
-                                                background: section.color,
-                                                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.25)',
-                                            }}>
-                                                <Icon sx={{ color: '#ffffff', fontSize: 24 }}>
-                                                    {section.icon}
-                                                </Icon>
-                                            </Box>
-                                            
-                                            <Box>
-                                                <Typography 
-                                                    variant="h5" 
-                                                    sx={{ 
-                                                        fontWeight: 600,
-                                                        color: '#2c3e50',
-                                                        mb: 0.5,
-                                                    }}
-                                                >
-                                                    {section.title}
-                                                </Typography>
-                                                <Typography 
-                                                    variant="body2" 
-                                                    sx={{ 
-                                                        color: '#7f8c8d',
-                                                        fontSize: '0.875rem',
-                                                    }}
-                                                >
-                                                    {section.description}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-
-                                        {/* Conteúdo da seção */}
                                         <Box>
                                             {section.component}
                                         </Box>
-                                    </Paper>
+                                    </Card>
                                 </Box>
                             ))}
                         </Box>

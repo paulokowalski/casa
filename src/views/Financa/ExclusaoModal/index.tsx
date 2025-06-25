@@ -1,4 +1,5 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
+import { Modal } from '../../../components/ui/Modal';
 import { Transacao } from '../../../contexts/FinancaContext';
 
 interface ExclusaoModalProps {
@@ -34,18 +35,22 @@ export function ExclusaoModal({ open, onClose, onConfirm, item }: ExclusaoModalP
     return dataStr;
   }
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>Excluir {item?.tipo === 'receita' ? 'Receita' : 'Despesa'}</DialogTitle>
-      <DialogContent>
-        <Typography>Tem certeza que deseja excluir esta {item?.tipo === 'receita' ? 'receita' : 'despesa'}?</Typography>
-        <Typography><strong>Descrição:</strong> {item?.descricao}</Typography>
-        <Typography><strong>Valor:</strong> R$ {item?.valor?.toFixed(2)}</Typography>
-        <Typography><strong>Data:</strong> {formatarData(item?.data)}</Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button color="error" variant="contained" onClick={onConfirm}>Excluir</Button>
-      </DialogActions>
-    </Dialog>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={`Excluir ${item?.tipo === 'receita' ? 'Receita' : 'Despesa'}`}
+      maxWidth="xs"
+      actions={
+        <>
+          <Button onClick={onClose}>Cancelar</Button>
+          <Button color="error" variant="contained" onClick={onConfirm}>Excluir</Button>
+        </>
+      }
+    >
+      <Typography>Tem certeza que deseja excluir esta {item?.tipo === 'receita' ? 'receita' : 'despesa'}?</Typography>
+      <Typography><strong>Descrição:</strong> {item?.descricao}</Typography>
+      <Typography><strong>Valor:</strong> {item?.valor !== undefined && item?.valor !== null ? item.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : ''}</Typography>
+      <Typography><strong>Data:</strong> {formatarData(item?.data)}</Typography>
+    </Modal>
   );
 } 

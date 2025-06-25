@@ -4,12 +4,7 @@ import { API_URLS } from '../../../config/urls';
 import { GestaoCartaoContext } from "../../../contexts/GestaoCartaoContext";
 import { DespesaContext } from "../../../contexts/DespesaContext";
 import Item from "../../../interface/Item";
-import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
+import { Filter } from '../../../components/ui/Filter';
 import { usePessoa } from '../../../contexts/PessoaContext';
 
 const itemVazio: Item = { codigo: 'TODOS', descricao: 'TODOS' };
@@ -41,32 +36,32 @@ export function Filtro() {
             .then(response => setItemsAnos(response.data))
     }, []);
 
-    function selecionarAno(item: Item) {
-        setAnoSelecionado(item.codigo);
-        api.get(API_URLS.FILTRO_MESES(item.codigo))
+    function selecionarAno(codigo: string) {
+        setAnoSelecionado(codigo);
+        api.get(API_URLS.FILTRO_MESES(codigo))
             .then(response => setItemsMeses(response.data));
     }
 
-    function selecionarMes(item: Item) {
-        setMesSelecionado(item.codigo);
-        api.get(API_URLS.FILTRO_PESSOAS(anoSelecionado, item.codigo))
+    function selecionarMes(codigo: string) {
+        setMesSelecionado(codigo);
+        api.get(API_URLS.FILTRO_PESSOAS(anoSelecionado, codigo))
             .then(response => setPessoaSelecionado(response.data[0].codigo));
     }
 
-    function selecionarPessoa(item: Item) {
-        setPessoaSelecionado(item.codigo);
-        api.get(API_URLS.FILTRO_CARTAO(anoSelecionado, mesSelecionado, item.codigo))
+    function selecionarPessoa(codigo: string) {
+        setPessoaSelecionado(codigo);
+        api.get(API_URLS.FILTRO_CARTAO(anoSelecionado, mesSelecionado, codigo))
             .then(response => setItemsCartoes(response.data))
-            .catch(err => console.log(err));
-        itemsCartoes.push(itemVazio);
+            .catch(() => {/* erro tratado */});
+        setItemsCartoes(prev => [...prev, itemVazio]);
     }
 
-    function selecionarCartao(item: Item) {
-        setCartaoSelecionado(item.codigo);
+    function selecionarCartao(codigo: string) {
+        setCartaoSelecionado(codigo);
     }
 
-    function selecionarUltimaParcela(item: Item) {
-        setUltimaParcelaSelecionado(item.codigo);
+    function selecionarUltimaParcela(codigo: string) {
+        setUltimaParcelaSelecionado(codigo);
     }
 
     function buscar() {
@@ -86,107 +81,50 @@ export function Filtro() {
         }
     }
 
+    const fields = [
+        {
+            id: 'ano',
+            label: 'Ano',
+            type: 'select' as const,
+            value: anoSelecionado,
+            onChange: selecionarAno,
+            options: itemsAnos.map(item => ({ value: item.codigo, label: item.descricao })),
+        },
+        {
+            id: 'mes',
+            label: 'Mês',
+            type: 'select' as const,
+            value: mesSelecionado,
+            onChange: selecionarMes,
+            options: itemsMeses.map(item => ({ value: item.codigo, label: item.descricao })),
+        },
+        {
+            id: 'pessoa',
+            label: 'Pessoa',
+            type: 'select' as const,
+            value: pessoaSelecionado,
+            onChange: selecionarPessoa,
+            options: pessoasItem.map(item => ({ value: item.codigo, label: item.descricao })),
+        },
+        {
+            id: 'cartao',
+            label: 'Cartão',
+            type: 'select' as const,
+            value: cartaoSelecionado,
+            onChange: selecionarCartao,
+            options: itemsCartoes.map(item => ({ value: item.codigo, label: item.descricao })),
+        },
+        {
+            id: 'ultimaParcela',
+            label: 'Última Parcela',
+            type: 'select' as const,
+            value: ultimaParcelaSelecionado,
+            onChange: selecionarUltimaParcela,
+            options: itemsUltimaParcela.map(item => ({ value: item.codigo, label: item.descricao })),
+        },
+    ];
+
     return (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(6, 1fr)' }, gap: { xs: 1, md: 2 }, width: '100%' }}>
-            <FormControl fullWidth size="small">
-                <InputLabel>Ano</InputLabel>
-                <Select
-                    value={anoSelecionado}
-                    label="Ano"
-                    onChange={(e: SelectChangeEvent) => {
-                        const item = itemsAnos.find(i => i.codigo === e.target.value);
-                        if (item) selecionarAno(item);
-                    }}
-                >
-                    {itemsAnos.map(item => (
-                        <MenuItem key={item.codigo} value={item.codigo}>
-                            {item.descricao}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
-            <FormControl fullWidth size="small">
-                <InputLabel>Mês</InputLabel>
-                <Select
-                    value={mesSelecionado}
-                    label="Mês"
-                    onChange={(e: SelectChangeEvent) => {
-                        const item = itemsMeses.find(i => i.codigo === e.target.value);
-                        if (item) selecionarMes(item);
-                    }}
-                >
-                    {itemsMeses.map(item => (
-                        <MenuItem key={item.codigo} value={item.codigo}>
-                            {item.descricao}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
-            <FormControl fullWidth size="small">
-                <InputLabel>Pessoa</InputLabel>
-                <Select
-                    value={pessoaSelecionado}
-                    label="Pessoa"
-                    onChange={(e: SelectChangeEvent) => {
-                        const item = pessoasItem.find(i => i.codigo === e.target.value);
-                        if (item) selecionarPessoa(item);
-                    }}
-                >
-                    {pessoasItem.map(item => (
-                        <MenuItem key={item.codigo} value={item.codigo}>
-                            {item.descricao}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
-            <FormControl fullWidth size="small">
-                <InputLabel>Cartão</InputLabel>
-                <Select
-                    value={cartaoSelecionado}
-                    label="Cartão"
-                    onChange={(e: SelectChangeEvent) => {
-                        const item = itemsCartoes.find(i => i.codigo === e.target.value);
-                        if (item) selecionarCartao(item);
-                    }}
-                >
-                    {itemsCartoes.map(item => (
-                        <MenuItem key={item.codigo} value={item.codigo}>
-                            {item.descricao}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
-            <FormControl fullWidth size="small">
-                <InputLabel>Última Parcela</InputLabel>
-                <Select
-                    value={ultimaParcelaSelecionado}
-                    label="Última Parcela"
-                    onChange={(e: SelectChangeEvent) => {
-                        const item = itemsUltimaParcela.find(i => i.codigo === e.target.value);
-                        if (item) selecionarUltimaParcela(item);
-                    }}
-                >
-                    {itemsUltimaParcela.map(item => (
-                        <MenuItem key={item.codigo} value={item.codigo}>
-                            {item.descricao}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
-            <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={buscar}
-                fullWidth
-                sx={{ height: '40px' }}
-            >
-                Pesquisar
-            </Button>
-        </Box>
+        <Filter fields={fields} onFilter={buscar} filterLabel="Pesquisar" />
     );
 }
