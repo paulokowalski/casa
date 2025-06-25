@@ -1,132 +1,48 @@
-import { useEffect, useState, useContext } from 'react';
-import { api } from '../../../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import { Box, Typography } from '@mui/material';
-import { FormatNumber } from '../../../functions/global';
-import { FinancaContext } from '../../../contexts/FinancaContext';
-
-interface DadosGrafico {
-    mes: string;
-    valorMes: number;
-}
-
-interface ValorMesAPI {
-    valorMes: number;
-    valorProximoMes: number;
-    valorSaindo: number;
-    valorParcelaSaindo: number;
-    valorSaindoTotal: number;
-}
-
-interface RespostaAPI {
-    pessoa: string;
-    ano: string;
-    despesasPorMes: Record<string, ValorMesAPI>;
-}
-
-const renderCustomLabel = (props: any) => {
-    const { x, y, width, value } = props;
-    return (
-        <text 
-            x={x + width / 2} 
-            y={y - 10} 
-            fill="#666"
-            textAnchor="middle"
-            fontSize="12"
-        >
-            {FormatNumber(value)}
-        </text>
-    );
-};
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { useFinanca } from '../../../contexts/FinancaContext';
 
 export function GraficoBarras() {
-    const [dados, setDados] = useState<DadosGrafico[]>([]);
-    const { ultimosFiltros } = useContext(FinancaContext);
+  const { transacoes, cartaoDespesas } = useFinanca();
+  // Agrupar valores por tipo
+  const transacoesArray = Array.isArray(transacoes) ? transacoes : [];
+  const cartaoArray = Array.isArray(cartaoDespesas) ? cartaoDespesas : [];
 
-    useEffect(() => {
-        if (ultimosFiltros.ano && ultimosFiltros.pessoa && ultimosFiltros.pessoa !== 'TODOS') {
-            api.get(`/v1/despesa/${ultimosFiltros.ano}/${ultimosFiltros.pessoa}`)
-                .then(response => {
-                    const respostaAPI = response.data as RespostaAPI;
-                    
-                    if (respostaAPI.despesasPorMes) {
-                        const dadosFormatados = Object.entries(respostaAPI.despesasPorMes)
-                            .map(([chave, valorObj]) => ({
-                                mes: chave.padStart(2, '0'),
-                                valorMes: valorObj?.valorMes ?? 0
-                            }))
-                            .sort((a, b) => parseInt(a.mes) - parseInt(b.mes));
+  // Soma receitas
+  const totalReceita = transacoesArray.filter(t => t.tipo === 'receita').reduce((acc, t) => acc + t.valor, 0);
+  // Soma despesas normais
+  const totalDespesa = transacoesArray.filter(t => t.tipo === 'despesa').reduce((acc, t) => acc + t.valor, 0);
+  // Soma despesas de cartão
+  const totalCartao = cartaoArray.reduce((acc, c) => acc + (Number(c.valorParcela) || 0), 0);
 
-                        setDados(dadosFormatados);
-                    } else {
-                        setDados([]);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar dados:', error);
-                    setDados([]);
-                });
-        }
-    }, [ultimosFiltros]);
+  const data = [
+    { tipo: 'Receita', valor: totalReceita },
+    { tipo: 'Despesa', valor: totalDespesa + totalCartao },
+  ];
 
-    if (!ultimosFiltros.ano || !ultimosFiltros.pessoa || ultimosFiltros.pessoa === 'TODOS') {
-        return null;
-    }
-
-    if (dados.length === 0) {
-        return (
-            <>
-                <Typography variant="h6" gutterBottom>
-                    Despesas Mensais - {ultimosFiltros.pessoa}
-                </Typography>
-                <Typography color="text.secondary">
-                    Nenhum dado disponível para o período selecionado.
-                </Typography>
-            </>
-        );
-    }
-
-    return (
-        <>
-            <Typography variant="h6" gutterBottom>
-                Despesas Mensais - {ultimosFiltros.pessoa}
-            </Typography>
-            <Box sx={{ width: '100%', height: { xs: 220, md: 300 }, overflowX: { xs: 'auto', md: 'visible' }, p: { xs: 1, md: 0 } }}>
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                        data={dados}
-                        margin={{
-                            top: 30,
-                            right: 30,
-                            left: 20,
-                            bottom: 5,
-                        }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="mes" />
-                        <YAxis 
-                            tickFormatter={(value: number) => FormatNumber(value)}
-                        />
-                        <Tooltip 
-                            formatter={(value: number) => [FormatNumber(value), "Valor"]}
-                            labelFormatter={(label: string) => `Mês: ${label}`}
-                        />
-                        <Legend />
-                        <Bar 
-                            dataKey="valorMes" 
-                            name="Valor Mensal" 
-                            fill="#8884d8"
-                            radius={[4, 4, 0, 0]}
-                        >
-                            <LabelList 
-                                dataKey="valorMes" 
-                                position="top" 
-                                content={renderCustomLabel}
-                            />
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
-            </Box>
-        </>
-    );
+  return (
+    <Box>
+      <Typography variant="h6">Gráfico de Receitas, Despesas e Investimentos</Typography>
+      <Box sx={{ height: 320, background: '#f5f6fa', borderRadius: 2, mt: 2, p: 2 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 16, right: 24, left: 0, bottom: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="tipo" style={{ fontWeight: 700 }} />
+            <YAxis tickFormatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
+            <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
+            <Legend />
+            <Bar dataKey="valor" name="Valor" radius={[8,8,0,0]}
+              fill="#667eea"
+              label={{ position: 'top', formatter: v => v > 0 ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '' }}
+              >
+              {data.map((entry, idx) => (
+                <Cell key={`cell-${idx}`}
+                  fill={entry.tipo === 'Receita' ? '#2e7d32' : '#c62828'} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </Box>
+    </Box>
+  );
 } 

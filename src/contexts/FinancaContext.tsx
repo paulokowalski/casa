@@ -1,133 +1,210 @@
-import { createContext, useState } from "react";
-import { api } from "../services/api";
-import Item from "../interface/Item";
+import { createContext, useState, useEffect, useMemo, useContext, useCallback } from 'react';
+import { getTransacoes, criarTransacao, atualizarTransacao, removerTransacao, api } from '../services/api';
+import { usePessoa } from './PessoaContext';
+import { API_URLS } from '../config/urls';
 
-interface CompraCartao {
-    nomeCartao: string,
-    valorTotal: number
-}
-
-interface Compra {
-    id: string,
-    dataParcela: string,
-    dataCompra: string,
-    nomeCompra: string,
-    nomeCartao: string,
-    nomePessoa: string,
-    numeroParcela: number,
-    numeroTotalParcela: number,
-    ultimaParcela: string,
-    valorFaltante: number,
-    valorParcela: number,
-    valorTotal: number,
-    comprasCartao: CompraCartao[],
-    categoria?: string
-}
-
-interface FinancaProviderProps {
-    children: React.ReactNode;
+export type TipoTransacao = 'despesa' | 'receita';
+export interface Transacao {
+  id: string;
+  tipo: TipoTransacao;
+  descricao: string;
+  valor: number;
+  data: string;
+  fixa: boolean;
+  pessoa: string;
+  ano: string;
+  mes: string;
+  categoria?: string;
 }
 
 interface FinancaContextData {
-    compras: Compra[],
-    chartData: any,
-    ultimosFiltros: {
-        ano: string;
-        mes: string;
-        pessoa: string;
-        cartao: string;
-        ultimaParcela: string;
-    };
-    removerCompra: (idCompra: string) => void;
-    consultar: (ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string) => void;
-    buscarFinancas: (ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) => void;
-    cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
-    excluirCompra: (id: string) => void;
+  transacoes: Transacao[];
+  adicionar: (t: Omit<Transacao, 'id'>) => void;
+  editar: (id: string, t: Omit<Transacao, 'id'>) => void;
+  excluir: (id: string) => void;
+  recarregarTransacoes: () => void;
+  pessoa: string;
+  setPessoa: (p: string) => void;
+  ano: string;
+  setAno: (a: string) => void;
+  mes: string;
+  setMes: (m: string) => void;
+  gastosPorCartao: { [nomeCartao: string]: number };
+  cartaoDespesas: any[];
+  pessoas: { id: number, nome: string }[];
+  cartaoDespesasAgrupadas: { [nomeCartao: string]: any[] };
+  transacoesProxMes: Transacao[];
+  getDespesasProximasTodasPessoas: () => Promise<any[]>;
 }
+const FinancaContext = createContext<FinancaContextData>({} as any);
+export const useFinanca = () => useContext(FinancaContext);
 
-export const FinancaContext = createContext<FinancaContextData>(
-    {} as FinancaContextData
-);
+export function FinancaProvider({ children }: { children: React.ReactNode }) {
+  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+  const [transacoesProxMes, setTransacoesProxMes] = useState<Transacao[]>([]);
+  const [pessoa, setPessoa] = useState('');
+  const [ano, setAno] = useState('');
+  const [mes, setMes] = useState('');
+  const [cartaoDespesas, setCartaoDespesas] = useState<any[]>([]);
+  const [gastosPorCartao, setGastosPorCartao] = useState<{ [nomeCartao: string]: number }>({});
 
-export function FinancaProvider({ children }: Readonly<FinancaProviderProps>) {
-    const [compras, setCompras] = useState<Compra[]>([]);
-    const [chartData, setChartData] = useState(null);
-    const [ultimosFiltros, setUltimosFiltros] = useState({
-        ano: '',
-        mes: '',
-        pessoa: 'TODOS',
-        cartao: 'TODOS',
-        ultimaParcela: 'TODOS'
+  const { pessoas, carregarPessoas } = usePessoa();
+
+  // Carregar pessoas automaticamente ao inicializar o contexto
+  useEffect(() => {
+    if (!pessoas || pessoas.length === 0) {
+      carregarPessoas();
+    }
+  }, []);
+
+  // Não carregar nada automaticamente. Só buscar quando o usuário selecionar pessoa, ano e mês explicitamente.
+  useEffect(() => {
+    if (pessoa && ano && mes) {
+      getTransacoes({ pessoaId: pessoa, ano, mes }).then(res => {
+        setTransacoes(res.data);
+      });
+      // Buscar transações do próximo mês
+      let proxMes = Number(mes) + 1;
+      let proxAno = Number(ano);
+      if (proxMes > 12) {
+        proxMes = 1;
+        proxAno++;
+      }
+      getTransacoes({ pessoaId: pessoa, ano: String(proxAno), mes: String(proxMes).padStart(2, '0') }).then(res => {
+        setTransacoesProxMes(res.data);
+      });
+    } else {
+      setTransacoes([]);
+      setTransacoesProxMes([]);
+    }
+  }, [pessoa, ano, mes]);
+
+  function adicionar(t: Omit<Transacao, 'id'>) {
+    criarTransacao(t).then(res => {
+      setTransacoes(prev => [...prev, res.data]);
     });
+  }
+  function editar(id: string, t: Omit<Transacao, 'id'>) {
+    atualizarTransacao(id, t).then(res => {
+      setTransacoes(prev => prev.map(item => item.id === id ? res.data : item));
+    });
+  }
+  function excluir(id: string) {
+    removerTransacao(id).then(() => {
+      setTransacoes(prev => prev.filter(item => item.id !== id));
+    });
+  }
 
-    function buscarFinancas(ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) {
-        const novosFiltros = {
-            ano: ano.codigo,
-            mes: mes.codigo,
-            pessoa: pessoa.codigo,
-            cartao: cartao.codigo,
-            ultimaParcela: ultimaParcelaSelecionado.codigo
-        };
-        setUltimosFiltros(novosFiltros);
-        consultar(
-            novosFiltros.ano,
-            novosFiltros.mes,
-            novosFiltros.pessoa,
-            novosFiltros.cartao,
-            novosFiltros.ultimaParcela
-        );
+  useEffect(() => {
+    if (pessoa && ano && mes) {
+      const pessoaObj = pessoas.find(p => String(p.id) === String(pessoa));
+      const nomePessoa = pessoaObj ? pessoaObj.nome : '';
+      if (nomePessoa) {
+        (async () => {
+          try {
+            const res = await api.get(API_URLS.COMPRA_SEM_CARTAO(ano, mes, nomePessoa));
+            let despesas = res.data;
+            if (despesas && Array.isArray(despesas.compras)) {
+              despesas = despesas.compras;
+            } else if (!Array.isArray(despesas)) {
+              if (despesas && Array.isArray(despesas.data)) {
+                despesas = despesas.data;
+              } else if (despesas && Array.isArray(despesas.items)) {
+                despesas = despesas.items;
+              } else if (despesas && typeof despesas === 'object') {
+                despesas = Object.values(despesas);
+              } else {
+                despesas = [];
+              }
+            }
+            setCartaoDespesas(Array.isArray(despesas) ? despesas : []);
+            const totais: { [nomeCartao: string]: number } = {};
+            if (Array.isArray(despesas)) {
+              despesas.forEach((despesa: any) => {
+                if (!despesa || typeof despesa !== 'object') return;
+                if (!('nomeCartao' in despesa)) return;
+                const nomeCartao = String(despesa.nomeCartao);
+                totais[nomeCartao] = (totais[nomeCartao] || 0) + (Number(despesa.valorParcela) || 0);
+              });
+            }
+            setGastosPorCartao(totais);
+          } catch {
+            setCartaoDespesas([]);
+            setGastosPorCartao({});
+          }
+        })();
+      } else {
+        setCartaoDespesas([]);
+        setGastosPorCartao({});
+      }
+    } else {
+      setCartaoDespesas([]);
+      setGastosPorCartao({});
     }
+  }, [pessoa, ano, mes, pessoas]);
 
-    function consultar(ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string) {
-        api.get(`/v1/compra/${ano}/${mes}/${pessoa}/${cartao}/${ultimaParcelaSelecionado}`)
-            .then(response => {
-                setCompras(response.data.compras);
-                setChartData(response.data.data);
-            });
+  const cartaoDespesasAgrupadas = useMemo(() => {
+    const agrupado: { [nomeCartao: string]: any[] } = {};
+    cartaoDespesas.forEach((despesa: any) => {
+      const nomeCartao = despesa && despesa.nomeCartao ? String(despesa.nomeCartao) : 'Desconhecido';
+      if (!agrupado[nomeCartao]) agrupado[nomeCartao] = [];
+      agrupado[nomeCartao].push(despesa);
+    });
+    return agrupado;
+  }, [cartaoDespesas]);
+
+  function recarregarTransacoes() {
+    if (pessoa && ano && mes) {
+      getTransacoes({ pessoaId: pessoa, ano, mes }).then(res => {
+        setTransacoes(res.data);
+      });
     }
+  }
 
-    function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string){
-        api.post('/v1/compra',{
-            nomeProduto: nomeProduto,
-            valorProduto: valorProduto,
-            dataCompra: dataCompra,
-            numeroParcelas: numeroParcelas,
-            nomePessoaCompra: nomePessoaCompra,
-            nomeCartao: nomeCartao
-        });
+  // Função para buscar despesas próximas do vencimento para todas as pessoas
+  const getDespesasProximasTodasPessoas = useCallback(async () => {
+    // Buscar pessoas do backend se ainda não estiverem carregadas
+    let pessoasList = pessoas;
+    if (!pessoasList || pessoasList.length === 0) {
+      const res = await api.get(API_URLS.PESSOAS);
+      pessoasList = res.data;
     }
-
-    function removerCompra(idCompra: String){
-        api.delete(`/v1/compra/${idCompra}`)
+    const hoje = new Date();
+    const anoAtual = hoje.getFullYear();
+    const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+    let todasDespesas: any[] = [];
+    for (const pessoaObj of pessoasList) {
+      // Buscar todas as despesas dos próximos 30 dias (mês corrente e próximo mês)
+      let despesas: any[] = [];
+      // Buscar mês corrente
+      const resCorrente = await getTransacoes({ pessoaId: pessoaObj.id, ano: String(anoAtual), mes: mesAtual });
+      despesas.push(...(resCorrente.data || []));
+      // Buscar próximo mês
+      let proxMes = Number(mesAtual) + 1;
+      let proxAno = anoAtual;
+      if (proxMes > 12) {
+        proxMes = 1;
+        proxAno++;
+      }
+      const resProx = await getTransacoes({ pessoaId: pessoaObj.id, ano: String(proxAno), mes: String(proxMes).padStart(2, '0') });
+      despesas.push(...(resProx.data || []));
+      // Filtrar despesas nos próximos 30 dias
+      const despesasProximas = despesas.filter((t: any) => {
+        if (t.tipo !== 'despesa' || !t.data) return false;
+        const dataVenc = Array.isArray(t.data)
+          ? new Date(t.data[0], t.data[1] - 1, t.data[2])
+          : new Date(t.data);
+        const diff = (dataVenc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
+        return diff >= 0 && diff <= 30;
+      });
+      todasDespesas.push(...despesasProximas.map((d: any) => ({ ...d, pessoaNome: pessoaObj.nome, pessoaId: pessoaObj.id })));
     }
+    return todasDespesas;
+  }, [pessoas]);
 
-    async function excluirCompra(id: string) {
-        try {
-            await api.delete(`/v1/compra/${id}`);
-            const response = await api.get(
-                `/v1/compra/${ultimosFiltros.ano}/${ultimosFiltros.mes}/${ultimosFiltros.pessoa}/${ultimosFiltros.cartao}/${ultimosFiltros.ultimaParcela}`
-            );
-            setCompras(response.data.compras);
-            setChartData(response.data.data);
-            return Promise.resolve();
-        } catch (error) {
-            console.error('Erro ao excluir compra:', error);
-            return Promise.reject(error);
-        }
-    }
-
-    return (
-        <FinancaContext.Provider value={{
-            compras,
-            chartData,
-            ultimosFiltros,
-            buscarFinancas,
-            cadastrarCompra,
-            removerCompra,
-            consultar,
-            excluirCompra
-        }}>
-            {children}
-        </FinancaContext.Provider>
-    );
-}
+  return (
+    <FinancaContext.Provider value={{ transacoes, adicionar, editar, excluir, recarregarTransacoes, pessoa, setPessoa, ano, setAno, mes, setMes, gastosPorCartao, cartaoDespesas, pessoas, cartaoDespesasAgrupadas, transacoesProxMes, getDespesasProximasTodasPessoas }}>
+      {children}
+    </FinancaContext.Provider>
+  );
+} 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
+import { API_URLS } from '../../config/urls';
 import { Box, Button, Modal, TextField, Typography } from '@mui/material';
 
 interface CadastroModalProps {
@@ -31,7 +32,7 @@ const CadastroModal: React.FC<CadastroModalProps> = ({ open, onClose, onSuccess 
     setLoading(true);
     setError(null);
     try {
-      await api.post('/v1/pessoas', { nome, email });
+      await api.post(API_URLS.PESSOAS, { nome, email });
       setNome('');
       setEmail('');
       if (onSuccess) onSuccess();

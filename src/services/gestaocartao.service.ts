@@ -1,4 +1,5 @@
 import { api } from './api';
+import { API_URLS } from '../config/urls';
 import Item from '../interface/Item';
 
 export interface Compra {
@@ -45,19 +46,19 @@ export interface FiltroResponse {
     cartoes: Item[];
 }
 
-class FinancaService {
+class GestaoCartaoService {
     async buscarCompras(ano: string, mes: string, pessoa: string, cartao: string, ultimaParcela: string): Promise<{ compras: Compra[], data: any }> {
-        const response = await api.get(`/v1/compra/${ano}/${mes}/${pessoa}/${cartao}/${ultimaParcela}`);
+        const response = await api.get(API_URLS.COMPRA(ano, mes, pessoa, cartao, ultimaParcela));
         return response.data;
     }
 
     async buscarDespesa(ano: string, mes: string, pessoa: string): Promise<Despesa> {
-        const response = await api.get(`/v1/despesa/${ano}/${mes}/${pessoa}`);
+        const response = await api.get(API_URLS.DESPESA(ano, mes, pessoa));
         return response.data;
     }
 
     async buscarDespesasPorMes(ano: string, pessoa: string): Promise<Record<string, DespesaPorMes>> {
-        const response = await api.get(`/v1/despesa/${ano}/${pessoa}`);
+        const response = await api.get(API_URLS.DESPESA_SEM_MES(ano, pessoa));
         return response.data.despesasPorMes;
     }
 
@@ -69,32 +70,32 @@ class FinancaService {
         nomePessoaCompra: string;
         nomeCartao: string;
     }): Promise<void> {
-        await api.post('/v1/compra', dados);
+        await api.post(API_URLS.COMPRA_ID(''), dados);
     }
 
     async excluirCompra(id: string): Promise<void> {
-        await api.delete(`/v1/compra/${id}`);
+        await api.delete(API_URLS.COMPRA_ID(id));
     }
 
     async buscarAnos(): Promise<Item[]> {
-        const response = await api.get('/v1/filtro/anos');
+        const response = await api.get(API_URLS.FILTRO_ANOS);
         return response.data;
     }
 
     async buscarMeses(ano: string): Promise<Item[]> {
-        const response = await api.get(`/v1/filtro/meses/${ano}`);
+        const response = await api.get(API_URLS.FILTRO_MESES(ano));
         return response.data;
     }
 
     async buscarPessoas(ano: string, mes: string): Promise<Item[]> {
-        const response = await api.get(`/v1/filtro/pessoas/${ano}/${mes}`);
+        const response = await api.get(API_URLS.FILTRO_PESSOAS(ano, mes));
         return response.data;
     }
 
     async buscarCartoes(ano: string, mes: string, pessoa: string): Promise<Item[]> {
-        const response = await api.get(`/v1/filtro/cartao/${ano}/${mes}/${pessoa}`);
+        const response = await api.get(API_URLS.FILTRO_CARTAO(ano, mes, pessoa));
         return response.data;
     }
 }
 
-export const financaService = new FinancaService(); 
+export const gestaoCartaoService = new GestaoCartaoService(); 

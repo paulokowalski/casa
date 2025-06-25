@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_BASE_URL } from '../config/urls';
+import { API_URLS } from '../config/urls';
 
 export const api = axios.create({
     baseURL: API_BASE_URL
@@ -51,3 +52,29 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// Funções para transações
+export function getTransacoes(params: Record<string, any>) {
+  return api.get(API_URLS.TRANSACOES, { params });
+}
+
+export function getTransacaoById(id: string | number) {
+  return api.get(API_URLS.TRANSACAO_ID(id));
+}
+
+export function criarTransacao(transacao: Record<string, any>) {
+  return api.post(API_URLS.TRANSACOES, transacao);
+}
+
+export function atualizarTransacao(id, transacao) {
+  return api.put(`/v1/transacoes/${id}`, transacao);
+}
+
+export function removerTransacao(id: string | number) {
+  return api.delete(API_URLS.TRANSACAO_ID(id));
+}
+
+export function atualizarTransacaoSerie(idSerie: string, transacao: any, aPartirDe?: string) {
+  const params = aPartirDe ? { params: { aPartirDe } } : {};
+  return api.put(`/v1/transacoes/serie/${idSerie}`, transacao, params);
+}

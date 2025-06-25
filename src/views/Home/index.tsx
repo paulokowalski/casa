@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Avatar, Chip, Stack, Tooltip, Container } from '@mui/material';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import EuroIcon from '@mui/icons-material/Euro';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 // Hooks personalizados
 import { useCearaData, useFipeData, useCurrencyData } from '../../hooks/useApiData';
+import { useFinanca } from '../../contexts/FinancaContext';
 
 // Componentes profissionais
 import { LoadingCard } from '../../components/ui/LoadingCard';
@@ -242,6 +244,48 @@ function CurrencyCard({ url, icon, label, gradient }: { url: string; icon: React
   );
 }
 
+function DespesasVencerCard() {
+  const { getDespesasProximasTodasPessoas } = useFinanca();
+  const [qtd, setQtd] = useState(0);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    setLoading(true);
+    getDespesasProximasTodasPessoas().then(despesas => {
+      // Filtrar só as que vencem em até 30 dias
+      const hoje = new Date();
+      const proximas30 = despesas.filter((t: any) => {
+        const dataVenc = Array.isArray(t.data)
+          ? new Date(t.data[0], t.data[1] - 1, t.data[2])
+          : new Date(t.data);
+        const diff = (dataVenc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
+        return diff >= 0 && diff <= 30;
+      });
+      setQtd(proximas30.length);
+      setLoading(false);
+    });
+  }, [getDespesasProximasTodasPessoas]);
+  return (
+    <Card
+      title="Despesas a vencer"
+      description="Próximos 30 dias"
+      icon={<WarningAmberIcon />}
+      gradient="linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)"
+      badge={qtd > 0 ? `${qtd}` : undefined}
+      badgeColor={qtd > 0 ? 'error' : 'info'}
+    >
+      <Box sx={{ textAlign: 'center', py: 2 }}>
+        {loading ? (
+          <Typography variant="body2">Carregando...</Typography>
+        ) : qtd > 0 ? (
+          <Typography variant="h4" color="error" fontWeight={700}>{qtd} despesa{qtd > 1 ? 's' : ''} a vencer</Typography>
+        ) : (
+          <Typography variant="body2" color="success.main">Nenhuma despesa a vencer nos próximos 30 dias.</Typography>
+        )}
+      </Box>
+    </Card>
+  );
+}
+
 export function Home() {
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
@@ -309,6 +353,11 @@ export function Home() {
             label="Euro" 
             gradient="linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)"
           />
+        </Box>
+
+        {/* Card de despesas a vencer */}
+        <Box className="fade-in-up" style={{ animationDelay: '0.05s' }}>
+          <DespesasVencerCard />
         </Box>
       </Box>
     </Container>

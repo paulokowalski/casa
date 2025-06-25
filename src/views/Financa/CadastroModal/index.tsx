@@ -1,306 +1,204 @@
-import { useContext, useState, ChangeEvent, useEffect } from "react";
-import { FinancaContext } from "../../../contexts/FinancaContext";
-import { 
-    Box, 
-    TextField, 
-    Button, 
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions,
-    Typography,
-    Icon,
-    Fab,
-    MenuItem,
-    InputAdornment,
-    Snackbar,
-    Alert,
-} from '@mui/material';
-import { format } from 'date-fns';
-import { api } from '../../../services/api';
+import { useState, useEffect } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem, FormControlLabel, Checkbox } from '@mui/material';
+import { useFinanca, TipoTransacao, Transacao as TransacaoBase } from '../../../contexts/FinancaContext';
+import { atualizarTransacaoSerie } from '../../../services/api';
+import { Dialog as MuiDialog } from '@mui/material';
+import { Typography } from '@mui/material';
+
+type Transacao = TransacaoBase & { idSerie?: string };
 
 interface CadastroModalProps {
-    open: boolean;
-    onClose: () => void;
+  open: boolean;
+  onClose: () => void;
+  transacao?: Transacao | null;
 }
 
-interface Pessoa {
-    id: number;
-    nome: string;
-}
+export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) {
+  const { adicionar, editar, pessoa, ano, mes } = useFinanca();
+  const [tipo, setTipo] = useState<TipoTransacao>('despesa');
+  const [descricao, setDescricao] = useState('');
+  const [valor, setValor] = useState('');
+  const [data, setData] = useState('');
+  const [fixa, setFixa] = useState(false);
+  const [modalSerie, setModalSerie] = useState(false);
+  const [payloadTemp, setPayloadTemp] = useState<any>(null);
 
-export function CadastroModal({ open, onClose }: CadastroModalProps) {
-    const { cadastrarCompra, consultar } = useContext(FinancaContext);
-    const [produto, setProduto] = useState('');
-    const [valorProduto, setValorProduto] = useState('');
-    const [dataCompra, setDataCompra] = useState(format(new Date(), 'yyyy-MM-dd'));
-    const [parcela, setParcela] = useState('1');
-    const [pessoa, setPessoa] = useState('');
-    const [cartao, setCartao] = useState('');
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const [pessoas, setPessoas] = useState<Pessoa[]>([]);
+  useEffect(() => {
+    if (transacao) {
+      setTipo(transacao.tipo);
+      setDescricao(transacao.descricao);
 
-    const cartoes = [
-        'VIRTUAL C6',
-        'PAULO C6',
-        'SABRINE C6',
-        'INTER',
-        'NUBANK',
-        'AMAZON',
-    ];
+      // Valor: garantir sempre formato brasileiro
+      let valorNum = Number(transacao.valor);
+      if (isNaN(valorNum)) {
+        const limpo = String(transacao.valor).replace(/[^\d,\.]/g, '').replace(',', '.');
+        valorNum = Number(limpo);
+      }
+      setValor(new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorNum));
 
-    useEffect(() => {
-        if (open) {
-            api.get<Pessoa[]>('/v1/pessoas').then(res => setPessoas(res.data));
+      // Data: garantir yyyy-MM-dd
+      let dataStr = transacao.data;
+      if (dataStr && !/^\d{4}-\d{2}-\d{2}$/.test(dataStr)) {
+        const d = new Date(dataStr);
+        if (!isNaN(d.getTime())) {
+          dataStr = d.toISOString().slice(0, 10);
         }
-    }, [open]);
-
-    function limparFormulario() {
-        setProduto('');
-        setValorProduto('');
-        setDataCompra(format(new Date(), 'yyyy-MM-dd'));
-        setParcela('1');
-        setPessoa('');
-        setCartao('');
+      }
+      setData(dataStr || '');
+      setFixa(transacao.fixa);
+    } else {
+      setTipo('despesa');
+      setDescricao('');
+      setValor('');
+      setData('');
+      setFixa(false);
     }
+  }, [transacao, open]);
 
-    const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenSnackbar(false);
-    };
-
-    function handleSubmit() {
-        const valorNumerico = valorProduto.replace(/[R$\s.]/g, '').replace(',', '.');
-        const valor = valorNumerico;
-        const dataFormatada = format(new Date(dataCompra), 'yyyy-MM-dd');
-
-        const pessoaSelecionada = pessoas.find(p => p.nome === pessoa);
-        const nomePessoa = pessoaSelecionada ? pessoaSelecionada.nome : pessoa;
-        cadastrarCompra(
-            produto.trim(),
-            valor,
-            dataFormatada,
-            parcela,
-            nomePessoa,
-            cartao.trim()
-        );
-        
-        consultar('2024', '06', pessoa, 'TODOS', 'TODOS');
-        limparFormulario();
-        setOpenSnackbar(true);
-        onClose();
+  function formatDateToISO(dateStr: string) {
+    if (!dateStr) return '';
+    // Se já estiver no formato yyyy-MM-dd, retorna direto
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    // Tenta converter para Date e formatar
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
+    return dateStr;
+  }
 
-    const handleValorChange = (e: ChangeEvent<HTMLInputElement>) => {
-        let valor = e.target.value.replace(/\D/g, '');
-        valor = (Number(valor) / 100).toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-        setValorProduto(valor);
+  // Função para formatar valor como moeda brasileira
+  function formatarValorBR(valor: string) {
+    if (!valor) return '';
+    // Remove tudo que não for número
+    const onlyNumbers = valor.replace(/\D/g, '');
+    const number = parseFloat(onlyNumbers) / 100;
+    return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  // Função para converter valor formatado para número
+  function valorBRtoNumber(valor: string) {
+    if (!valor) return 0;
+    // Remove tudo que não for número ou vírgula
+    const clean = valor.replace(/[^\d,]/g, '').replace(',', '.');
+    return parseFloat(clean) || 0;
+  }
+
+  // Handler para input de valor
+  function handleValorChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value;
+    // Permite colar valores já formatados ou só números
+    setValor(formatarValorBR(raw));
+  }
+
+  // Handler para colar valor
+  function handleValorPaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    const pasted = e.clipboardData.getData('Text');
+    setValor(formatarValorBR(pasted));
+    e.preventDefault();
+  }
+
+  function handleSubmit() {
+    const payload = {
+      tipo,
+      descricao,
+      valor: valorBRtoNumber(valor),
+      data: formatDateToISO(data),
+      fixa,
+      pessoa,
+      ano,
+      mes,
     };
+    if (transacao && transacao.fixa && transacao.idSerie) {
+      setPayloadTemp(payload);
+      setModalSerie(true);
+    } else if (transacao) {
+      editar(transacao.id, payload);
+      onClose();
+    } else {
+      adicionar(payload);
+      onClose();
+    }
+  }
 
-    const handleDataChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setDataCompra(e.target.value);
-    };
+  function handleEditarUnico() {
+    if (transacao && payloadTemp) {
+      editar(transacao.id, payloadTemp);
+      setModalSerie(false);
+      setPayloadTemp(null);
+      onClose();
+    }
+  }
 
-    const parcelasOptions = Array.from({ length: 24 }, (_, i) => i + 1);
+  async function handleEditarSerie() {
+    if (transacao && transacao.idSerie && payloadTemp) {
+      await atualizarTransacaoSerie(transacao.idSerie, payloadTemp, data);
+      setModalSerie(false);
+      setPayloadTemp(null);
+      onClose();
+    }
+  }
 
-    return (
-        <>
-            <Dialog 
-                open={open} 
-                onClose={onClose}
-                maxWidth="md"
-                fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 3,
-                        position: 'relative',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                        overflow: 'visible'
-                    }
-                }}
-            >
-                <Box sx={{ position: 'absolute', right: -20, top: -20, zIndex: 1 }}>
-                    <Fab
-                        size="small"
-                        color="default"
-                        onClick={onClose}
-                        sx={{
-                            bgcolor: 'background.paper',
-                            boxShadow: 2,
-                            '&:hover': {
-                                bgcolor: 'background.paper',
-                                transform: 'scale(1.1)',
-                                transition: 'transform 0.2s'
-                            }
-                        }}
-                    >
-                        <Icon>close</Icon>
-                    </Fab>
-                </Box>
-
-                <DialogTitle sx={{ 
-                    pb: 1,
-                    pt: 3,
-                }}>
-                    <Typography variant="h5" component="div" fontWeight="500">
-                        Nova Transação
-                    </Typography>
-                </DialogTitle>
-
-                <DialogContent sx={{ p: { xs: 2, md: 3 } }}>
-                    <Box sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-                        gap: { xs: 1, md: 2 },
-                        mt: 1,
-                        width: '100%',
-                    }}>
-                        <TextField
-                            fullWidth
-                            label="Produto"
-                            value={produto}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setProduto(e.target.value)}
-                            variant="outlined"
-                            size="small"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Valor Compra"
-                            value={valorProduto}
-                            onChange={handleValorChange}
-                            variant="outlined"
-                            size="small"
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                            }}
-                        />
-                        <TextField
-                            fullWidth
-                            label="Data Compra"
-                            value={dataCompra}
-                            onChange={handleDataChange}
-                            variant="outlined"
-                            size="small"
-                            type="date"
-                            InputLabelProps={{ 
-                                shrink: true,
-                                sx: { color: 'rgba(0, 0, 0, 0.6)' }
-                            }}
-                            inputProps={{
-                                max: format(new Date(), 'yyyy-MM-dd')
-                            }}
-                            sx={{
-                                '& input::-webkit-calendar-picker-indicator': {
-                                    cursor: 'pointer'
-                                }
-                            }}
-                        />
-                        <TextField
-                            select
-                            fullWidth
-                            label="Parcelas"
-                            value={parcela}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setParcela(e.target.value)}
-                            variant="outlined"
-                            size="small"
-                        >
-                            {parcelasOptions.map((num) => (
-                                <MenuItem key={num} value={num}>
-                                    {num}x
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                        <TextField
-                            select
-                            fullWidth
-                            label="Pessoa"
-                            value={pessoa}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setPessoa(e.target.value)}
-                            variant="outlined"
-                            size="small"
-                        >
-                            {pessoas.map((p) => (
-                                <MenuItem key={p.id} value={p.nome}>
-                                    {p.nome.toUpperCase()}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                        <TextField
-                            select
-                            fullWidth
-                            label="Cartão"
-                            value={cartao}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setCartao(e.target.value)}
-                            variant="outlined"
-                            size="small"
-                        >
-                            {cartoes.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                    {c.toUpperCase()}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Box>
-                </DialogContent>
-
-                <DialogActions sx={{ p: 3, pt: 1 }}>
-                    <Button 
-                        onClick={onClose} 
-                        color="inherit"
-                        size="large"
-                        sx={{ 
-                            minWidth: 100,
-                            bgcolor: 'grey.100',
-                            '&:hover': {
-                                bgcolor: 'grey.200'
-                            }
-                        }}
-                    >
-                        Cancelar
-                    </Button>
-                    <Button 
-                        onClick={handleSubmit}
-                        color="primary"
-                        size="large"
-                        sx={{ 
-                            minWidth: 100,
-                            bgcolor: 'primary.main',
-                            color: 'white',
-                            '&:hover': {
-                                bgcolor: 'primary.dark'
-                            }
-                        }}
-                    >
-                        Cadastrar
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Snackbar
-                open={openSnackbar}
-                autoHideDuration={3000}
-                onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert 
-                    onClose={handleCloseSnackbar} 
-                    severity="success" 
-                    variant="filled"
-                    sx={{ 
-                        width: '100%',
-                        bgcolor: 'primary.main',
-                        '& .MuiAlert-icon': {
-                            color: 'white'
-                        }
-                    }}
-                >
-                    Transação cadastrada com sucesso!
-                </Alert>
-            </Snackbar>
-        </>
-    );
+  return (
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        <DialogTitle>{transacao ? 'Editar' : 'Cadastrar'} {tipo === 'despesa' ? 'Despesa' : 'Receita'}</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <TextField
+            select
+            label="Tipo"
+            value={tipo}
+            onChange={e => setTipo(e.target.value as TipoTransacao)}
+            fullWidth
+          >
+            <MenuItem value="despesa">Despesa</MenuItem>
+            <MenuItem value="receita">Receita</MenuItem>
+            <MenuItem value="investimento">Investimento</MenuItem>
+          </TextField>
+          <TextField
+            label="Descrição"
+            value={descricao}
+            onChange={e => setDescricao(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Valor"
+            value={valor}
+            onChange={handleValorChange}
+            onPaste={handleValorPaste}
+            fullWidth
+            inputProps={{ inputMode: 'numeric', pattern: '[0-9,.]*' }}
+          />
+          <TextField
+            label="Data"
+            value={data}
+            onChange={e => setData(e.target.value)}
+            fullWidth
+            type="date"
+            InputLabelProps={{ shrink: true }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={fixa} onChange={e => setFixa(e.target.checked)} />}
+            label="Despesa/Receita fixa?"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancelar</Button>
+          <Button onClick={handleSubmit} variant="contained">Salvar</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Modal de confirmação para editar série */}
+      <MuiDialog open={modalSerie} onClose={() => setModalSerie(false)}>
+        <DialogTitle>Editar transação fixa</DialogTitle>
+        <DialogContent>
+          <Typography>Esta transação faz parte de uma série fixa. O que deseja fazer?</Typography>
+          <Button onClick={handleEditarUnico} variant="contained" sx={{ mt: 2, mr: 2 }}>Editar apenas este registro</Button>
+          <Button onClick={handleEditarSerie} variant="outlined" sx={{ mt: 2 }}>Editar este e os próximos da série</Button>
+        </DialogContent>
+      </MuiDialog>
+    </>
+  );
 } 

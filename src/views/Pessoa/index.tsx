@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { api } from '../../services/api';
 import { Box, Button, Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import CadastroModal from './CadastroModal';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { red } from '@mui/material/colors';
+import { usePessoa } from '../../contexts/PessoaContext';
 
 interface Pessoa {
   id: number;
@@ -13,25 +13,14 @@ interface Pessoa {
   email: string;
 }
 
-// Função para buscar pessoas (find)
-async function findPessoa(): Promise<Pessoa[]> {
-  const { data } = await api.get<Pessoa[]>('/v1/pessoas');
-  return data;
-}
-
 const PessoaView: React.FC = () => {
-  const [pessoas, setPessoas] = useState<Pessoa[]>([]);
+  const { pessoas, carregarPessoas, loading, editarPessoa, excluirPessoa } = usePessoa();
   const [openModal, setOpenModal] = useState(false);
   const [editPessoa, setEditPessoa] = useState<Pessoa | null>(null);
   const [deletePessoa, setDeletePessoa] = useState<Pessoa | null>(null);
   const [editNome, setEditNome] = useState('');
   const [editEmail, setEditEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const carregarPessoas = async () => {
-    const pessoas = await findPessoa();
-    setPessoas(pessoas);
-  };
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     carregarPessoas();
@@ -46,13 +35,12 @@ const PessoaView: React.FC = () => {
 
   const handleEditSave = async () => {
     if (!editPessoa) return;
-    setLoading(true);
+    setEditLoading(true);
     try {
-      await api.put(`/v1/pessoas/${editPessoa.id}`, { nome: editNome, email: editEmail });
+      await editarPessoa(editPessoa.id, editNome, editEmail);
       setEditPessoa(null);
-      await carregarPessoas();
     } finally {
-      setLoading(false);
+      setEditLoading(false);
     }
   };
 
@@ -63,13 +51,12 @@ const PessoaView: React.FC = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deletePessoa) return;
-    setLoading(true);
+    setEditLoading(true);
     try {
-      await api.delete(`/v1/pessoas/${deletePessoa.id}`);
+      await excluirPessoa(deletePessoa.id);
       setDeletePessoa(null);
-      await carregarPessoas();
     } finally {
-      setLoading(false);
+      setEditLoading(false);
     }
   };
 

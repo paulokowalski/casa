@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Drawer, 
@@ -13,18 +13,21 @@ import {
   CssBaseline, 
   useTheme, 
   ListItemButton,
-  Avatar,
   Badge,
-  Tooltip
+  Tooltip,
+  Menu,
+  MenuItem,
+  Divider
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PeopleIcon from '@mui/icons-material/People';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { Link, useLocation } from 'react-router-dom';
+import { useFinanca } from '../../contexts/FinancaContext';
 
 const drawerWidth = 280;
 
@@ -42,6 +45,12 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       to: '/',
       description: 'Visão geral do sistema'
     },
+    {
+      text: 'Finanças',
+      icon: <MonetizationOnIcon />,
+      to: '/financa',
+      description: 'Controle de receitas e despesas'
+    },
     { 
       text: 'Gestão de Cartão', 
       icon: <AccountBalanceWalletIcon />, 
@@ -55,6 +64,21 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       description: 'Cadastro de pessoas'
     },
   ];
+
+  const { getDespesasProximasTodasPessoas } = useFinanca();
+  const [despesasProximas, setDespesasProximas] = useState<any[]>([]);
+  useEffect(() => {
+    getDespesasProximasTodasPessoas().then(setDespesasProximas);
+  }, [getDespesasProximasTodasPessoas]);
+
+  // Estado do menu do sino
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
@@ -126,39 +150,51 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                   },
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
+                onClick={handleOpenMenu}
               >
-                <Badge badgeContent={3} color="error">
+                <Badge badgeContent={despesasProximas.length} color="error">
                   <NotificationsIcon />
                 </Badge>
               </IconButton>
-            </Tooltip>
-            
-            <Tooltip title="Perfil">
-              <IconButton
-                sx={{ 
-                  color: '#1a202c',
-                  '&:hover': {
-                    background: 'rgba(102, 126, 234, 0.1)',
-                    transform: 'scale(1.05)',
-                  },
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                }}
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleCloseMenu}
+                PaperProps={{ sx: { minWidth: 320 } }}
               >
-                <Avatar 
-                  sx={{ 
-                    width: 32, 
-                    height: 32,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  }}
-                >
-                  <AccountCircleIcon />
-                </Avatar>
-              </IconButton>
+                <MenuItem disabled>
+                  <ListItemText primary="Despesas próximas do vencimento" />
+                </MenuItem>
+                <Divider />
+                {despesasProximas.length > 0 ? (
+                  [...despesasProximas]
+                    .sort((a, b) => {
+                      const dataA = Array.isArray(a.data)
+                        ? new Date(a.data[0], a.data[1] - 1, a.data[2])
+                        : new Date(a.data);
+                      const dataB = Array.isArray(b.data)
+                        ? new Date(b.data[0], b.data[1] - 1, b.data[2])
+                        : new Date(b.data);
+                      return dataA.getTime() - dataB.getTime();
+                    })
+                    .map((t, idx) => (
+                      <MenuItem key={t.id || idx}>
+                        <ListItemText
+                          primary={`${t.pessoaNome}: ${t.descricao}`}
+                          secondary={`Valor: R$ ${t.valor.toFixed(2)} | Vencimento: ${Array.isArray(t.data) ? `${String(t.data[2]).padStart(2, '0')}/${String(t.data[1]).padStart(2, '0')}/${t.data[0]}` : new Date(t.data).toLocaleDateString('pt-BR')}`}
+                        />
+                      </MenuItem>
+                    ))
+                ) : (
+                  <MenuItem disabled>
+                    <ListItemText primary="Nenhuma despesa próxima do vencimento." />
+                  </MenuItem>
+                )}
+              </Menu>
             </Tooltip>
           </Box>
         </Toolbar>
       </AppBar>
-
       {/* Drawer Moderno */}
       <Drawer
         variant="persistent"
@@ -192,7 +228,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           >
             Navegação
           </Typography>
-          
           <List sx={{ p: 0 }}>
             {navItems.map((item) => (
               <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
@@ -259,7 +294,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           </List>
         </Box>
       </Drawer>
-
       {/* Conteúdo Principal */}
       <Box
         component="main"
@@ -281,4 +315,4 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       </Box>
     </Box>
   );
-}; 
+};
