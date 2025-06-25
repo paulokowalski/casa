@@ -6,6 +6,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^7.1.2",
+    "@mui/icons-material": "^7.1.2",
     "@mui/x-data-grid": "^8.5.3",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.10.0",
