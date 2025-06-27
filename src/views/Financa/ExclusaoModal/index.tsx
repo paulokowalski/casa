@@ -34,6 +34,7 @@ export function ExclusaoModal({ open, onClose, onConfirm, item }: ExclusaoModalP
     // Se não conseguir, retorna como está
     return dataStr;
   }
+  if (!item) return null;
   return (
     <Modal
       open={open}

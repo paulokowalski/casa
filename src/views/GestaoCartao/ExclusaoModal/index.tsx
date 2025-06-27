@@ -1,10 +1,11 @@
 import { 
     Button, 
-    Typography
+    Typography,
+    Alert
 } from '@mui/material';
 import { Modal } from '../../../components/ui/Modal';
 import { format } from 'date-fns';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
 
 interface ExclusaoModalProps {
@@ -23,16 +24,23 @@ interface ExclusaoModalProps {
 
 export function ExclusaoModal({ open, onClose, onSuccess, item }: ExclusaoModalProps) {
     const { excluirCompra } = useContext(GestaoCartaoContext);
+    const [error, setError] = useState<string | null>(null);
 
     const handleConfirmarExclusao = async () => {
         if (item) {
             try {
                 await excluirCompra(item.id);
+                setError(null);
                 onSuccess();
-            } catch (error) {
-                // erro ao excluir tratado
+            } catch (error: any) {
+                setError(error?.response?.data?.message || 'Erro ao excluir compra.');
             }
         }
+    };
+
+    const handleClose = () => {
+        setError(null);
+        onClose();
     };
 
     if (!item) return null;
@@ -40,16 +48,17 @@ export function ExclusaoModal({ open, onClose, onSuccess, item }: ExclusaoModalP
     return (
         <Modal
             open={open}
-            onClose={onClose}
+            onClose={handleClose}
             title="Excluir Compra"
             maxWidth="xs"
             actions={
                 <>
-                    <Button onClick={onClose}>Cancelar</Button>
+                    <Button onClick={handleClose}>Cancelar</Button>
                     <Button onClick={handleConfirmarExclusao} color="error" variant="contained">Excluir</Button>
                 </>
             }
         >
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Typography>Tem certeza que deseja excluir esta compra?</Typography>
             <Typography><strong>Produto:</strong> {item.nomeCompra}</Typography>
             <Typography><strong>Valor:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valorTotal)}</Typography>

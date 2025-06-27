@@ -43,6 +43,7 @@ interface GestaoCartaoContextData {
     consultar: (ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string) => void;
     buscarGestaoCartao: (ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) => void;
     cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
+    editarCompra: (id: string, nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => Promise<void>;
     excluirCompra: (id: string) => void;
     loading: boolean;
     setLoading: (v: boolean) => void;
@@ -95,15 +96,20 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             .catch(() => setLoading(false));
     }
 
-    function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string){
-        api.post(API_URLS.COMPRA_ID(''),{
-            nomeProduto: nomeProduto,
-            valorProduto: valorProduto,
-            dataCompra: dataCompra,
-            numeroParcelas: numeroParcelas,
-            nomePessoaCompra: nomePessoaCompra,
-            nomeCartao: nomeCartao
-        });
+    async function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) {
+        try {
+            await api.post(API_URLS.COMPRA_ID(''), {
+                nomeProduto: nomeProduto,
+                valorProduto: valorProduto,
+                dataCompra: dataCompra,
+                numeroParcelas: numeroParcelas,
+                nomePessoaCompra: nomePessoaCompra,
+                nomeCartao: nomeCartao
+            });
+            return Promise.resolve();
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     function removerCompra(idCompra: string){
@@ -124,6 +130,22 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
         }
     }
 
+    async function editarCompra(id: string, nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) {
+        try {
+            await api.put(API_URLS.COMPRA_ID(id), {
+                nomeProduto: nomeProduto,
+                valorProduto: valorProduto,
+                dataCompra: dataCompra,
+                numeroParcelas: numeroParcelas,
+                nomePessoaCompra: nomePessoaCompra,
+                nomeCartao: nomeCartao
+            });
+            return Promise.resolve();
+        } catch (error) {
+            return Promise.reject(error);
+        }
+    }
+
     return (
         <GestaoCartaoContext.Provider value={{
             compras,
@@ -131,6 +153,7 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             ultimosFiltros,
             buscarGestaoCartao,
             cadastrarCompra,
+            editarCompra,
             removerCompra,
             consultar,
             excluirCompra,

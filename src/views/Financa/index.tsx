@@ -13,6 +13,7 @@ import { usePessoa } from '../../contexts/PessoaContext';
 import { Alert as CustomAlert } from '../../components/ui/Alert';
 import { Card } from '../../components/Card';
 import { TabelaTransacao } from './TabelaTransacao';
+import MuiAlert from '@mui/material/Alert';
 
 const MESES = [
   { codigo: '01', descricao: 'Janeiro' },
@@ -34,6 +35,7 @@ export function Financa() {
   const [editando, setEditando] = useState<Transacao | null>(null);
   const [excluindo, setExcluindo] = useState<Transacao | null>(null);
   const [snack, setSnack] = useState<string | null>(null);
+  const [snackType, setSnackType] = useState<'success' | 'info'>('info');
   const [anoAtual] = useState(new Date().getFullYear());
   const anos = Array.from({ length: 6 }, (_, i) => {
     const ano = anoAtual + i;
@@ -54,12 +56,19 @@ export function Financa() {
     setOpenCadastroModal(true);
   };
   const handleExcluir = (transacao: Transacao) => setExcluindo(transacao);
+  const handleCadastroSuccess = () => {
+    setSnack('Transação cadastrada com sucesso!');
+    setSnackType('success');
+  };
   const handleConfirmarExclusao = () => {
     if (excluindo) {
       excluir(excluindo.id);
-      setSnack('Transação excluída com sucesso!');
       setExcluindo(null);
-      recarregarTransacoes();
+      setTimeout(() => {
+        setSnack('Transação excluída com sucesso!');
+        setSnackType('info');
+        recarregarTransacoes();
+      }, 400);
     }
   };
 
@@ -69,7 +78,7 @@ export function Financa() {
     // Somar todas as despesas de cartão
     const totalCartao = (cartaoDespesas || []).reduce((acc, c) => acc + (Number(c.valorParcela) || 0), 0);
     const cartaoLinha = totalCartao > 0 ? [{
-      id: 'cartao-agrupado-unico',
+      id: `cartao-agrupado-unico-${pessoa}-${ano}-${mes}`,
       tipo: 'despesa' as 'despesa',
       descricao: 'Despesas no cartão de crédito',
       valor: totalCartao,
@@ -85,7 +94,7 @@ export function Financa() {
       ...transacoesArray.map(t => ({ ...t, categoria: t.categoria || (t.tipo === 'despesa' ? 'Despesa' : 'Receita') })),
       ...cartaoLinha
     ];
-  }, [transacoes, cartaoDespesas]);
+  }, [transacoes, cartaoDespesas, pessoa, ano, mes]);
 
   const sections = [
     {
@@ -147,7 +156,12 @@ export function Financa() {
             Nenhuma pessoa encontrada. Cadastre uma pessoa para continuar.
           </Box>
         )}
-        <Card elevation={1} sx={{ mb: 5, p: 3, borderRadius: 3, background: 'rgba(255,255,255,0.98)', border: '1px solid #e0e7ef', boxShadow: '0 4px 20px rgba(44,62,80,0.06)' }}>
+        <Card 
+          title="Filtros"
+          description="Selecione pessoa, ano e mês para filtrar"
+          icon={<TableChartIcon />} 
+          sx={{ mb: 5, p: 3, borderRadius: 3, background: 'rgba(255,255,255,0.98)', border: '1px solid #e0e7ef', boxShadow: '0 4px 20px rgba(44,62,80,0.06)' }}
+        >
           <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
             <FormControl fullWidth size="small" sx={{ maxWidth: 220, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
               <InputLabel>Pessoa</InputLabel>
@@ -170,13 +184,11 @@ export function Financa() {
           </Box>
         </Card>
 
-        <Box mb={4} />
-
         {/* Grid de seções */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {sections.map((section, index) => (
             <Card
-              elevation={0}
+              key={section.title || index}
               sx={{
                 p: { xs: 3, md: 4 },
                 borderRadius: 3,
@@ -202,7 +214,6 @@ export function Financa() {
                 },
               }}
               className="fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
               title={section.title}
               description={section.description}
               icon={section.icon}
@@ -220,27 +231,19 @@ export function Financa() {
           open={openCadastroModal}
           onClose={handleCloseCadastroModal}
           transacao={editando}
+          onSuccess={handleCadastroSuccess}
         />
 
         {/* Modal de Exclusão */}
-        <ExclusaoModal
-          open={!!excluindo}
-          onClose={() => setExcluindo(null)}
-          onConfirm={handleConfirmarExclusao}
-          item={excluindo}
-        />
-
-        {/* Snackbar de feedback */}
-        <Snackbar
-          open={!!snack}
-          autoHideDuration={3000}
-          onClose={() => setSnack(null)}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-          <CustomAlert severity="success" onClose={() => setSnack(null)}>
-            {snack}
-          </CustomAlert>
-        </Snackbar>
+        {excluindo && (
+          <ExclusaoModal
+            key={excluindo.id}
+            open={true}
+            onClose={() => setExcluindo(null)}
+            onConfirm={handleConfirmarExclusao}
+            item={excluindo}
+          />
+        )}
 
         {/* FAB Moderno */}
         <Box sx={{
@@ -261,6 +264,18 @@ export function Financa() {
             <AddIcon />
           </Fab>
         </Box>
+
+        {/* Snackbar de feedback */}
+        <Snackbar
+          open={!!snack}
+          autoHideDuration={3000}
+          onClose={() => setSnack(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <MuiAlert onClose={() => setSnack(null)} severity={snackType} sx={{ width: '100%', background: snackType === 'success' ? '#e8f5e9' : '#e3f2fd', color: snackType === 'success' ? '#2e7d32' : '#1565c0' }}>
+            {snack}
+          </MuiAlert>
+        </Snackbar>
       </Container>
     </Box>
   );

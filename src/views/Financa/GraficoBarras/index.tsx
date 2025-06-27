@@ -79,11 +79,11 @@ export function GraficoBarras() {
   return (
     <Box>
       <Typography variant="h6">Gráfico de Receitas e Despesas do Ano</Typography>
-      <Box sx={{ height: 320, background: '#f5f6fa', borderRadius: 2, mt: 2, p: 2 }}>
+      <Box sx={{ height: 380, background: '#f5f6fa', borderRadius: 2, mt: 2, p: 2 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dadosAno} margin={{ top: 16, right: 24, left: 0, bottom: 8 }}>
+          <BarChart data={dadosAno} margin={{ top: 16, right: 24, left: 0, bottom: 32 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="mes" style={{ fontWeight: 700 }} />
+            <XAxis dataKey="mes" style={{ fontWeight: 700, fontSize: 12 }} />
             <YAxis tickFormatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
             <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
             <Legend />

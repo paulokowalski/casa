@@ -12,10 +12,11 @@ interface CadastroModalProps {
   open: boolean;
   onClose: () => void;
   transacao?: Transacao | null;
+  onSuccess?: () => void;
 }
 
-export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) {
-  const { adicionar, editar, pessoa, ano, mes } = useFinanca();
+export function CadastroModal({ open, onClose, transacao, onSuccess }: CadastroModalProps) {
+  const { adicionar, editar, pessoa, setPessoa, ano, mes, pessoas } = useFinanca();
   const [tipo, setTipo] = useState<TipoTransacao>('despesa');
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
@@ -115,9 +116,11 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
       setModalSerie(true);
     } else if (transacao) {
       editar(transacao.id, payload);
+      if (onSuccess) onSuccess();
       onClose();
     } else {
       adicionar(payload);
+      if (onSuccess) onSuccess();
       onClose();
     }
   }
@@ -125,6 +128,7 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
   function handleEditarUnico() {
     if (transacao && payloadTemp) {
       editar(transacao.id, payloadTemp);
+      if (onSuccess) onSuccess();
       setModalSerie(false);
       setPayloadTemp(null);
       onClose();
@@ -134,6 +138,7 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
   async function handleEditarSerie() {
     if (transacao && transacao.idSerie && payloadTemp) {
       await atualizarTransacaoSerie(transacao.idSerie, payloadTemp, data);
+      if (onSuccess) onSuccess();
       setModalSerie(false);
       setPayloadTemp(null);
       onClose();
@@ -188,6 +193,20 @@ export function CadastroModal({ open, onClose, transacao }: CadastroModalProps) 
             type="date"
             InputLabelProps={{ shrink: true }}
           />
+          <TextField
+            select
+            label="Pessoa"
+            value={pessoa}
+            onChange={e => setPessoa(e.target.value)}
+            fullWidth
+            required
+          >
+            {pessoas.map((p) => (
+              <MenuItem key={p.id} value={String(p.id)}>
+                {p.nome}
+              </MenuItem>
+            ))}
+          </TextField>
           <FormControlLabel
             control={<Checkbox checked={fixa} onChange={e => setFixa(e.target.checked)} />}
             label="Despesa/Receita fixa?"

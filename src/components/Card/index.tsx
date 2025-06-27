@@ -11,6 +11,7 @@ interface CardProps {
   badgeColor?: 'success' | 'error' | 'warning' | 'info';
   onClick?: () => void;
   className?: string;
+  sx?: any;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -23,6 +24,7 @@ export const Card: React.FC<CardProps> = ({
   badgeColor = 'info',
   onClick,
   className = '',
+  sx = {},
 }) => {
   const badgeColors = {
     success: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
@@ -59,6 +61,7 @@ export const Card: React.FC<CardProps> = ({
           height: '3px',
           background: gradient,
         },
+        ...sx,
       }}
       className={`fade-in-up ${className}`}
     >

@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { ExclusaoModal } from '../ExclusaoModal';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingOverlay } from '../../../components/ui/LoadingOverlay';
+import EditIcon from '@mui/icons-material/Edit';
 
 interface CompraRow {
     id: string;
@@ -22,7 +23,11 @@ interface CompraRow {
     acoes?: never;
 }
 
-export function TabelaTransacao() {
+interface TabelaTransacaoProps {
+    onEditCompra?: (compra: any) => void;
+}
+
+export function TabelaTransacao({ onEditCompra }: TabelaTransacaoProps) {
     const { compras, loading } = useContext(GestaoCartaoContext);
     const [itemParaExcluir, setItemParaExcluir] = useState<CompraRow | null>(null);
 
@@ -130,11 +135,18 @@ export function TabelaTransacao() {
             label: 'Ações',
             align: 'right' as const,
             render: (_: CompraRow['acoes'], row: CompraRow) => (
-                <Tooltip title="Excluir">
-                    <IconButton color="error" onClick={() => handleExcluir(row)}>
-                        <DeleteIcon />
-                    </IconButton>
-                </Tooltip>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                    <Tooltip title="Editar">
+                        <IconButton color="primary" onClick={() => onEditCompra && onEditCompra(row)}>
+                            <EditIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Excluir">
+                        <IconButton color="error" onClick={() => handleExcluir(row)}>
+                            <DeleteIcon />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
             ),
         },
     ];

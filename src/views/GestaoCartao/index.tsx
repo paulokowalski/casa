@@ -13,12 +13,39 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { Card } from '../../components/Card';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 export function GestaoCartao() {
     const [openCadastroModal, setOpenCadastroModal] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [compraParaEditar, setCompraParaEditar] = useState<any | null>(null);
 
-    const handleOpenCadastroModal = () => setOpenCadastroModal(true);
-    const handleCloseCadastroModal = () => setOpenCadastroModal(false);
+    const handleOpenCadastroModal = () => {
+        setCompraParaEditar(null);
+        setOpenCadastroModal(true);
+    };
+    const handleCloseCadastroModal = () => {
+        setOpenCadastroModal(false);
+        setCompraParaEditar(null);
+    };
+
+    // Ao cadastrar ou editar com sucesso
+    const handleCadastroSuccess = () => {
+        setOpenCadastroModal(false);
+        setCompraParaEditar(null);
+        setShowSuccess(true);
+    };
+
+    const handleCloseSuccess = (event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') return;
+        setShowSuccess(false);
+    };
+
+    const handleEditCompra = (compra: any) => {
+        setCompraParaEditar(compra);
+        setOpenCadastroModal(true);
+    };
 
     const sections = [
         {
@@ -39,7 +66,7 @@ export function GestaoCartao() {
             title: "Transações",
             description: "Lista de todas as transações",
             icon: <TableChartIcon />,
-            component: <TabelaTransacao />,
+            component: <TabelaTransacao onEditCompra={handleEditCompra} />,
             color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
         },
         {
@@ -116,6 +143,9 @@ export function GestaoCartao() {
                         <CadastroModal 
                             open={openCadastroModal}
                             onClose={handleCloseCadastroModal}
+                            onSuccess={handleCadastroSuccess}
+                            onEdit={handleCadastroSuccess}
+                            compra={compraParaEditar}
                         />
 
                         {/* FAB Moderno */}
@@ -145,6 +175,18 @@ export function GestaoCartao() {
                                 <AddIcon />
                             </Fab>
                         </Box>
+
+                        {/* Snackbar de sucesso */}
+                        <Snackbar
+                            open={showSuccess}
+                            autoHideDuration={3000}
+                            onClose={handleCloseSuccess}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                        >
+                            <MuiAlert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
+                                Transação cadastrada com sucesso!
+                            </MuiAlert>
+                        </Snackbar>
                     </Container>
                 </Box>
             </DespesaProvider>
