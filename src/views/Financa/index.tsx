@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Typography, Box, Fab, Container, Snackbar, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Typography, Box, Container, Snackbar, MenuItem, Select, FormControl, InputLabel, Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -13,7 +13,6 @@ import { usePessoa } from '../../contexts/PessoaContext';
 import { Alert as CustomAlert } from '../../components/ui/Alert';
 import { Card } from '../../components/Card';
 import { TabelaTransacao } from './TabelaTransacao';
-import MuiAlert from '@mui/material/Alert';
 
 const MESES = [
   { codigo: '01', descricao: 'Janeiro' },
@@ -42,7 +41,7 @@ export function Financa() {
     return { codigo: String(ano), descricao: String(ano) };
   });
 
-  const { pessoa, setPessoa, ano, setAno, mes, setMes, transacoes, cartaoDespesas, excluir, recarregarTransacoes, loading } = useFinanca();
+  const { pessoa, setPessoa, ano, setAno, mes, setMes, transacoes, cartaoDespesas, excluir, recarregarTransacoes, loading, editar } = useFinanca();
   const { pessoas } = usePessoa();
 
   const handleOpenCadastroModal = () => setOpenCadastroModal(true);
@@ -72,6 +71,12 @@ export function Financa() {
     }
   };
 
+  const handleMarcarComoPaga = (transacao: Transacao) => {
+    editar(transacao.id, transacao);
+    setSnack(transacao.paga ? 'Transação marcada como paga!' : 'Transação desmarcada como paga!');
+    setSnackType('success');
+  };
+
   // Unir transações normais e despesas de cartão adaptadas para a tabela
   const transacoesComCartao = useMemo(() => {
     const transacoesArray = Array.isArray(transacoes) ? transacoes : [];
@@ -88,12 +93,17 @@ export function Financa() {
       pessoa: '',
       ano: '',
       mes: '',
+      paga: false,
     }] : [];
     // Não adicionar investimento virtual
-    return [
-      ...transacoesArray.map(t => ({ ...t, categoria: t.categoria || (t.tipo === 'despesa' ? 'Despesa' : 'Receita') })),
-      ...cartaoLinha
-    ];
+    const transacoesOrdenadas = transacoesArray
+      .sort((a, b) => {
+        if (a.tipo === b.tipo) return 0;
+        if (a.tipo === 'receita') return -1;
+        return 1;
+      })
+      .map(t => ({ ...t, categoria: t.categoria || (t.tipo === 'despesa' ? 'Despesa' : 'Receita'), paga: t.paga ?? false }));
+    return transacoesOrdenadas.concat(cartaoLinha);
   }, [transacoes, cartaoDespesas, pessoa, ano, mes]);
 
   const sections = [
@@ -108,7 +118,7 @@ export function Financa() {
       title: 'Financeiro',
       description: 'Receitas, despesas e cartões de crédito agrupados',
       icon: <TableChartIcon />,
-      component: <TabelaTransacao transacoes={transacoesComCartao} onEditar={handleEditar} onExcluir={handleExcluir} loading={loading} />,
+      component: <TabelaTransacao transacoes={transacoesComCartao} onEditar={handleEditar} onExcluir={handleExcluir} onMarcarComoPaga={handleMarcarComoPaga} loading={loading} />,
       color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
     },
     {
@@ -123,10 +133,10 @@ export function Financa() {
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', pb: 6 }}>
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
-          py: { xs: 4, md: 6 },
-          px: { xs: 2, sm: 4, md: 0 },
+          py: { xs: 2, md: 4 },
+          px: { xs: 1, sm: 2, md: 0 },
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'stretch',
@@ -142,11 +152,21 @@ export function Financa() {
             sx={{ 
               fontWeight: 800,
               mb: 1,
-              color: '#ffffff',
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+              color: '#764ba2',
+              textShadow: '0 4px 16px rgba(39,26,69,0.18)',
             }}
           >
             Finanças
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: '#764ba2',
+              fontWeight: 400,
+              textShadow: '0 2px 8px rgba(39,26,69,0.18)',
+            }}
+          >
+            Subtítulo ou descrição da tela de Finanças
           </Typography>
         </Box>
 
@@ -160,7 +180,7 @@ export function Financa() {
           title="Filtros"
           description="Selecione pessoa, ano e mês para filtrar"
           icon={<TableChartIcon />} 
-          sx={{ mb: 5, p: 3, borderRadius: 3, background: 'rgba(255,255,255,0.98)', border: '1px solid #e0e7ef', boxShadow: '0 4px 20px rgba(44,62,80,0.06)' }}
+          sx={{ mb: 3, p: { xs: 2, md: 3 }, borderRadius: 0.5, background: 'rgba(255,255,255,0.18)', boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)' }}
         >
           <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
             <FormControl fullWidth size="small" sx={{ maxWidth: 220, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
@@ -185,43 +205,18 @@ export function Financa() {
         </Card>
 
         {/* Grid de seções */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {sections.map((section, index) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {sections.map((section, idx) => (
             <Card
-              key={section.title || index}
-              sx={{
-                p: { xs: 3, md: 4 },
-                borderRadius: 3,
-                background: 'rgba(255, 255, 255, 0.98)',
-                border: '1px solid #e0e7ef',
-                boxShadow: '0 6px 32px rgba(44,62,80,0.08)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                position: 'relative',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 40px rgba(44,62,80,0.10)',
-                },
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  background: section.color,
-                  borderTopLeftRadius: 12,
-                  borderTopRightRadius: 12,
-                },
-              }}
-              className="fade-in-up"
+              key={section.title}
               title={section.title}
               description={section.description}
               icon={section.icon}
               gradient={section.color}
+              sx={{ mb: 3, borderRadius: 0.5, background: 'rgba(255,255,255,0.18)', boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)' }}
+              className="fade-in-up"
             >
-              <Box>
-                {section.component}
-              </Box>
+              {section.component}
             </Card>
           ))}
         </Box>
@@ -272,9 +267,9 @@ export function Financa() {
           onClose={() => setSnack(null)}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          <MuiAlert onClose={() => setSnack(null)} severity={snackType} sx={{ width: '100%', background: snackType === 'success' ? '#e8f5e9' : '#e3f2fd', color: snackType === 'success' ? '#2e7d32' : '#1565c0' }}>
+          <CustomAlert onClose={() => setSnack(null)} severity={snackType} sx={{ width: '100%', background: snackType === 'success' ? '#e8f5e9' : '#e3f2fd', color: snackType === 'success' ? '#2e7d32' : '#1565c0' }}>
             {snack}
-          </MuiAlert>
+          </CustomAlert>
         </Snackbar>
       </Container>
     </Box>

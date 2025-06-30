@@ -1,6 +1,8 @@
 import { Box, Typography, IconButton, Chip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Transacao as TransacaoBase } from '../../../contexts/FinancaContext';
 import { Table } from '../../../components/ui/Table';
 import { LoadingOverlay } from '../../../components/ui/LoadingOverlay';
@@ -11,10 +13,11 @@ interface TabelaTransacaoProps {
   transacoes: Transacao[];
   onEditar: (transacao: Transacao) => void;
   onExcluir: (transacao: Transacao) => void;
+  onMarcarComoPaga: (transacao: Transacao) => void;
   loading?: boolean;
 }
 
-export function TabelaTransacao({ transacoes, onEditar, onExcluir, loading = false }: TabelaTransacaoProps) {
+export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoPaga, loading = false }: TabelaTransacaoProps) {
   const columns = [
     { id: 'descricao', label: 'Descrição' },
     {
@@ -69,6 +72,22 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, loading = fal
           <>
             <IconButton size="small" onClick={() => onEditar(row)}><EditIcon fontSize="small" /></IconButton>
             <IconButton size="small" color="error" onClick={() => onExcluir(row)}><DeleteIcon fontSize="small" /></IconButton>
+            {row.tipo === 'despesa' && (
+              <IconButton
+                size="small"
+                color={row.paga ? "success" : "default"}
+                onClick={() => onMarcarComoPaga({ ...row, paga: !row.paga })}
+                title={row.paga ? "Desmarcar como paga" : "Marcar como paga"}
+              >
+                {row.paga
+                  ? <CheckCircleIcon fontSize="small" />
+                  : <RadioButtonUncheckedIcon fontSize="small" />
+                }
+              </IconButton>
+            )}
+            {row.paga && row.tipo === 'despesa' && (
+              <span style={{ color: '#2e7d32', fontWeight: 600, marginLeft: 8 }}>Paga</span>
+            )}
           </>
         );
       },

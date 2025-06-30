@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Container, Typography, Paper, IconButton, TextField } from '@mui/material';
+import { Box, Button, Container, Typography, IconButton, TextField } from '@mui/material';
 import { Table } from '../../components/ui/Table';
 import { Modal } from '../../components/ui/Modal';
 import CadastroModal from './CadastroModal';
@@ -87,11 +87,28 @@ const PessoaView: React.FC = () => {
 
   return (
     <Container maxWidth="md">
-      <Box display="flex" justifyContent="space-between" alignItems="center" mt={4} mb={2}>
-        <Typography variant="h4">Pessoas</Typography>
-        <Button variant="contained" color="primary" onClick={() => setOpenModal(true)}>
-          Nova Pessoa
-        </Button>
+      <Box sx={{ mb: 4, textAlign: 'center' }} className="fade-in">
+        <Typography 
+          variant="h3" 
+          sx={{ 
+            fontWeight: 800,
+            mb: 1,
+            color: '#764ba2',
+            textShadow: '0 4px 16px rgba(39,26,69,0.18)',
+          }}
+        >
+          Pessoas
+        </Typography>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            color: '#764ba2',
+            fontWeight: 400,
+            textShadow: '0 2px 8px rgba(39,26,69,0.18)',
+          }}
+        >
+          Gerencie os usuários do sistema
+        </Typography>
       </Box>
       <Card title="Lista de Pessoas">
         <LoadingOverlay loading={loading} text="Carregando...">
@@ -166,6 +183,39 @@ const PessoaView: React.FC = () => {
           </Typography>
         </Box>
       </Modal>
+      {/* FAB Moderno */}
+      <Box sx={{ 
+        position: 'fixed', 
+        bottom: 24, 
+        right: 24,
+        zIndex: 1000,
+      }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setOpenModal(true)}
+          sx={{
+            minWidth: 0,
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            p: 0,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+              transform: 'scale(1.05)',
+              boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
+            },
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5V19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M5 12H19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Button>
+      </Box>
     </Container>
   );
 };

@@ -46,36 +46,42 @@ export function Table<T extends { [key: string]: any }>({
   const paginatedData = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.08)', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)' }}>
-      <MuiTable>
+    <TableContainer component={Paper} sx={{
+      borderRadius: 0.5,
+      boxShadow: '0 8px 32px rgba(140, 16, 206, 0.10)',
+      background: 'rgba(255,255,255,0.65)',
+      maxHeight: 520,
+    }}>
+      <MuiTable stickyHeader>
         <TableHead>
-          <TableRow>
-            {columns.map((column) => (
-              <TableCell
-                key={String(column.id)}
-                align={column.align || 'left'}
-                sx={{ fontWeight: 700, color: '#667eea', fontSize: '1rem', background: 'rgba(102,126,234,0.05)' }}
-              >
-                {column.label}
-              </TableCell>
+          <TableRow sx={{ background: 'rgba(140, 16, 206, 0.10)', backdropFilter: 'blur(4px)' }}>
+            {columns.map((col) => (
+              <TableCell key={col.id} align={col.align || 'left'} sx={{ fontWeight: 700, fontSize: 15, background: 'rgba(140, 16, 206, 0.10)', color: '#8A05BE', borderBottom: '2px solid rgba(140, 16, 206, 0.18)', letterSpacing: 0.5 }}>{col.label}</TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
-          {paginatedData.length === 0 ? (
+          {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={columns.length} align="center">
-                <Box py={4}>
-                  <Typography color="text.secondary">{emptyMessage}</Typography>
-                </Box>
+              <TableCell colSpan={columns.length} align="center" sx={{ py: 6, color: '#a0aec0', fontWeight: 500 }}>
+                {emptyMessage || 'Nenhum dado encontrado.'}
               </TableCell>
             </TableRow>
           ) : (
-            paginatedData.map((row, idx) => (
-              <TableRow key={idx} hover sx={{ transition: 'background 0.2s', '&:hover': { background: 'rgba(102,126,234,0.07)' } }}>
-                {columns.map((column) => (
-                  <TableCell key={column.id} align={column.align || 'left'}>
-                    {column.render ? column.render(row[column.id], row) : row[column.id]}
+            data.map((row, idx) => (
+              <TableRow
+                key={row.id || idx}
+                sx={{
+                  background: idx % 2 === 0 ? 'rgba(140, 16, 206, 0.03)' : 'rgba(255,255,255,0.45)',
+                  transition: 'background 0.2s',
+                  '&:hover': {
+                    background: 'rgba(140, 16, 206, 0.13)',
+                  },
+                }}
+              >
+                {columns.map((col) => (
+                  <TableCell key={col.id} align={col.align || 'left'} sx={{ borderBottom: '1px solid rgba(140, 16, 206, 0.10)', fontSize: 15 }}>
+                    {col.render ? col.render(row[col.id], row) : row[col.id]}
                   </TableCell>
                 ))}
               </TableRow>

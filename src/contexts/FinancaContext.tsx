@@ -15,6 +15,7 @@ export interface Transacao {
   ano: string;
   mes: string;
   categoria?: string;
+  paga: boolean;
 }
 
 interface FinancaContextData {
@@ -152,8 +153,25 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     });
   }
   function editar(id: string, t: Omit<Transacao, 'id'>) {
-    atualizarTransacao(id, t).then(res => {
+    // Converter data para objeto LocalDate se for string yyyy-MM-dd
+    let dataObj: any = t.data;
+    if (typeof t.data === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(t.data)) {
+      const [year, month, day] = t.data.split('-').map(Number);
+      dataObj = { year, month, day };
+    }
+    // Montar payload compatível com o backend
+    const payload = {
+      tipo: t.tipo,
+      descricao: t.descricao,
+      valor: t.valor,
+      data: dataObj,
+      fixa: t.fixa,
+      pessoa: t.pessoa ? Number(t.pessoa) : undefined,
+      paga: t.paga ?? false,
+    };
+    atualizarTransacao(id, payload).then(res => {
       setTransacoes(prev => prev.map(item => item.id === id ? res.data : item));
+      recarregarTransacoes();
     });
   }
   function excluir(id: string) {

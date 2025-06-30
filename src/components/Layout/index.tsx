@@ -29,46 +29,26 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { Link, useLocation } from 'react-router-dom';
 import { useFinanca } from '../../contexts/FinancaContext';
 
-const drawerWidth = 280;
+const drawerWidth = 240;
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const theme = useTheme();
   const location = useLocation();
 
-  const handleDrawerToggle = () => setOpen((prev) => !prev);
-
   const navItems = [
-    { 
-      text: 'Dashboard', 
-      icon: <DashboardIcon />, 
-      to: '/',
-      description: 'Visão geral do sistema'
-    },
-    {
-      text: 'Finanças',
-      icon: <MonetizationOnIcon />,
-      to: '/financa',
-      description: 'Controle de receitas e despesas'
-    },
-    { 
-      text: 'Gestão de Cartão', 
-      icon: <AccountBalanceWalletIcon />, 
-      to: '/gestao-cartao',
-      description: 'Gestão de cartões e transações'
-    },
-    {
-      text: 'Pessoas',
-      icon: <PeopleIcon />,
-      to: '/pessoa',
-      description: 'Cadastro de pessoas'
-    },
+    { text: 'Dashboard', icon: <DashboardIcon />, to: '/' },
+    { text: 'Finanças', icon: <MonetizationOnIcon />, to: '/financa' },
+    { text: 'Gestão de Cartão', icon: <AccountBalanceWalletIcon />, to: '/gestao-cartao' },
+    { text: 'Pessoas', icon: <PeopleIcon />, to: '/pessoa' },
   ];
 
   const { getDespesasProximasTodasPessoas } = useFinanca();
   const [despesasProximas, setDespesasProximas] = useState<any[]>([]);
   useEffect(() => {
-    getDespesasProximasTodasPessoas().then(setDespesasProximas);
+    getDespesasProximasTodasPessoas().then(despesas => {
+      setDespesasProximas(Array.isArray(despesas) ? despesas.filter((t: any) => !t.paga) : []);
+    });
   }, [getDespesasProximasTodasPessoas]);
 
   // Estado do menu do sino
@@ -81,236 +61,84 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: theme.palette.background.default }}>
       <CssBaseline />
-      
-      {/* AppBar Moderna */}
-      <AppBar 
-        position="fixed" 
-        sx={{ 
-          zIndex: theme.zIndex.drawer + 1,
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-        }}
-      >
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton
-              color="inherit"
-              aria-label="toggle drawer"
-              onClick={handleDrawerToggle}
-              edge="start"
-              sx={{ 
-                mr: 2,
-                color: '#1a202c',
-                '&:hover': {
-                  background: 'rgba(102, 126, 234, 0.1)',
-                  transform: 'scale(1.05)',
-                },
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-            >
-              {open ? <ChevronLeftIcon /> : <MenuIcon />}
-            </IconButton>
-            
-            <Typography
-              variant="h5"
-              component={Link}
-              to="/"
-              sx={{ 
-                color: '#1a202c',
-                textDecoration: 'none', 
-                cursor: 'pointer',
-                fontWeight: 700,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                },
-                transition: 'transform 0.3s ease',
-              }}
-            >
-              Kowalski House
-            </Typography>
-          </Box>
-
-          {/* Área de ações do usuário */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tooltip title="Notificações">
-              <IconButton
-                sx={{ 
-                  color: '#1a202c',
-                  '&:hover': {
-                    background: 'rgba(102, 126, 234, 0.1)',
-                    transform: 'scale(1.05)',
-                  },
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                }}
-                onClick={handleOpenMenu}
-              >
-                <Badge badgeContent={despesasProximas.length} color="error">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleCloseMenu}
-                PaperProps={{ sx: { minWidth: 320 } }}
-              >
-                <MenuItem disabled>
-                  <ListItemText primary="Despesas próximas do vencimento" />
-                </MenuItem>
-                <Divider />
-                {despesasProximas.length > 0 ? (
-                  [...despesasProximas]
-                    .sort((a, b) => {
-                      const dataA = Array.isArray(a.data)
-                        ? new Date(a.data[0], a.data[1] - 1, a.data[2])
-                        : new Date(a.data);
-                      const dataB = Array.isArray(b.data)
-                        ? new Date(b.data[0], b.data[1] - 1, b.data[2])
-                        : new Date(b.data);
-                      return dataA.getTime() - dataB.getTime();
-                    })
-                    .map((t, idx) => (
-                      <MenuItem key={t.id || idx}>
-                        <ListItemText
-                          primary={`${t.pessoaNome}: ${t.descricao}`}
-                          secondary={`Valor: R$ ${t.valor.toFixed(2)} | Vencimento: ${Array.isArray(t.data) ? `${String(t.data[2]).padStart(2, '0')}/${String(t.data[1]).padStart(2, '0')}/${t.data[0]}` : new Date(t.data).toLocaleDateString('pt-BR')}`}
-                        />
-                      </MenuItem>
-                    ))
-                ) : (
-                  <MenuItem disabled>
-                    <ListItemText primary="Nenhuma despesa próxima do vencimento." />
-                  </MenuItem>
-                )}
-              </Menu>
-            </Tooltip>
-          </Box>
-        </Toolbar>
-      </AppBar>
-      {/* Drawer Moderno */}
+      {/* Sidebar Premium */}
       <Drawer
-        variant="persistent"
+        variant="permanent"
         open={open}
         sx={{
-          display: open ? 'block' : 'none',
+          width: open ? drawerWidth : 72,
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
+          boxSizing: 'border-box',
+          background: 'rgba(140, 16, 206, 0.18)',
+          backdropFilter: 'blur(16px)',
+          borderRight: '1px solid rgba(140, 16, 206, 0.12)',
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRight: '1px solid rgba(255, 255, 255, 0.2)',
-            color: '#1a202c',
-            zIndex: theme.zIndex.drawer,
-            top: 0,
-            height: '100vh',
+            width: open ? drawerWidth : 72,
+            background: 'rgba(140, 16, 206, 0.18)',
+            backdropFilter: 'blur(16px)',
+            borderRight: '1px solid rgba(140, 16, 206, 0.12)',
+            boxShadow: '0 8px 32px rgba(44,62,80,0.10)',
+            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            overflowX: 'hidden',
           },
         }}
       >
-        {/* Navegação */}
-        <Box sx={{ p: 2, mt: 8 }}>
-          <Typography 
-            variant="overline" 
-            sx={{ 
-              color: '#4a5568', 
-              fontWeight: 600, 
-              letterSpacing: 1,
-              mb: 2,
-              display: 'block',
-            }}
-          >
-            Navegação
-          </Typography>
-          <List sx={{ p: 0 }}>
-            {navItems.map((item) => (
-              <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
-                <ListItemButton
-                  component={Link}
-                  to={item.to}
-                  selected={location.pathname === item.to}
-                  onClick={() => setOpen(false)}
-                  sx={{
-                    borderRadius: 2,
-                    mx: 1,
-                    minHeight: 36,
-                    py: 0.5,
-                    px: 1.5,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                      transform: 'translateX(6px)',
-                    },
-                    '&.Mui-selected': {
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: '#ffffff',
-                      boxShadow: '0 4px 16px rgba(102, 126, 234, 0.18)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                      },
-                      '& .MuiListItemIcon-root': {
-                        color: '#ffffff',
-                      },
-                    },
-                  }}
-                >
-                  <ListItemIcon 
-                    sx={{ 
-                      minWidth: 28,
-                      color: location.pathname === item.to ? '#ffffff' : '#667eea',
-                      fontSize: 18,
-                      mr: 1,
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-                  <Box>
-                    <ListItemText 
-                      primary={item.text} 
-                      primaryTypographyProps={{
-                        fontWeight: location.pathname === item.to ? 600 : 500,
-                        fontSize: '0.95rem',
-                        lineHeight: 1.1,
-                      }}
-                    />
-                    <ListItemText 
-                      secondary={item.description}
-                      secondaryTypographyProps={{
-                        fontSize: '0.7rem',
-                        color: location.pathname === item.to ? 'rgba(255,255,255,0.8)' : '#4a5568',
-                        lineHeight: 1.1,
-                      }}
-                    />
-                  </Box>
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: open ? 'space-between' : 'center', px: 2, py: 2 }}>
+          {open && (
+            <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: 1, color: theme.palette.primary.main }}>
+              Kowalski
+            </Typography>
+          )}
+          <IconButton onClick={() => setOpen(!open)} size="small" sx={{ ml: open ? 0 : 0 }}>
+            {open ? <ChevronLeftIcon /> : <MenuIcon />}
+          </IconButton>
         </Box>
+        <List sx={{ mt: 2 }}>
+          {navItems.map((item) => (
+            <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 1 }}>
+              <ListItemButton
+                component={Link}
+                to={item.to}
+                selected={location.pathname === item.to}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? 'initial' : 'center',
+                  px: 2.5,
+                  borderRadius: 3,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  background: location.pathname === item.to ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'none',
+                  color: location.pathname === item.to ? '#fff' : theme.palette.text.primary,
+                  boxShadow: location.pathname === item.to ? '0 4px 16px rgba(102, 126, 234, 0.18)' : 'none',
+                  '&:hover': {
+                    background: 'rgba(102, 126, 234, 0.08)',
+                    color: theme.palette.primary.main,
+                  },
+                }}
+              >
+                <ListItemIcon sx={{
+                  minWidth: 0,
+                  mr: open ? 2 : 'auto',
+                  justifyContent: 'center',
+                  color: location.pathname === item.to ? '#fff' : theme.palette.primary.main,
+                  fontSize: 24,
+                  transition: 'color 0.3s',
+                }}>
+                  {item.icon}
+                </ListItemIcon>
+                {open && (
+                  <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0, fontWeight: 700 }} />
+                )}
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
       </Drawer>
       {/* Conteúdo Principal */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: { xs: 2, sm: 3, md: 4 },
-          mt: 8,
-          width: '100%',
-          minHeight: '100vh',
-          transition: 'margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          ml: open ? `${drawerWidth}px` : 0,
-          background: 'transparent',
-          position: 'relative',
-          zIndex: 1,
-        }}
-        className="fade-in"
-      >
+      <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, sm: 3, md: 4 }, minHeight: '100vh', transition: 'margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
         {children}
       </Box>
     </Box>

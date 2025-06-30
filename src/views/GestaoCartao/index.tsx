@@ -1,4 +1,4 @@
-import { Typography, Box, Fab, Icon, Container } from '@mui/material';
+import { Typography, Box, Fab, Container } from '@mui/material';
 import { GestaoCartaoProvider } from "../../contexts/GestaoCartaoContext";
 import { DespesaProvider } from "../../contexts/DespesaContext";
 import { Summary } from "./Summary";
@@ -8,13 +8,13 @@ import { TabelaTransacao } from "./TabelaTransacao";
 import { GraficoBarras } from "./GraficoBarras";
 import { useState } from "react";
 import AddIcon from '@mui/icons-material/Add';
+import { Card } from '../../components/Card';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import { Card } from '../../components/Card';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
 
 export function GestaoCartao() {
     const [openCadastroModal, setOpenCadastroModal] = useState(false);
@@ -102,8 +102,8 @@ export function GestaoCartao() {
                                 sx={{ 
                                     fontWeight: 800,
                                     mb: 1,
-                                    color: '#ffffff',
-                                    textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                                    color: '#764ba2',
+                                    textShadow: '0 4px 16px rgba(39,26,69,0.18)',
                                 }}
                             >
                                 Gestão de Cartão
@@ -111,9 +111,9 @@ export function GestaoCartao() {
                             <Typography 
                                 variant="h6" 
                                 sx={{ 
-                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    color: '#764ba2',
                                     fontWeight: 400,
-                                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+                                    textShadow: '0 2px 8px rgba(39,26,69,0.18)',
                                 }}
                             >
                                 Controle total dos seus cartões e transações

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from "react-router-dom";
-import { GlobalStyle } from "./styles/global";
+import { Global } from '@emotion/react';
+import { globalStyles } from "./styles/global";
 import { Layout } from "./components/Layout";
 import { Home } from "./views/Home";
 import { GestaoCartao } from './views/GestaoCartao';
@@ -33,7 +34,7 @@ function App() {
   return (
     <ErrorBoundary>
       <PessoaProvider>
-        <GlobalStyle/>
+        <Global styles={globalStyles} />
         <FinancaProvider>
           <Layout>
             <Routes>

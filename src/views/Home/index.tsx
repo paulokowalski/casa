@@ -6,10 +6,6 @@ import EuroIcon from '@mui/icons-material/Euro';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
-// Hooks personalizados
-import { useCearaData, useFipeData, useCurrencyData } from '../../hooks/useApiData';
-import { useFinanca } from '../../contexts/FinancaContext';
-
 // Componentes profissionais
 import { LoadingCard } from '../../components/ui/LoadingCard';
 import { ErrorCard } from '../../components/ui/ErrorCard';
@@ -17,10 +13,9 @@ import { Card } from '../../components/Card';
 
 // Configurações
 import { API_URLS } from '../../config/urls';
+import { useCearaData, useFipeData, useCurrencyData } from '../../hooks/useApiData';
+import { useFinanca } from '../../contexts/FinancaContext';
 import { DESIGN_CONFIG } from '../../config/constants';
-
-// Tipos
-// import { CearaData, FipeData, CurrencyData } from '../../types/api';
 
 function CearaTableCard() {
   const { data, loading, error, refetch } = useCearaData(API_URLS.CEARA);
@@ -251,9 +246,10 @@ function DespesasVencerCard() {
   useEffect(() => {
     setLoading(true);
     getDespesasProximasTodasPessoas().then(despesas => {
-      // Filtrar só as que vencem em até 30 dias
+      // Filtrar só as que vencem em até 30 dias e NÃO estão pagas
       const hoje = new Date();
       const proximas30 = despesas.filter((t: any) => {
+        if (t.paga) return false; // só não pagas!
         const dataVenc = Array.isArray(t.data)
           ? new Date(t.data[0], t.data[1] - 1, t.data[2])
           : new Date(t.data);
@@ -296,8 +292,8 @@ export function Home() {
           sx={{ 
             fontWeight: 800,
             mb: 1,
-            color: '#ffffff',
-            textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+            color: '#764ba2',
+            textShadow: '0 4px 16px rgba(39,26,69,0.18)',
           }}
         >
           Dashboard Kowalski House
@@ -305,9 +301,9 @@ export function Home() {
         <Typography 
           variant="h6" 
           sx={{ 
-            color: 'rgba(255, 255, 255, 0.9)',
+            color: '#764ba2',
             fontWeight: 400,
-            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+            textShadow: '0 2px 8px rgba(39,26,69,0.18)',
           }}
         >
           Informações em tempo real e insights inteligentes

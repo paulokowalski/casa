@@ -38,19 +38,18 @@ export const Card: React.FC<CardProps> = ({
       elevation={0}
       onClick={onClick}
       sx={{
-        p: { xs: 2, md: 3 },
-        borderRadius: 2,
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+        p: { xs: 1.5, md: 2.5 },
+        borderRadius: 0.5,
+        background: 'rgba(255, 255, 255, 0.18)',
+        border: '1.5px solid rgba(130, 10, 209, 0.22)',
+        boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
         '&:hover': {
           transform: onClick ? 'translateY(-2px)' : 'none',
-          boxShadow: onClick ? '0 8px 30px rgba(0, 0, 0, 0.12)' : '0 4px 20px rgba(0, 0, 0, 0.08)',
+          boxShadow: onClick ? '0 16px 48px rgba(130, 10, 209, 0.22)' : '0 8px 32px rgba(130, 10, 209, 0.18)',
         },
         '&::before': {
           content: '""',
