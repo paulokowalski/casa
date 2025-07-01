@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Typography, Box, Container, Snackbar, MenuItem, Select, FormControl, InputLabel, Fab } from '@mui/material';
+import { useState, useMemo, useEffect } from 'react';
+import { Typography, Box, Container, MenuItem, Select, FormControl, InputLabel, Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -33,8 +33,6 @@ export function Financa() {
   const [openCadastroModal, setOpenCadastroModal] = useState(false);
   const [editando, setEditando] = useState<Transacao | null>(null);
   const [excluindo, setExcluindo] = useState<Transacao | null>(null);
-  const [snack, setSnack] = useState<string | null>(null);
-  const [snackType, setSnackType] = useState<'success' | 'info'>('info');
   const [anoAtual] = useState(new Date().getFullYear());
   const anos = Array.from({ length: 6 }, (_, i) => {
     const ano = anoAtual + i;
@@ -43,6 +41,9 @@ export function Financa() {
 
   const { pessoa, setPessoa, ano, setAno, mes, setMes, transacoes, cartaoDespesas, excluir, recarregarTransacoes, loading, editar } = useFinanca();
   const { pessoas } = usePessoa();
+
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleOpenCadastroModal = () => setOpenCadastroModal(true);
   const handleCloseCadastroModal = () => {
@@ -56,16 +57,16 @@ export function Financa() {
   };
   const handleExcluir = (transacao: Transacao) => setExcluindo(transacao);
   const handleCadastroSuccess = () => {
-    setSnack('Transação cadastrada com sucesso!');
-    setSnackType('success');
+    setSuccessMessage('Transação cadastrada com sucesso!');
+    setShowSuccess(true);
   };
   const handleConfirmarExclusao = () => {
     if (excluindo) {
       excluir(excluindo.id);
       setExcluindo(null);
       setTimeout(() => {
-        setSnack('Transação excluída com sucesso!');
-        setSnackType('info');
+        setSuccessMessage('Transação excluída com sucesso!');
+        setShowSuccess(true);
         recarregarTransacoes();
       }, 400);
     }
@@ -73,9 +74,16 @@ export function Financa() {
 
   const handleMarcarComoPaga = (transacao: Transacao) => {
     editar(transacao.id, transacao);
-    setSnack(transacao.paga ? 'Transação marcada como paga!' : 'Transação desmarcada como paga!');
-    setSnackType('success');
+    setSuccessMessage(transacao.paga ? 'Transação marcada como paga!' : 'Transação desmarcada como paga!');
+    setShowSuccess(true);
   };
+
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => setShowSuccess(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
 
   // Unir transações normais e despesas de cartão adaptadas para a tabela
   const transacoesComCartao = useMemo(() => {
@@ -260,17 +268,14 @@ export function Financa() {
           </Fab>
         </Box>
 
-        {/* Snackbar de feedback */}
-        <Snackbar
-          open={!!snack}
-          autoHideDuration={3000}
-          onClose={() => setSnack(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <CustomAlert onClose={() => setSnack(null)} severity={snackType} sx={{ width: '100%', background: snackType === 'success' ? '#e8f5e9' : '#e3f2fd', color: snackType === 'success' ? '#2e7d32' : '#1565c0' }}>
-            {snack}
-          </CustomAlert>
-        </Snackbar>
+        {/* Alerta fixo de feedback, sem animação */}
+        {showSuccess && (
+          <Box sx={{ position: 'fixed', top: 16, left: 0, right: 0, zIndex: 2000, display: 'flex', justifyContent: 'center' }}>
+            <CustomAlert onClose={() => setShowSuccess(false)} severity="success">
+              {successMessage}
+            </CustomAlert>
+          </Box>
+        )}
       </Container>
     </Box>
   );

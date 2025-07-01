@@ -148,7 +148,7 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
   }, [pessoa, ano, mes, pessoas]);
 
   function adicionar(t: Omit<Transacao, 'id'>) {
-    criarTransacao(t).then(res => {
+    return criarTransacao(t).then(res => {
       setTransacoes(prev => [...prev, res.data]);
     });
   }

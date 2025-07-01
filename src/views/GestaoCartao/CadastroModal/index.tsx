@@ -7,12 +7,9 @@ import {
     Button, 
     MenuItem,
     InputAdornment,
-    Snackbar,
-    Alert,
 } from '@mui/material';
-import { format } from 'date-fns';
+import { formatCurrency, parseCurrency, toISODate } from '../../../functions/global';
 import { Modal } from '../../../components/ui/Modal';
-import { Alert as CustomAlert } from '../../../components/ui/Alert';
 
 interface CadastroModalProps {
     open: boolean;
@@ -22,23 +19,16 @@ interface CadastroModalProps {
     onEdit?: () => void; // Callback para sucesso na edição
 }
 
-interface Pessoa {
-    id: number;
-    nome: string;
-}
-
 export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: CadastroModalProps) {
     const { cadastrarCompra, editarCompra, consultar } = useContext(GestaoCartaoContext);
     const [produto, setProduto] = useState('');
     const [valorProduto, setValorProduto] = useState('');
-    const [dataCompra, setDataCompra] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [dataCompra, setDataCompra] = useState(getTodayISO());
     const [parcela, setParcela] = useState('1');
     const [pessoa, setPessoa] = useState('');
     const [cartao, setCartao] = useState('');
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-    const { pessoas } = usePessoa();
-    const [errorSnackbar, setErrorSnackbar] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const { pessoas } = usePessoa();
 
     const cartoes = [
         'VIRTUAL C6',
@@ -54,50 +44,35 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
         if (compra) {
             setProduto(compra.nomeCompra || '');
             setValorProduto(
-                Number(compra.valorTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                formatCurrency(Number(compra.valorTotal || 0))
             );
-            setDataCompra(compra.dataCompra ? format(new Date(compra.dataCompra), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'));
+            setDataCompra(compra.dataCompra ? toISODate(compra.dataCompra) : getTodayISO());
             setParcela(String(compra.numeroTotalParcela || '1'));
             setPessoa(compra.nomePessoa || '');
             setCartao(compra.nomeCartao || '');
         } else {
             setProduto('');
             setValorProduto('');
-            setDataCompra(format(new Date(), 'yyyy-MM-dd'));
+            setDataCompra(getTodayISO());
             setParcela('1');
             setPessoa('');
             setCartao('');
         }
         setSuccess(false);
-        setErrorSnackbar(null);
     }, [compra, open]);
 
     function limparFormulario() {
         setProduto('');
         setValorProduto('');
-        setDataCompra(format(new Date(), 'yyyy-MM-dd'));
+        setDataCompra(getTodayISO());
         setParcela('1');
         setPessoa('');
         setCartao('');
     }
 
-    const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenSnackbar(false);
-        limparFormulario();
-        onClose();
-    };
-
-    const handleCloseErrorSnackbar = () => {
-        setErrorSnackbar(null);
-    };
-
     async function handleSubmit() {
-        const valorNumerico = valorProduto.replace(/[R$\s.]/g, '').replace(',', '.');
-        const valor = valorNumerico;
-        const dataFormatada = format(new Date(dataCompra), 'yyyy-MM-dd');
+        const valor = parseCurrency(valorProduto);
+        const dataFormatada = dataCompra;
 
         const pessoaSelecionada = pessoas.find(p => p.nome === pessoa);
         const nomePessoa = pessoaSelecionada ? pessoaSelecionada.nome : pessoa;
@@ -107,43 +82,37 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                 await editarCompra(
                     compra.id,
                     produto.trim(),
-                    valor,
+                    String(valor),
                     dataFormatada,
                     parcela,
                     nomePessoa,
                     cartao.trim()
                 );
                 consultar('2024', '06', pessoa, 'TODOS', 'TODOS');
-                setErrorSnackbar(null);
                 setSuccess(true);
                 if (onEdit) onEdit();
             } else {
                 // Cadastro
                 await cadastrarCompra(
                     produto.trim(),
-                    valor,
+                    String(valor),
                     dataFormatada,
                     parcela,
                     nomePessoa,
                     cartao.trim()
                 );
                 consultar('2024', '06', pessoa, 'TODOS', 'TODOS');
-                setErrorSnackbar(null);
                 setSuccess(true);
                 if (onSuccess) onSuccess();
             }
         } catch (error: any) {
             setSuccess(false);
-            setErrorSnackbar(error?.response?.data?.message || 'Erro ao cadastrar/editar compra.');
         }
     }
 
     const handleValorChange = (e: ChangeEvent<HTMLInputElement>) => {
         let valor = e.target.value.replace(/\D/g, '');
-        valor = (Number(valor) / 100).toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        valor = formatCurrency(Number(valor) / 100);
         setValorProduto(valor);
     };
 
@@ -155,10 +124,13 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
 
     const handleCloseModal = () => {
         setSuccess(false);
-        setErrorSnackbar(null);
         limparFormulario();
         onClose();
     };
+
+    function getTodayISO() {
+        return toISODate(new Date().toISOString());
+    }
 
     return (
         <>
@@ -182,10 +154,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                 }
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                    {!!errorSnackbar && (
-                        <Alert severity="error">{errorSnackbar}</Alert>
-                    )}
-                    {!success && !errorSnackbar && (
+                    {!success && (
                         <>
                             <TextField
                                 fullWidth
@@ -219,7 +188,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                                     sx: { color: 'rgba(0, 0, 0, 0.6)' }
                                 }}
                                 inputProps={{
-                                    max: format(new Date(), 'yyyy-MM-dd')
+                                    max: getTodayISO()
                                 }}
                                 sx={{
                                     '& input::-webkit-calendar-picker-indicator': {

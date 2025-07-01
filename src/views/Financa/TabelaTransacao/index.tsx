@@ -6,6 +6,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { Transacao as TransacaoBase } from '../../../contexts/FinancaContext';
 import { Table } from '../../../components/ui/Table';
 import { LoadingOverlay } from '../../../components/ui/LoadingOverlay';
+import { formatCurrency } from '../../../functions/global';
 
 type Transacao = TransacaoBase;
 
@@ -23,7 +24,7 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoP
     {
       id: 'valor',
       label: 'Valor',
-      render: (value: Transacao['valor']) => value !== undefined && value !== null ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '',
+      render: (value: Transacao['valor']) => value !== undefined && value !== null ? formatCurrency(value) : '',
     },
     {
       id: 'data',
@@ -69,7 +70,7 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoP
           return null;
         }
         return (
-          <>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
             <IconButton size="small" onClick={() => onEditar(row)}><EditIcon fontSize="small" /></IconButton>
             <IconButton size="small" color="error" onClick={() => onExcluir(row)}><DeleteIcon fontSize="small" /></IconButton>
             {row.tipo === 'despesa' && (
@@ -88,7 +89,7 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoP
             {row.paga && row.tipo === 'despesa' && (
               <span style={{ color: '#2e7d32', fontWeight: 600, marginLeft: 8 }}>Paga</span>
             )}
-          </>
+          </Box>
         );
       },
     },

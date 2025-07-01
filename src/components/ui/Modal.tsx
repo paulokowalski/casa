@@ -13,7 +13,7 @@ interface ModalProps {
 
 export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, actions, maxWidth = 'sm' }) => {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth={maxWidth} fullWidth PaperProps={{ sx: { borderRadius: 3, p: 1 } }}>
+    <Dialog open={open} onClose={onClose} maxWidth={maxWidth} fullWidth keepMounted PaperProps={{ sx: { borderRadius: 3, p: 1 } }}>
       {title && (
         <DialogTitle sx={{ fontWeight: 700, color: '#667eea', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {title}

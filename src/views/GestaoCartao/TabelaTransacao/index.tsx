@@ -2,8 +2,7 @@ import { useContext, useState } from "react";
 import { GestaoCartaoContext } from "../../../contexts/GestaoCartaoContext";
 import { Box, Chip, IconButton, Tooltip } from "@mui/material";
 import { Table } from '../../../components/ui/Table';
-import { FormatNumber } from '../../../functions/global';
-import { format } from 'date-fns';
+import { formatCurrency, toBRDate } from '../../../functions/global';
 import { ExclusaoModal } from '../ExclusaoModal';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingOverlay } from '../../../components/ui/LoadingOverlay';
@@ -25,11 +24,13 @@ interface CompraRow {
 
 interface TabelaTransacaoProps {
     onEditCompra?: (compra: any) => void;
+    itemParaExcluir: CompraRow | null;
+    setItemParaExcluir: (item: CompraRow | null) => void;
+    handleExclusaoSuccess: () => void;
 }
 
-export function TabelaTransacao({ onEditCompra }: TabelaTransacaoProps) {
+export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcluir, handleExclusaoSuccess }: TabelaTransacaoProps) {
     const { compras, loading } = useContext(GestaoCartaoContext);
-    const [itemParaExcluir, setItemParaExcluir] = useState<CompraRow | null>(null);
 
     const handleExcluir = (item: CompraRow) => {
         setItemParaExcluir(item);
@@ -39,14 +40,11 @@ export function TabelaTransacao({ onEditCompra }: TabelaTransacaoProps) {
         setItemParaExcluir(null);
     };
 
-    const formatDate = (dateString: string) => {
-        return format(new Date(dateString), 'dd/MM/yyyy');
-    };
-
     const columns = [
         {
             id: 'nomeCompra',
-            label: 'Nome da Compra',
+            label: 'Nome',
+            minWidth: 320,
             render: (value: CompraRow['nomeCompra']) => (
                 <Box sx={{ fontWeight: 500, color: '#2c3e50' }}>{value}</Box>
             ),
@@ -55,9 +53,10 @@ export function TabelaTransacao({ onEditCompra }: TabelaTransacaoProps) {
             id: 'dataCompra',
             label: 'Data',
             align: 'center' as const,
+            minWidth: 70,
             render: (value: CompraRow['dataCompra']) => (
                 <Chip
-                    label={formatDate(value)}
+                    label={toBRDate(value)}
                     size="small"
                     sx={{
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -78,6 +77,7 @@ export function TabelaTransacao({ onEditCompra }: TabelaTransacaoProps) {
             id: 'ultimaParcela',
             label: 'Status',
             align: 'center' as const,
+            minWidth: 80,
             render: (value: CompraRow['ultimaParcela']) => (
                 <Chip
                     label={value === 'SIM' ? 'Finalizado' : 'Em andamento'}
@@ -90,7 +90,7 @@ export function TabelaTransacao({ onEditCompra }: TabelaTransacaoProps) {
                         color: '#ffffff',
                         fontWeight: 600,
                         fontSize: '0.65rem',
-                        minWidth: 80,
+                        minWidth: 60,
                         borderRadius: '6px',
                         height: '18px',
                         boxShadow:
@@ -108,34 +108,26 @@ export function TabelaTransacao({ onEditCompra }: TabelaTransacaoProps) {
             id: 'numeroParcela',
             label: 'Parcela',
             align: 'center' as const,
+            minWidth: 60,
             render: (_: CompraRow['numeroParcela'], row: CompraRow) => (
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', fontWeight: 600, color: '#2c3e50', fontSize: '0.75rem' }}>
                     {`${row.numeroParcela} de ${row.numeroTotalParcela}`}
                 </Box>
             ),
         },
-        { id: 'nomeCartao', label: 'Cartão' },
+        { id: 'nomeCartao', label: 'Cartão', minWidth: 80 },
         {
             id: 'valorParcela',
             label: 'Valor Parcela',
-            render: (value: CompraRow['valorParcela']) => FormatNumber(value),
-        },
-        {
-            id: 'valorFaltante',
-            label: 'Valor Faltante',
-            render: (value: CompraRow['valorFaltante']) => FormatNumber(value),
-        },
-        {
-            id: 'valorTotal',
-            label: 'Valor Total',
-            render: (value: CompraRow['valorTotal']) => FormatNumber(value),
+            minWidth: 40,
+            render: (value: CompraRow['valorParcela']) => formatCurrency(value),
         },
         {
             id: 'acoes',
             label: 'Ações',
-            align: 'right' as const,
+            minWidth: 20,
             render: (_: CompraRow['acoes'], row: CompraRow) => (
-                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                     <Tooltip title="Editar">
                         <IconButton color="primary" onClick={() => onEditCompra && onEditCompra(row)}>
                             <EditIcon />
@@ -168,7 +160,10 @@ export function TabelaTransacao({ onEditCompra }: TabelaTransacaoProps) {
                 open={!!itemParaExcluir}
                 item={itemParaExcluir}
                 onClose={handleFecharModalExclusao}
-                onSuccess={handleFecharModalExclusao}
+                onSuccess={() => {
+                    handleFecharModalExclusao();
+                    handleExclusaoSuccess();
+                }}
             />
         </Box>
     );

@@ -50,13 +50,18 @@ export function Table<T extends { [key: string]: any }>({
       borderRadius: 0.5,
       boxShadow: '0 8px 32px rgba(140, 16, 206, 0.10)',
       background: 'rgba(255,255,255,0.65)',
-      maxHeight: 520,
     }}>
       <MuiTable stickyHeader>
         <TableHead>
           <TableRow sx={{ background: 'rgba(140, 16, 206, 0.10)', backdropFilter: 'blur(4px)' }}>
-            {columns.map((col) => (
-              <TableCell key={col.id} align={col.align || 'left'} sx={{ fontWeight: 700, fontSize: 15, background: 'rgba(140, 16, 206, 0.10)', color: '#8A05BE', borderBottom: '2px solid rgba(140, 16, 206, 0.18)', letterSpacing: 0.5 }}>{col.label}</TableCell>
+            {columns.map((col, idx) => (
+              <TableCell
+                key={col.id}
+                align={'center'}
+                sx={{ fontWeight: 700, fontSize: 15, background: 'rgba(140, 16, 206, 0.10)', color: '#8A05BE', borderBottom: '2px solid rgba(140, 16, 206, 0.18)', letterSpacing: 0.5 }}
+              >
+                {col.label}
+              </TableCell>
             ))}
           </TableRow>
         </TableHead>
@@ -68,7 +73,7 @@ export function Table<T extends { [key: string]: any }>({
               </TableCell>
             </TableRow>
           ) : (
-            data.map((row, idx) => (
+            paginatedData.map((row, idx) => (
               <TableRow
                 key={row.id || idx}
                 sx={{
@@ -79,8 +84,18 @@ export function Table<T extends { [key: string]: any }>({
                   },
                 }}
               >
-                {columns.map((col) => (
-                  <TableCell key={col.id} align={col.align || 'left'} sx={{ borderBottom: '1px solid rgba(140, 16, 206, 0.10)', fontSize: 15 }}>
+                {columns.map((col, idx) => (
+                  <TableCell
+                    key={col.id}
+                    align={idx === 0 ? 'left' : (col.align || 'center')}
+                    sx={{
+                      borderBottom: '1px solid rgba(140, 16, 206, 0.10)',
+                      fontSize: 15,
+                      minWidth: col.minWidth,
+                      paddingX: 1,
+                      paddingY: 0.5,
+                    }}
+                  >
                     {col.render ? col.render(row[col.id], row) : row[col.id]}
                   </TableCell>
                 ))}

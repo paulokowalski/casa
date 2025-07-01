@@ -3,7 +3,7 @@ import { api } from '../../../services/api';
 import { API_URLS } from '../../../config/urls';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import { Box, Typography } from '@mui/material';
-import { FormatNumber } from '../../../functions/global';
+import { formatCurrency } from '../../../functions/global';
 import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
 
 interface DadosGrafico {
@@ -35,7 +35,7 @@ const renderCustomLabel = (props: any) => {
             textAnchor="middle"
             fontSize="12"
         >
-            {FormatNumber(value)}
+            {formatCurrency(value)}
         </text>
     );
 };
@@ -113,10 +113,10 @@ export function GraficoBarras() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="mes" />
                         <YAxis 
-                            tickFormatter={(value: number) => FormatNumber(value)}
+                            tickFormatter={(value: number) => formatCurrency(value)}
                         />
                         <Tooltip 
-                            formatter={(value: number) => [FormatNumber(value), "Valor"]}
+                            formatter={(value: number) => [formatCurrency(value), "Valor"]}
                             labelFormatter={(label: string) => `Mês: ${label}`}
                         />
                         <Legend />

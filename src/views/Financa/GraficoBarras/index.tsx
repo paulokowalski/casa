@@ -5,6 +5,7 @@ import { useFinanca } from '../../../contexts/FinancaContext';
 import { getTransacoes, api } from '../../../services/api';
 import { API_URLS } from '../../../config/urls';
 import { LoadingCard } from '../../../components/ui/LoadingCard';
+import { formatCurrency } from '../../../functions/global';
 
 const MESES = [
   'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
@@ -84,8 +85,8 @@ export function GraficoBarras() {
           <BarChart data={dadosAno} margin={{ top: 16, right: 24, left: 0, bottom: 32 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="mes" style={{ fontWeight: 700, fontSize: 12 }} />
-            <YAxis tickFormatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
-            <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
+            <YAxis tickFormatter={(v: number) => formatCurrency(v)} />
+            <Tooltip formatter={(v: number) => formatCurrency(v)} />
             <Legend />
             <Bar dataKey="Receita" name="Receita" radius={[8,8,0,0]} fill="#6ee7b7" />
             <Bar dataKey="Despesa" name="Despesa" radius={[8,8,0,0]} fill="#fca5a5" />

@@ -6,11 +6,10 @@ import { CadastroModal } from "./CadastroModal";
 import { Filtro } from "./Filtro";
 import { TabelaTransacao } from "./TabelaTransacao";
 import { GraficoBarras } from "./GraficoBarras";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddIcon from '@mui/icons-material/Add';
 import { Card } from '../../components/Card';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
+import { Alert as CustomAlert } from '../../components/ui/Alert';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -18,8 +17,10 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 
 export function GestaoCartao() {
     const [openCadastroModal, setOpenCadastroModal] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
     const [compraParaEditar, setCompraParaEditar] = useState<any | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string>('');
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [itemParaExcluir, setItemParaExcluir] = useState<any | null>(null);
 
     const handleOpenCadastroModal = () => {
         setCompraParaEditar(null);
@@ -30,22 +31,29 @@ export function GestaoCartao() {
         setCompraParaEditar(null);
     };
 
-    // Ao cadastrar ou editar com sucesso
     const handleCadastroSuccess = () => {
         setOpenCadastroModal(false);
         setCompraParaEditar(null);
+        setSuccessMessage('Transação cadastrada com sucesso!');
         setShowSuccess(true);
     };
 
-    const handleCloseSuccess = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        if (reason === 'clickaway') return;
-        setShowSuccess(false);
+    const handleExclusaoSuccess = () => {
+        setSuccessMessage('Transação excluída com sucesso!');
+        setShowSuccess(true);
     };
 
     const handleEditCompra = (compra: any) => {
         setCompraParaEditar(compra);
         setOpenCadastroModal(true);
     };
+
+    useEffect(() => {
+        if (showSuccess) {
+            const timer = setTimeout(() => setShowSuccess(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [showSuccess]);
 
     const sections = [
         {
@@ -66,7 +74,12 @@ export function GestaoCartao() {
             title: "Transações",
             description: "Lista de todas as transações",
             icon: <TableChartIcon />,
-            component: <TabelaTransacao onEditCompra={handleEditCompra} />,
+            component: <TabelaTransacao 
+                onEditCompra={handleEditCompra} 
+                itemParaExcluir={itemParaExcluir}
+                setItemParaExcluir={setItemParaExcluir}
+                handleExclusaoSuccess={handleExclusaoSuccess}
+            />,
             color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
         },
         {
@@ -148,6 +161,17 @@ export function GestaoCartao() {
                             compra={compraParaEditar}
                         />
 
+                        {/* ExclusaoModal agora é controlado pelo TabelaTransacao */}
+
+                        {/* Alerta fixo de feedback, sem animação */}
+                        {showSuccess && (
+                          <Box sx={{ position: 'fixed', top: 16, left: 0, right: 0, zIndex: 2000, display: 'flex', justifyContent: 'center' }}>
+                             <CustomAlert onClose={() => setShowSuccess(false)} severity="success">
+                               {successMessage}
+                             </CustomAlert>
+                          </Box>
+                        )}
+
                         {/* FAB Moderno */}
                         <Box sx={{ 
                             position: 'fixed', 
@@ -175,18 +199,6 @@ export function GestaoCartao() {
                                 <AddIcon />
                             </Fab>
                         </Box>
-
-                        {/* Snackbar de sucesso */}
-                        <Snackbar
-                            open={showSuccess}
-                            autoHideDuration={3000}
-                            onClose={handleCloseSuccess}
-                            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                        >
-                            <MuiAlert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
-                                Transação cadastrada com sucesso!
-                            </MuiAlert>
-                        </Snackbar>
                     </Container>
                 </Box>
             </DespesaProvider>

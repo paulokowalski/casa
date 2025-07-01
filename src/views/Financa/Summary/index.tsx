@@ -7,6 +7,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PaymentIcon from '@mui/icons-material/Payment';
+import { formatCurrency } from '../../../functions/global';
 
 export function Summary() {
   const { transacoes, gastosPorCartao, cartaoDespesas, loading } = useFinanca();
@@ -22,7 +23,7 @@ export function Summary() {
   const summaryItems = [
     {
       title: 'Receitas',
-      value: totalReceitas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      value: formatCurrency(totalReceitas),
       color: '#10b981',
       gradient: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
       icon: <TrendingUpIcon />,
@@ -31,7 +32,7 @@ export function Summary() {
     },
     {
       title: 'Despesas',
-      value: totalDespesas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      value: formatCurrency(totalDespesas),
       color: '#ef4444',
       gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
       icon: <TrendingDownIcon />,
@@ -40,7 +41,7 @@ export function Summary() {
     },
     {
       title: 'Saldo',
-      value: saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      value: formatCurrency(saldo),
       color: saldo >= 0 ? '#10b981' : '#ef4444',
       gradient: saldo >= 0
         ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'
@@ -51,7 +52,7 @@ export function Summary() {
     },
     {
       title: 'Investimento Sugerido (30%)',
-      value: valorInvestir.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      value: formatCurrency(valorInvestir),
       color: '#667eea',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       icon: <PaymentIcon />,
@@ -60,7 +61,7 @@ export function Summary() {
     },
     {
       title: 'Saldo Após Investir',
-      value: saldoAposInvestir.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      value: formatCurrency(saldoAposInvestir),
       color: saldoAposInvestir >= 0 ? '#10b981' : '#ef4444',
       gradient: saldoAposInvestir >= 0
         ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'

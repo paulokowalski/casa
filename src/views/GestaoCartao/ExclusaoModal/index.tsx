@@ -4,9 +4,9 @@ import {
     Alert
 } from '@mui/material';
 import { Modal } from '../../../components/ui/Modal';
-import { format } from 'date-fns';
 import { useContext, useState } from 'react';
 import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
+import { formatCurrency, toBRDate } from '../../../functions/global';
 
 interface ExclusaoModalProps {
     open: boolean;
@@ -61,8 +61,8 @@ export function ExclusaoModal({ open, onClose, onSuccess, item }: ExclusaoModalP
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             <Typography>Tem certeza que deseja excluir esta compra?</Typography>
             <Typography><strong>Produto:</strong> {item.nomeCompra}</Typography>
-            <Typography><strong>Valor:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valorTotal)}</Typography>
-            <Typography><strong>Data:</strong> {format(new Date(item.dataCompra), 'dd/MM/yyyy')}</Typography>
+            <Typography><strong>Valor:</strong> {formatCurrency(item.valorTotal)}</Typography>
+            <Typography><strong>Data:</strong> {toBRDate(item.dataCompra)}</Typography>
             <Typography><strong>Parcelas:</strong> {item.numeroTotalParcela}x</Typography>
             <Typography><strong>Cartão:</strong> {item.nomeCartao}</Typography>
         </Modal>
