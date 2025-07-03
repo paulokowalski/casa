@@ -18,7 +18,7 @@ interface FilterProps {
 
 export const Filter: React.FC<FilterProps> = ({ fields, onFilter, filterLabel = 'Filtrar' }) => {
   return (
-    <Box display="flex" gap={2} alignItems="flex-end" flexWrap="wrap" mb={2}>
+    <Box display="flex" gap={2} alignItems="center" flexWrap="wrap" mb={2} justifyContent="center">
       {fields.map((field) => (
         field.type === 'text' ? (
           <TextField

@@ -87,7 +87,7 @@ const PessoaView: React.FC = () => {
 
   return (
     <Container maxWidth="md">
-      <Box sx={{ mb: 4, textAlign: 'center' }} className="fade-in">
+      <Box sx={{ mt: 10, mb: 4, textAlign: 'center' }} className="fade-in">
         <Typography 
           variant="h3" 
           sx={{ 

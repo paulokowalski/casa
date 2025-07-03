@@ -71,8 +71,14 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoP
         }
         return (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
-            <IconButton size="small" onClick={() => onEditar(row)}><EditIcon fontSize="small" /></IconButton>
-            <IconButton size="small" color="error" onClick={() => onExcluir(row)}><DeleteIcon fontSize="small" /></IconButton>
+            {/* Só exibe o ícone de edição se não estiver paga */}
+            {!(row.paga && row.tipo === 'despesa') && (
+              <IconButton size="small" onClick={() => onEditar(row)}><EditIcon fontSize="small" /></IconButton>
+            )}
+            {/* Só exibe o ícone de remover se não estiver paga */}
+            {!(row.paga && row.tipo === 'despesa') && (
+              <IconButton size="small" color="error" onClick={() => onExcluir(row)}><DeleteIcon fontSize="small" /></IconButton>
+            )}
             {row.tipo === 'despesa' && (
               <IconButton
                 size="small"
@@ -103,12 +109,14 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoP
   return (
     <Box>
       <Typography variant="h6">Tabela de Despesas e Receitas</Typography>
-      <LoadingOverlay loading={loading}>
-        <Table<Transacao> columns={columns} data={data} emptyMessage="Nenhuma transação encontrada."
-          rowsPerPageOptions={[5, 10, 25]}
-          defaultRowsPerPage={10}
-        />
-      </LoadingOverlay>
+      <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'auto', pb: 1 }}>
+        <LoadingOverlay loading={loading}>
+          <Table<Transacao> columns={columns} data={data} emptyMessage="Nenhuma transação encontrada."
+            rowsPerPageOptions={[5, 10, 25]}
+            defaultRowsPerPage={10}
+          />
+        </LoadingOverlay>
+      </Box>
     </Box>
   );
 } 

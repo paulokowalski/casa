@@ -1,136 +1,83 @@
 import React from 'react';
-import { Paper, Box, Typography, Icon, Chip } from '@mui/material';
+import { Paper, Box, useTheme } from '@mui/material';
 
 interface CardProps {
-  title: string;
-  description?: string;
-  icon?: React.ReactNode;
-  gradient?: string;
   children: React.ReactNode;
-  badge?: string;
-  badgeColor?: 'success' | 'error' | 'warning' | 'info';
+  gradient?: string;
   onClick?: () => void;
   className?: string;
   sx?: any;
 }
 
 export const Card: React.FC<CardProps> = ({
-  title,
-  description,
-  icon,
-  gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   children,
-  badge,
-  badgeColor = 'info',
+  gradient = 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
   onClick,
   className = '',
   sx = {},
 }) => {
-  const badgeColors = {
-    success: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-    error: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
-    warning: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-    info: 'linear-gradient(135deg, #36d1dc 0%, #5bdbff 100%)',
-  };
+  const theme = useTheme();
 
   return (
     <Paper
-      elevation={0}
+      elevation={1}
       onClick={onClick}
       sx={{
-        p: { xs: 1.5, md: 2.5 },
-        borderRadius: 0.5,
-        background: 'rgba(255, 255, 255, 0.18)',
-        border: '1.5px solid rgba(130, 10, 209, 0.22)',
-        boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        p: { xs: 2, md: 3 },
+        borderRadius: 2,
+        background: theme.palette.background.paper,
+        boxShadow: '0 2px 8px rgba(44,62,80,0.04)',
+        transition: 'box-shadow 0.2s, transform 0.2s',
         position: 'relative',
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        minHeight: 120,
         '&:hover': {
-          transform: onClick ? 'translateY(-2px)' : 'none',
-          boxShadow: onClick ? '0 16px 48px rgba(130, 10, 209, 0.22)' : '0 8px 32px rgba(130, 10, 209, 0.18)',
-        },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '3px',
-          background: gradient,
+          boxShadow: '0 2px 8px rgba(44,62,80,0.06)',
+          transform: 'none',
         },
         ...sx,
       }}
-      className={`fade-in-up ${className}`}
+      className={`system-card ${className}`}
     >
-      {/* Header do Card */}
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        mb: 3,
-        gap: 2
-      }}>
-        {icon && (
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            width: 48,
-            height: 48,
-            borderRadius: 2,
-            background: gradient,
-            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.25)',
-          }}>
-            <Icon sx={{ color: '#ffffff', fontSize: 24 }}>
-              {icon}
-            </Icon>
-          </Box>
-        )}
-        
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                fontWeight: 600,
-                color: '#1a202c',
-              }}
-            >
-              {title}
-            </Typography>
-            {badge && (
-              <Chip 
-                label={badge}
-                size="small"
-                sx={{
-                  background: badgeColors[badgeColor],
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  fontSize: '0.75rem',
-                  height: 20,
-                }}
-              />
-            )}
-          </Box>
-          {description && (
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: '#4a5568',
-                fontSize: '0.875rem',
-              }}
-            >
-              {description}
-            </Typography>
-          )}
-        </Box>
-      </Box>
-
+      {/* Gradiente no topo (opcional, pode remover se quiser ainda mais clean) */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 4,
+        background: gradient,
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+      }} />
       {/* Conteúdo do Card */}
-      <Box>
+      <Box sx={{ 
+        width: '100%', 
+        flex: 1, 
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'stretch',
+      }}>
         {children}
       </Box>
     </Paper>
   );
-}; 
+};
+
+// Animação fadeInUp
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+`;
+document.head.appendChild(style); 

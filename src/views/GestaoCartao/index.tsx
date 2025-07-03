@@ -1,4 +1,8 @@
-import { Typography, Box, Fab, Container } from '@mui/material';
+import { Typography, Box, Container, Fab } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { GestaoCartaoProvider } from "../../contexts/GestaoCartaoContext";
 import { DespesaProvider } from "../../contexts/DespesaContext";
 import { Summary } from "./Summary";
@@ -6,14 +10,11 @@ import { CadastroModal } from "./CadastroModal";
 import { Filtro } from "./Filtro";
 import { TabelaTransacao } from "./TabelaTransacao";
 import { GraficoBarras } from "./GraficoBarras";
+import { GraficoPorCartao } from './GraficoBarras/GraficoPorCartao';
 import { useState, useEffect } from "react";
-import AddIcon from '@mui/icons-material/Add';
 import { Card } from '../../components/Card';
 import { Alert as CustomAlert } from '../../components/ui/Alert';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import TableChartIcon from '@mui/icons-material/TableChart';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import React from 'react';
 
 export function GestaoCartao() {
     const [openCadastroModal, setOpenCadastroModal] = useState(false);
@@ -30,24 +31,20 @@ export function GestaoCartao() {
         setOpenCadastroModal(false);
         setCompraParaEditar(null);
     };
-
     const handleCadastroSuccess = () => {
         setOpenCadastroModal(false);
         setCompraParaEditar(null);
         setSuccessMessage('Transação cadastrada com sucesso!');
         setShowSuccess(true);
     };
-
     const handleExclusaoSuccess = () => {
         setSuccessMessage('Transação excluída com sucesso!');
         setShowSuccess(true);
     };
-
     const handleEditCompra = (compra: any) => {
         setCompraParaEditar(compra);
         setOpenCadastroModal(true);
     };
-
     useEffect(() => {
         if (showSuccess) {
             const timer = setTimeout(() => setShowSuccess(false), 3000);
@@ -57,149 +54,163 @@ export function GestaoCartao() {
 
     const sections = [
         {
-            title: "Resumo Financeiro",
-            description: "Visão geral dos valores e tendências",
-            icon: <TrendingUpIcon />,
-            component: <Summary />,
-            color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            title: 'Resumo Financeiro',
+            icon: <TrendingUpIcon />, 
+            component: <Summary />, 
+            color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         },
         {
-            title: "Filtros",
-            description: "Configure os filtros de busca",
-            icon: <FilterListIcon />,
-            component: <Filtro />,
-            color: "linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)"
+            title: 'Transações',
+            icon: <TableChartIcon />, 
+            component: <TabelaTransacao onEditCompra={handleEditCompra} itemParaExcluir={itemParaExcluir} setItemParaExcluir={setItemParaExcluir} handleExclusaoSuccess={handleExclusaoSuccess} />, 
+            color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
         },
         {
-            title: "Transações",
-            description: "Lista de todas as transações",
-            icon: <TableChartIcon />,
-            component: <TabelaTransacao 
-                onEditCompra={handleEditCompra} 
-                itemParaExcluir={itemParaExcluir}
-                setItemParaExcluir={setItemParaExcluir}
-                handleExclusaoSuccess={handleExclusaoSuccess}
-            />,
-            color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+            title: 'Gráficos',
+            icon: <BarChartIcon />, 
+            component: (
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+                    <Box sx={{ flex: 1 }}><GraficoBarras /></Box>
+                    <Box sx={{ flex: 1 }}><GraficoPorCartao /></Box>
+                </Box>
+            ),
+            color: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)',
         },
-        {
-            title: "Gráficos",
-            description: "Análise visual dos dados",
-            icon: <BarChartIcon />,
-            component: <GraficoBarras />,
-            color: "linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)"
-        }
     ];
 
     return (
         <GestaoCartaoProvider>
             <DespesaProvider>
-                <Box sx={{ width: '100%', minHeight: '100vh' }}>
-                    <Container 
-                        maxWidth="xl" 
-                        sx={{ 
-                            py: { xs: 2, md: 4 },
-                            px: { xs: 1, sm: 2, md: 0 },
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'stretch',
-                            width: '100%',
-                            maxWidth: '100vw',
-                            boxSizing: 'border-box',
-                        }}
+                <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 } }}>
+                    {/* Header da página */}
+                    <Box sx={{ mt: 4, mb: 2, textAlign: 'center', width: '100%' }}>
+                        <Typography 
+                            variant="h3" 
+                            sx={{ 
+                                fontWeight: 800,
+                                mb: 1,
+                                color: '#764ba2',
+                                textShadow: '0 4px 16px rgba(39,26,69,0.18)',
+                            }}
+                        >
+                            Gestão de Cartão
+                        </Typography>
+                    </Box>
+
+                    {/* Filtros em card, logo abaixo do título */}
+                    <Card 
+                        sx={{ mb: 3, borderRadius: 0.5, background: 'rgba(255,255,255,0.18)', boxShadow: '0 8px 32px rgba(130, 10, 209, 0.08)', minHeight: 80, width: '100%', maxWidth: '100%', px: { xs: 1, sm: 4 } }}
                     >
-                        {/* Header da página */}
-                        <Box sx={{ mb: 4, textAlign: 'center' }} className="fade-in">
-                            <Typography 
-                                variant="h3" 
-                                sx={{ 
-                                    fontWeight: 800,
-                                    mb: 1,
-                                    color: '#764ba2',
-                                    textShadow: '0 4px 16px rgba(39,26,69,0.18)',
-                                }}
-                            >
-                                Gestão de Cartão
-                            </Typography>
-                            <Typography 
-                                variant="h6" 
-                                sx={{ 
-                                    color: '#764ba2',
-                                    fontWeight: 400,
-                                    textShadow: '0 2px 8px rgba(39,26,69,0.18)',
-                                }}
-                            >
-                                Controle total dos seus cartões e transações
-                            </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3, flexWrap: { xs: 'nowrap', sm: 'wrap' }, justifyContent: 'stretch', alignItems: 'center', width: '100%', py: 1 }}>
+                            <Box sx={{ flex: 1 }}>
+                                <Filtro />
+                            </Box>
                         </Box>
+                    </Card>
 
-                        {/* Grid de seções */}
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            {sections.map((section, index) => (
-                                <Box key={section.title}>
-                                    <Card
-                                        title={section.title}
-                                        description={section.description}
-                                        icon={section.icon}
-                                        gradient={section.color}
-                                        className="fade-in-up"
-                                    >
-                                        <Box>
-                                            {section.component}
-                                        </Box>
-                                    </Card>
-                                </Box>
-                            ))}
-                        </Box>
-
-                        {/* Modal de Cadastro */}
-                        <CadastroModal 
-                            open={openCadastroModal}
-                            onClose={handleCloseCadastroModal}
-                            onSuccess={handleCadastroSuccess}
-                            onEdit={handleCadastroSuccess}
-                            compra={compraParaEditar}
-                        />
-
-                        {/* ExclusaoModal agora é controlado pelo TabelaTransacao */}
-
-                        {/* Alerta fixo de feedback, sem animação */}
-                        {showSuccess && (
-                          <Box sx={{ position: 'fixed', top: 16, left: 0, right: 0, zIndex: 2000, display: 'flex', justifyContent: 'center' }}>
-                             <CustomAlert onClose={() => setShowSuccess(false)} severity="success">
-                               {successMessage}
-                             </CustomAlert>
-                          </Box>
-                        )}
-
-                        {/* FAB Moderno */}
-                        <Box sx={{ 
-                            position: 'fixed', 
-                            bottom: 24, 
-                            right: 24,
-                            zIndex: 1000,
-                        }}>
-                            <Fab 
-                                color="primary" 
-                                aria-label="adicionar transação"
-                                onClick={handleOpenCadastroModal}
+                    {/* Grid de seções lado a lado em telas médias/grandes */}
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        gap: 3,
+                        width: '100%',
+                    }}>
+                        {/* Coluna esquerda: Summary + Tabela */}
+                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <Card
+                                gradient={'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}
                                 sx={{
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
-                                    width: 56,
-                                    height: 56,
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                                        transform: 'scale(1.05)',
-                                        boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
-                                    },
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    mb: 3,
+                                    borderRadius: 0.5,
+                                    background: 'rgba(255,255,255,0.18)',
+                                    boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+                                    width: '100%',
+                                    maxWidth: '100%',
+                                    px: { xs: 1, sm: 4 },
                                 }}
                             >
-                                <AddIcon />
-                            </Fab>
+                                <Summary />
+                            </Card>
+                            <Card
+                                gradient={'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'}
+                                sx={{
+                                    mb: 3,
+                                    borderRadius: 0.5,
+                                    background: 'rgba(255,255,255,0.18)',
+                                    boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+                                    width: '100%',
+                                    maxWidth: '100%',
+                                    px: { xs: 1, sm: 4 },
+                                }}
+                            >
+                                <TabelaTransacao onEditCompra={handleEditCompra} itemParaExcluir={itemParaExcluir} setItemParaExcluir={setItemParaExcluir} handleExclusaoSuccess={handleExclusaoSuccess} />
+                            </Card>
                         </Box>
-                    </Container>
+                        {/* Coluna direita: Gráficos */}
+                        <Box sx={{ flex: 1, minWidth: 350, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <Card
+                                gradient={'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)'}
+                                sx={{
+                                    mb: 3,
+                                    borderRadius: 0.5,
+                                    background: 'rgba(255,255,255,0.18)',
+                                    boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+                                    width: '100%',
+                                    maxWidth: '100%',
+                                    px: 0,
+                                }}
+                            >
+                                <GraficoBarras />
+                            </Card>
+                            <Card
+                                gradient={'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)'}
+                                sx={{
+                                    mb: 3,
+                                    borderRadius: 0.5,
+                                    background: 'rgba(255,255,255,0.18)',
+                                    boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+                                    width: '100%',
+                                    maxWidth: '100%',
+                                    px: 0,
+                                }}
+                            >
+                                <GraficoPorCartao />
+                            </Card>
+                        </Box>
+                    </Box>
+
+                    {/* Modal de Cadastro */}
+                    <CadastroModal 
+                        open={openCadastroModal}
+                        onClose={handleCloseCadastroModal}
+                        onSuccess={handleCadastroSuccess}
+                        onEdit={handleCadastroSuccess}
+                        compra={compraParaEditar}
+                    />
+
+                    {/* FAB Moderno */}
+                    <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1000 }}>
+                        <Fab
+                            color="primary"
+                            aria-label="adicionar transação"
+                            onClick={handleOpenCadastroModal}
+                            sx={{
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                            }}
+                        >
+                            <AddIcon />
+                        </Fab>
+                    </Box>
+
+                    {/* Alerta fixo de feedback, sem animação */}
+                    {showSuccess && (
+                        <Box sx={{ position: 'fixed', top: 16, left: 0, right: 0, zIndex: 2000, display: 'flex', justifyContent: 'center' }}>
+                            <CustomAlert onClose={() => setShowSuccess(false)} severity="success">
+                                {successMessage}
+                            </CustomAlert>
+                        </Box>
+                    )}
                 </Box>
             </DespesaProvider>
         </GestaoCartaoProvider>

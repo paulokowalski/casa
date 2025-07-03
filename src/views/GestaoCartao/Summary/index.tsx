@@ -99,37 +99,32 @@ export function Summary() {
             {summaryItems.map((item, index) => (
                 <Card
                     key={index}
-                    title={item.title}
-                    description={item.description}
-                    icon={item.icon}
                     gradient={item.gradient}
                     className="fade-in-up"
                 >
-                    <Box sx={{ width: '100%' }}>
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <span style={{ display: 'flex', alignItems: 'center', color: item.color, fontSize: 18 }}>{item.icon}</span>
+                            <Typography variant="subtitle2" sx={{ color: item.color, fontWeight: 500, fontSize: '0.95rem', opacity: 0.85 }}>
+                                {item.title}
+                            </Typography>
+                        </Box>
                         <Typography 
                             variant="h4" 
                             component="p" 
                             sx={{ 
                                 color: item.color,
                                 fontWeight: 700,
-                                mb: 1,
-                                fontSize: { xs: '1.25rem', md: '1.5rem' },
+                                fontSize: { xs: '1.35rem', md: '1.7rem' },
                                 background: item.gradient,
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
+                                mb: 0,
                             }}
                         >
                             {item.value}
                         </Typography>
-                        {/* Indicador de tendência */}
-                        <Box sx={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            {item.trend === "up" ? (
-                                <TrendingUpIcon sx={{ color: '#4facfe', fontSize: 14, transform: 'rotate(-45deg)' }} />
-                            ) : (
-                                <TrendingDownIcon sx={{ color: '#ff6b6b', fontSize: 14, transform: 'rotate(45deg)' }} />
-                            )}
-                        </Box>
                     </Box>
                 </Card>
             ))}

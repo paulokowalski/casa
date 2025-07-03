@@ -106,9 +106,18 @@ export function Financa() {
     // Não adicionar investimento virtual
     const transacoesOrdenadas = transacoesArray
       .sort((a, b) => {
-        if (a.tipo === b.tipo) return 0;
-        if (a.tipo === 'receita') return -1;
-        return 1;
+        // 1. Receitas primeiro
+        if (a.tipo === 'receita' && b.tipo !== 'receita') return -1;
+        if (a.tipo !== 'receita' && b.tipo === 'receita') return 1;
+        // 2. Entre despesas: não pagas antes de pagas
+        if (a.tipo === 'despesa' && b.tipo === 'despesa') {
+          if (a.paga !== b.paga) return a.paga ? 1 : -1;
+        }
+        // 3. Dentro do grupo, ordenar por data crescente
+        // Se não houver data, considerar como maior (vai para o final)
+        const dataA = a.data ? new Date(a.data) : new Date(8640000000000000);
+        const dataB = b.data ? new Date(b.data) : new Date(8640000000000000);
+        return dataA.getTime() - dataB.getTime();
       })
       .map(t => ({ ...t, categoria: t.categoria || (t.tipo === 'despesa' ? 'Despesa' : 'Receita'), paga: t.paga ?? false }));
     return transacoesOrdenadas.concat(cartaoLinha);
@@ -139,144 +148,166 @@ export function Financa() {
   ];
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6 }}>
-      <Container
-        maxWidth="xl"
-        sx={{
-          py: { xs: 2, md: 4 },
-          px: { xs: 1, sm: 2, md: 0 },
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'stretch',
-          width: '100%',
-          maxWidth: '100vw',
-          boxSizing: 'border-box',
-        }}
-      >
-        {/* Header da página */}
-        <Box sx={{ mb: 4, textAlign: 'center' }} className="fade-in">
-          <Typography 
-            variant="h3" 
-            sx={{ 
-              fontWeight: 800,
-              mb: 1,
-              color: '#764ba2',
-              textShadow: '0 4px 16px rgba(39,26,69,0.18)',
-            }}
-          >
-            Finanças
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              color: '#764ba2',
-              fontWeight: 400,
-              textShadow: '0 2px 8px rgba(39,26,69,0.18)',
-            }}
-          >
-            Subtítulo ou descrição da tela de Finanças
-          </Typography>
-        </Box>
-
-        {/* Selects de pessoa, ano e mês */}
-        {pessoas.length === 0 && (
-          <Box sx={{ mb: 2, color: 'red', fontWeight: 600, textAlign: 'center' }}>
-            Nenhuma pessoa encontrada. Cadastre uma pessoa para continuar.
-          </Box>
-        )}
-        <Card 
-          title="Filtros"
-          description="Selecione pessoa, ano e mês para filtrar"
-          icon={<TableChartIcon />} 
-          sx={{ mb: 3, p: { xs: 2, md: 3 }, borderRadius: 0.5, background: 'rgba(255,255,255,0.18)', boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)' }}
+    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 } }}>
+      {/* Header da página */}
+      <Box sx={{ mt: 4, mb: 2, textAlign: 'center', width: '100%' }}>
+        <Typography 
+          variant="h3" 
+          sx={{ 
+            fontWeight: 800,
+            mb: 1,
+            color: '#764ba2',
+            textShadow: '0 4px 16px rgba(39,26,69,0.18)',
+          }}
         >
-          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <FormControl fullWidth size="small" sx={{ maxWidth: 220, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
-              <InputLabel>Pessoa</InputLabel>
-              <Select value={pessoa} label="Pessoa" onChange={e => setPessoa(e.target.value)}>
-                {pessoas.map(p => <MenuItem key={p.id} value={String(p.id)}>{p.nome}</MenuItem>)}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth size="small" sx={{ maxWidth: 120, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
-              <InputLabel>Ano</InputLabel>
-              <Select value={ano} label="Ano" onChange={e => setAno(e.target.value)}>
-                {anos.map(a => <MenuItem key={a.codigo} value={a.codigo}>{a.descricao}</MenuItem>)}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth size="small" sx={{ maxWidth: 120, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
-              <InputLabel>Mês</InputLabel>
-              <Select value={mes} label="Mês" onChange={e => setMes(e.target.value)}>
-                {MESES.map(m => <MenuItem key={m.codigo} value={m.codigo}>{m.descricao}</MenuItem>)}
-              </Select>
-            </FormControl>
-          </Box>
-        </Card>
+          Finanças
+        </Typography>
+      </Box>
 
-        {/* Grid de seções */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {sections.map((section, idx) => (
-            <Card
-              key={section.title}
-              title={section.title}
-              description={section.description}
-              icon={section.icon}
-              gradient={section.color}
-              sx={{ mb: 3, borderRadius: 0.5, background: 'rgba(255,255,255,0.18)', boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)' }}
-              className="fade-in-up"
-            >
-              {section.component}
-            </Card>
-          ))}
+      {/* Filtros em card, logo abaixo do título */}
+      {pessoas.length === 0 && (
+        <Box sx={{ mb: 2, color: 'red', fontWeight: 600, textAlign: 'center' }}>
+          Nenhuma pessoa encontrada. Cadastre uma pessoa para continuar.
         </Box>
-
-        {/* Modal de Cadastro */}
-        <CadastroModal
-          open={openCadastroModal}
-          onClose={handleCloseCadastroModal}
-          transacao={editando}
-          onSuccess={handleCadastroSuccess}
-        />
-
-        {/* Modal de Exclusão */}
-        {excluindo && (
-          <ExclusaoModal
-            key={excluindo.id}
-            open={true}
-            onClose={() => setExcluindo(null)}
-            onConfirm={handleConfirmarExclusao}
-            item={excluindo}
-          />
-        )}
-
-        {/* FAB Moderno */}
+      )}
+      <Card 
+        sx={{ mb: 3, borderRadius: 0.5, background: 'rgba(255,255,255,0.18)', boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)', minHeight: 80, width: '100%', maxWidth: '100%' }}
+      >
         <Box sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          zIndex: 1000,
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 3,
+          flexWrap: { xs: 'nowrap', sm: 'wrap' },
+          justifyContent: 'stretch',
+          alignItems: 'center',
+          width: '100%',
+          py: 1,
         }}>
-          <Fab
-            color="primary"
-            aria-label="adicionar transação"
-            onClick={handleOpenCadastroModal}
+          <FormControl fullWidth size="small" sx={{ maxWidth: 220, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
+            <InputLabel>Pessoa</InputLabel>
+            <Select value={pessoa} label="Pessoa" onChange={e => setPessoa(e.target.value)}>
+              {pessoas.map(p => <MenuItem key={p.id} value={String(p.id)}>{p.nome}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth size="small" sx={{ maxWidth: 120, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
+            <InputLabel>Ano</InputLabel>
+            <Select value={ano} label="Ano" onChange={e => setAno(e.target.value)}>
+              {anos.map(a => <MenuItem key={a.codigo} value={a.codigo}>{a.descricao}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth size="small" sx={{ maxWidth: 120, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
+            <InputLabel>Mês</InputLabel>
+            <Select value={mes} label="Mês" onChange={e => setMes(e.target.value)}>
+              {MESES.map(m => <MenuItem key={m.codigo} value={m.codigo}>{m.descricao}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Box>
+      </Card>
+
+      {/* Grid de seções lado a lado em telas médias/grandes */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        gap: 3,
+        width: '100%',
+      }}>
+        {/* Coluna esquerda: Summary + Tabela */}
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Card
+            gradient={'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}
             sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+              mb: 3,
+              borderRadius: 0.5,
+              background: 'rgba(255,255,255,0.18)',
+              boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+              width: '100%',
+              maxWidth: '100%',
+              px: { xs: 1, sm: 4 },
             }}
           >
-            <AddIcon />
-          </Fab>
+            <Summary />
+          </Card>
+          <Card
+            gradient={'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)'}
+            sx={{
+              mb: 3,
+              borderRadius: 0.5,
+              background: 'rgba(255,255,255,0.18)',
+              boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+              width: '100%',
+              maxWidth: '100%',
+              px: { xs: 1, sm: 4 },
+            }}
+          >
+            <TabelaTransacao transacoes={transacoesComCartao} onEditar={handleEditar} onExcluir={handleExcluir} onMarcarComoPaga={handleMarcarComoPaga} loading={loading} />
+          </Card>
         </Box>
+        {/* Coluna direita: Gráficos */}
+        <Box sx={{ flex: 1, minWidth: 350, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Card
+            gradient={'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)'}
+            sx={{
+              mb: 3,
+              borderRadius: 0.5,
+              background: 'rgba(255,255,255,0.18)',
+              boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+              width: '100%',
+              maxWidth: '100%',
+              px: 0,
+            }}
+          >
+            <GraficoBarras />
+          </Card>
+        </Box>
+      </Box>
 
-        {/* Alerta fixo de feedback, sem animação */}
-        {showSuccess && (
-          <Box sx={{ position: 'fixed', top: 16, left: 0, right: 0, zIndex: 2000, display: 'flex', justifyContent: 'center' }}>
-            <CustomAlert onClose={() => setShowSuccess(false)} severity="success">
-              {successMessage}
-            </CustomAlert>
-          </Box>
-        )}
-      </Container>
+      {/* Modal de Cadastro */}
+      <CadastroModal
+        open={openCadastroModal}
+        onClose={handleCloseCadastroModal}
+        transacao={editando}
+        onSuccess={handleCadastroSuccess}
+      />
+
+      {/* Modal de Exclusão */}
+      {excluindo && (
+        <ExclusaoModal
+          key={excluindo.id}
+          open={true}
+          onClose={() => setExcluindo(null)}
+          onConfirm={handleConfirmarExclusao}
+          item={excluindo}
+        />
+      )}
+
+      {/* FAB Moderno */}
+      <Box sx={{
+        position: 'fixed',
+        bottom: 24,
+        right: 24,
+        zIndex: 1000,
+      }}>
+        <Fab
+          color="primary"
+          aria-label="adicionar transação"
+          onClick={handleOpenCadastroModal}
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+          }}
+        >
+          <AddIcon />
+        </Fab>
+      </Box>
+
+      {/* Alerta fixo de feedback, sem animação */}
+      {showSuccess && (
+        <Box sx={{ position: 'fixed', top: 16, left: 0, right: 0, zIndex: 2000, display: 'flex', justifyContent: 'center' }}>
+          <CustomAlert onClose={() => setShowSuccess(false)} severity="success">
+            {successMessage}
+          </CustomAlert>
+        </Box>
+      )}
     </Box>
   );
 }

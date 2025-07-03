@@ -109,13 +109,16 @@ export function Summary() {
       {summaryItems.map((item, index) => (
         <Card
           key={index}
-          title={item.title}
-          description={item.description}
-          icon={item.icon}
           gradient={item.gradient}
           className="fade-in-up"
         >
-          <Box sx={{ width: '100%' }}>
+          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <span style={{ display: 'flex', alignItems: 'center', color: item.color, fontSize: 18 }}>{item.icon}</span>
+              <Typography variant="subtitle2" sx={{ color: item.color, fontWeight: 500, fontSize: '0.95rem', opacity: 0.85 }}>
+                {item.title}
+              </Typography>
+            </Box>
             <Typography 
               variant="h4" 
               component="p" 

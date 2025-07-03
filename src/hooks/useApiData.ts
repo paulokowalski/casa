@@ -98,4 +98,26 @@ export function useCearaData(url: string) {
     error,
     refetch,
   };
+}
+
+export function useBitcoinPrice() {
+  const [data, setData] = useState<{ usd: number, brl: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('https://blockchain.info/ticker')
+      .then(res => res.json())
+      .then(json => {
+        setData({ usd: json.USD.last, brl: json.BRL.last });
+        setLoading(false);
+      })
+      .catch(err => {
+        setError('Erro ao buscar valor do Bitcoin');
+        setLoading(false);
+      });
+  }, []);
+
+  return { data, loading, error };
 } 
