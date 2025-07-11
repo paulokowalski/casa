@@ -6,11 +6,14 @@ import EuroSymbolIcon from '@mui/icons-material/EuroSymbol';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 
 // Componentes profissionais
 import { LoadingCard } from '../../components/ui/LoadingCard';
 import { ErrorCard } from '../../components/ui/ErrorCard';
 import { Card } from '../../components/Card';
+import { getGeracaoSolar } from '../../services/api';
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 // Configurações
 import { API_URLS } from '../../config/urls';
@@ -245,6 +248,46 @@ export function Home() {
     });
   }, [getDespesasProximasTodasPessoas]);
 
+  // Estado para geração solar
+  const [potencias, setPotencias] = React.useState<any[]>([]);
+  const [geracaoLoading, setGeracaoLoading] = React.useState(true);
+  const [geracaoError, setGeracaoError] = React.useState<string | null>(null);
+  const [geracaoValor, setGeracaoValor] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    // Buscar geração solar do dia atual
+    const hoje = new Date();
+    const dataStr = hoje.toISOString().slice(0, 10); // yyyy-mm-dd
+    setGeracaoLoading(true);
+    getGeracaoSolar(dataStr)
+      .then(res => {
+        const payload = res.data;
+        // Exibe todos os registros recebidos, sem agrupar
+        let dadosGrafico: { horario: string, potencia: number }[] = [];
+        if (payload && payload.potencias) {
+          dadosGrafico = payload.potencias.map((item: any) => {
+            const [ano, mes, dia, hora, minuto, segundo] = item.data;
+            const horario = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
+            return {
+              horario,
+              potencia: item.potencia,
+            };
+          });
+        }
+        setPotencias(dadosGrafico);
+        if (payload && payload.geracao !== undefined) {
+          setGeracaoValor(payload.geracao);
+        } else {
+          setGeracaoValor(null);
+        }
+        setGeracaoLoading(false);
+      })
+      .catch(err => {
+        setGeracaoError('Erro ao buscar geração solar');
+        setGeracaoLoading(false);
+      });
+  }, []);
+
   return (
     <Box sx={{ minHeight: '100vh', background: theme => theme.palette.background.default, py: 0 }}>
       <Container maxWidth="xl" sx={{ py: { xs: 4, md: 8 } }}>
@@ -375,25 +418,44 @@ export function Home() {
             </Card>
           ) : null}
 
-          {/* Card Bitcoin */}
-          {bitcoinLoading ? (
-            <LoadingCard title="Bitcoin" variant="compact" height={220} />
-          ) : bitcoinError ? (
-            <ErrorCard error={bitcoinError} title="Erro ao carregar Bitcoin" variant="compact" />
-          ) : bitcoinData ? (
-            <Card gradient="linear-gradient(135deg, #fbbf24 0%, #f59e42 100%)">
-              <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <CurrencyBitcoinIcon sx={{ fontSize: 20, color: '#fbbf24' }} />
-                  <Typography variant="subtitle2" sx={{ color: '#fbbf24', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
-                    Bitcoin
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ color: '#fbbf24', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>R$ {Number(bitcoinData.brl).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>Cotação em BRL</Typography>
+          {/* Card Geração Solar */}
+          <Card gradient="linear-gradient(135deg, #fbbf24 0%, #f59e42 100%)">
+            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <WbSunnyIcon sx={{ fontSize: 20, color: '#fbbf24' }} />
+                <Typography variant="subtitle2" sx={{ color: '#fbbf24', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
+                  Geração Solar
+                </Typography>
               </Box>
-            </Card>
-          ) : null}
+              <Typography variant="h4" sx={{ color: '#fbbf24', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>
+                {geracaoValor !== null ? `${geracaoValor} kWh` : '—'}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+                Geração total do dia
+              </Typography>
+            </Box>
+          </Card>
+        </Box>
+        {/* Gráfico de Potência Solar */}
+        <Box sx={{ mt: 6, mb: 4 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#fbbf24' }}>
+            Potência Solar (W) durante o dia
+          </Typography>
+          {geracaoLoading ? (
+            <LoadingCard title="Potência Solar" variant="detailed" />
+          ) : geracaoError ? (
+            <ErrorCard error={geracaoError} title="Erro ao carregar geração solar" />
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart data={potencias} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="horario" />
+                <YAxis label={{ value: 'Potência (W)', angle: -90, position: 'insideLeft' }} />
+                <RechartsTooltip />
+                <Line type="monotone" dataKey="potencia" stroke="#fbbf24" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </Box>
       </Container>
     </Box>

@@ -78,3 +78,8 @@ export function atualizarTransacaoSerie(idSerie: string, transacao: Record<strin
   const params = aPartirDe ? { params: { aPartirDe } } : {};
   return api.put(`/v1/transacoes/serie/${idSerie}`, transacao, params);
 }
+
+// Função para buscar geração solar
+export function getGeracaoSolar(data: string) {
+  return api.get(API_URLS.GERACAO_SOLAR(data));
+}
