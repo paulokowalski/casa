@@ -13,6 +13,7 @@ import { usePessoa } from '../../contexts/PessoaContext';
 import { Alert as CustomAlert } from '../../components/ui/Alert';
 import { Card } from '../../components/Card';
 import { TabelaTransacao } from './TabelaTransacao';
+import { Theme } from '@mui/material/styles';
 
 const MESES = [
   { codigo: '01', descricao: 'Janeiro' },
@@ -129,21 +130,21 @@ export function Financa() {
       description: 'Visão geral das receitas e despesas',
       icon: <TrendingUpIcon />,
       component: <Summary />, 
-      color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
     },
     {
       title: 'Financeiro',
       description: 'Receitas, despesas e cartões de crédito agrupados',
       icon: <TableChartIcon />,
       component: <TabelaTransacao transacoes={transacoesComCartao} onEditar={handleEditar} onExcluir={handleExcluir} onMarcarComoPaga={handleMarcarComoPaga} loading={loading} />,
-      color: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+      color: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
     },
     {
       title: 'Gráficos',
       description: 'Análise visual das finanças',
       icon: <BarChartIcon />,
       component: <GraficoBarras />, 
-      color: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)',
+      color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
     },
   ];
 
@@ -156,8 +157,8 @@ export function Financa() {
           sx={{ 
             fontWeight: 800,
             mb: 1,
-            color: '#764ba2',
-            textShadow: '0 4px 16px rgba(39,26,69,0.18)',
+            color: '#f5f6fa',
+            textShadow: '0 4px 16px rgba(139, 92, 246, 0.3)',
           }}
         >
           Finanças
@@ -166,12 +167,12 @@ export function Financa() {
 
       {/* Filtros em card, logo abaixo do título */}
       {pessoas.length === 0 && (
-        <Box sx={{ mb: 2, color: 'red', fontWeight: 600, textAlign: 'center' }}>
+        <Box sx={{ mb: 2, color: '#ef4444', fontWeight: 600, textAlign: 'center' }}>
           Nenhuma pessoa encontrada. Cadastre uma pessoa para continuar.
         </Box>
       )}
       <Card 
-        sx={{ mb: 3, borderRadius: 0.5, background: 'rgba(255,255,255,0.18)', boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)', minHeight: 80, width: '100%', maxWidth: '100%' }}
+        sx={{ mb: 3, borderRadius: 0.5, background: (theme: Theme) => theme.palette.background.paper, boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)', minHeight: 80, width: '100%', maxWidth: '100%' }}
       >
         <Box sx={{
           display: 'flex',
@@ -183,22 +184,22 @@ export function Financa() {
           width: '100%',
           py: 1,
         }}>
-          <FormControl fullWidth size="small" sx={{ maxWidth: 220, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
-            <InputLabel>Pessoa</InputLabel>
-            <Select value={pessoa} label="Pessoa" onChange={e => setPessoa(e.target.value)}>
-              {pessoas.map(p => <MenuItem key={p.id} value={String(p.id)}>{p.nome}</MenuItem>)}
+          <FormControl fullWidth size="small" sx={{ maxWidth: 220, bgcolor: '#23263a', borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.2)', '& .MuiInputLabel-root': { color: '#f5f6fa' }, '& .MuiSelect-select': { color: '#f5f6fa' } }}>
+            <InputLabel sx={{ color: '#f5f6fa' }}>Pessoa</InputLabel>
+            <Select value={pessoa} label="Pessoa" onChange={e => setPessoa(e.target.value)} sx={{ color: '#f5f6fa' }}>
+              {pessoas.map(p => <MenuItem key={p.id} value={String(p.id)} sx={{ color: '#f5f6fa' }}>{p.nome}</MenuItem>)}
             </Select>
           </FormControl>
-          <FormControl fullWidth size="small" sx={{ maxWidth: 120, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
-            <InputLabel>Ano</InputLabel>
-            <Select value={ano} label="Ano" onChange={e => setAno(e.target.value)}>
-              {anos.map(a => <MenuItem key={a.codigo} value={a.codigo}>{a.descricao}</MenuItem>)}
+          <FormControl fullWidth size="small" sx={{ maxWidth: 120, bgcolor: '#23263a', borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.2)', '& .MuiInputLabel-root': { color: '#f5f6fa' }, '& .MuiSelect-select': { color: '#f5f6fa' } }}>
+            <InputLabel sx={{ color: '#f5f6fa' }}>Ano</InputLabel>
+            <Select value={ano} label="Ano" onChange={e => setAno(e.target.value)} sx={{ color: '#f5f6fa' }}>
+              {anos.map(a => <MenuItem key={a.codigo} value={a.codigo} sx={{ color: '#f5f6fa' }}>{a.descricao}</MenuItem>)}
             </Select>
           </FormControl>
-          <FormControl fullWidth size="small" sx={{ maxWidth: 120, bgcolor: 'white', borderRadius: 2, boxShadow: '0 1px 6px rgba(44,62,80,0.04)' }}>
-            <InputLabel>Mês</InputLabel>
-            <Select value={mes} label="Mês" onChange={e => setMes(e.target.value)}>
-              {MESES.map(m => <MenuItem key={m.codigo} value={m.codigo}>{m.descricao}</MenuItem>)}
+          <FormControl fullWidth size="small" sx={{ maxWidth: 120, bgcolor: '#23263a', borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.2)', '& .MuiInputLabel-root': { color: '#f5f6fa' }, '& .MuiSelect-select': { color: '#f5f6fa' } }}>
+            <InputLabel sx={{ color: '#f5f6fa' }}>Mês</InputLabel>
+            <Select value={mes} label="Mês" onChange={e => setMes(e.target.value)} sx={{ color: '#f5f6fa' }}>
+              {MESES.map(m => <MenuItem key={m.codigo} value={m.codigo} sx={{ color: '#f5f6fa' }}>{m.descricao}</MenuItem>)}
             </Select>
           </FormControl>
         </Box>
@@ -214,12 +215,12 @@ export function Financa() {
         {/* Coluna esquerda: Summary + Tabela */}
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card
-            gradient={'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}
+            gradient={'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'}
             sx={{
               mb: 3,
               borderRadius: 0.5,
-              background: 'rgba(255,255,255,0.18)',
-              boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+              background: (theme: Theme) => theme.palette.background.paper,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
               width: '100%',
               maxWidth: '100%',
               px: { xs: 1, sm: 4 },
@@ -228,12 +229,12 @@ export function Financa() {
             <Summary />
           </Card>
           <Card
-            gradient={'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)'}
+            gradient={'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'}
             sx={{
               mb: 3,
               borderRadius: 0.5,
-              background: 'rgba(255,255,255,0.18)',
-              boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+              background: (theme: Theme) => theme.palette.background.paper,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
               width: '100%',
               maxWidth: '100%',
               px: { xs: 1, sm: 4 },
@@ -245,12 +246,12 @@ export function Financa() {
         {/* Coluna direita: Gráficos */}
         <Box sx={{ flex: 1, minWidth: 350, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card
-            gradient={'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)'}
+            gradient={'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}
             sx={{
               mb: 3,
               borderRadius: 0.5,
-              background: 'rgba(255,255,255,0.18)',
-              boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+              background: (theme: Theme) => theme.palette.background.paper,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
               width: '100%',
               maxWidth: '100%',
               px: 0,
@@ -292,8 +293,12 @@ export function Financa() {
           aria-label="adicionar transação"
           onClick={handleOpenCadastroModal}
           sx={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+            boxShadow: '0 8px 25px rgba(139, 92, 246, 0.4)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+              boxShadow: '0 12px 35px rgba(139, 92, 246, 0.5)',
+            },
           }}
         >
           <AddIcon />

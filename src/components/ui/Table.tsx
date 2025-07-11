@@ -47,18 +47,18 @@ export function Table<T extends { [key: string]: any }>({
 
   return (
     <TableContainer component={Paper} sx={{
-      borderRadius: 0.5,
-      boxShadow: '0 8px 32px rgba(140, 16, 206, 0.10)',
-      background: 'rgba(255,255,255,0.65)',
+      borderRadius: 1,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+      background: '#23263a',
     }}>
       <MuiTable stickyHeader>
         <TableHead>
-          <TableRow sx={{ background: 'rgba(140, 16, 206, 0.10)', backdropFilter: 'blur(4px)' }}>
+          <TableRow sx={{ background: '#181a20', backdropFilter: 'blur(4px)' }}>
             {columns.map((col, idx) => (
               <TableCell
                 key={col.id}
                 align={'center'}
-                sx={{ fontWeight: 700, fontSize: 15, background: 'rgba(140, 16, 206, 0.10)', color: '#8A05BE', borderBottom: '2px solid rgba(140, 16, 206, 0.18)', letterSpacing: 0.5 }}
+                sx={{ fontWeight: 700, fontSize: 15, background: '#181a20', color: '#f5f6fa', borderBottom: '2px solid #23263a', letterSpacing: 0.5 }}
               >
                 {col.label}
               </TableCell>
@@ -68,7 +68,7 @@ export function Table<T extends { [key: string]: any }>({
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={columns.length} align="center" sx={{ py: 6, color: '#a0aec0', fontWeight: 500 }}>
+              <TableCell colSpan={columns.length} align="center" sx={{ py: 6, color: '#a0aec0', fontWeight: 500, background: '#23263a' }}>
                 {emptyMessage || 'Nenhum dado encontrado.'}
               </TableCell>
             </TableRow>
@@ -77,10 +77,10 @@ export function Table<T extends { [key: string]: any }>({
               <TableRow
                 key={row.id || idx}
                 sx={{
-                  background: idx % 2 === 0 ? 'rgba(140, 16, 206, 0.03)' : 'rgba(255,255,255,0.45)',
+                  background: idx % 2 === 0 ? 'rgba(35,38,58,0.95)' : 'rgba(35,38,58,0.85)',
                   transition: 'background 0.2s',
                   '&:hover': {
-                    background: 'rgba(140, 16, 206, 0.13)',
+                    background: 'rgba(139, 92, 246, 0.13)',
                   },
                 }}
               >
@@ -89,11 +89,12 @@ export function Table<T extends { [key: string]: any }>({
                     key={col.id}
                     align={idx === 0 ? 'left' : (col.align || 'center')}
                     sx={{
-                      borderBottom: '1px solid rgba(140, 16, 206, 0.10)',
+                      borderBottom: '1px solid #23263a',
                       fontSize: 15,
                       minWidth: col.minWidth,
                       paddingX: 1,
                       paddingY: 0.5,
+                      color: '#f5f6fa',
                     }}
                   >
                     {col.render ? col.render(row[col.id], row) : row[col.id]}
@@ -113,6 +114,7 @@ export function Table<T extends { [key: string]: any }>({
         onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={rowsPerPageOptions}
         labelRowsPerPage="Linhas por página"
+        sx={{ background: '#181a20', color: '#f5f6fa', borderTop: '1px solid #23263a' }}
       />
     </TableContainer>
   );

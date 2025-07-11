@@ -21,7 +21,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ loading, childre
             left: 0,
             width: '100%',
             height: '100%',
-            bgcolor: 'rgba(255,255,255,0.5)',
+            bgcolor: 'rgba(35,38,58,0.85)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -31,7 +31,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ loading, childre
           }}
         >
           {text && (
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 600, textShadow: '0 2px 8px #fff' }}>
+            <Typography variant="h6" color="#f5f6fa" sx={{ fontWeight: 600, textShadow: '0 2px 8px #23263a' }}>
               {text}
             </Typography>
           )}

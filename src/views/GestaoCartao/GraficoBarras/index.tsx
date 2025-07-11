@@ -31,7 +31,7 @@ const renderCustomLabel = (props: any) => {
         <text 
             x={x + width / 2} 
             y={y - 10} 
-            fill="#666"
+            fill="#f5f6fa"
             textAnchor="middle"
             fontSize="12"
         >
@@ -75,7 +75,7 @@ export function GraficoBarras() {
 
     if (!ultimosFiltros.ano || !ultimosFiltros.pessoa || ultimosFiltros.pessoa === 'TODOS') {
         return (
-            <Typography color="text.secondary">
+            <Typography sx={{ color: '#a0aec0' }}>
                 Selecione ano e pessoa para visualizar o gráfico.
             </Typography>
         );
@@ -84,10 +84,10 @@ export function GraficoBarras() {
     if (dados.length === 0) {
         return (
             <>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ color: '#f5f6fa' }}>
                     Despesas Mensais - {ultimosFiltros.pessoa}
                 </Typography>
-                <Typography color="text.secondary">
+                <Typography sx={{ color: '#a0aec0' }}>
                     Nenhum dado disponível para o período selecionado.
                 </Typography>
             </>
@@ -96,10 +96,10 @@ export function GraficoBarras() {
 
     return (
         <>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ color: '#f5f6fa' }}>
                 Despesas Mensais - {ultimosFiltros.pessoa}
             </Typography>
-            <Box sx={{ width: '100%', height: 360, display: 'block' }}>
+            <Box sx={{ width: '100%', height: 360, display: 'block', background: '#23263a', borderRadius: 2, p: 2 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={dados}
@@ -110,20 +110,22 @@ export function GraficoBarras() {
                             bottom: 5,
                         }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="mes" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
+                        <XAxis dataKey="mes" tick={{ fill: '#f5f6fa' }} />
                         <YAxis 
                             tickFormatter={(value: number) => formatCurrency(value)}
+                            tick={{ fill: '#f5f6fa' }}
                         />
                         <Tooltip 
                             formatter={(value: number) => [formatCurrency(value), "Valor"]}
                             labelFormatter={(label: string) => `Mês: ${label}`}
+                            contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }}
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ color: '#f5f6fa' }} />
                         <Bar 
                             dataKey="valorMes" 
                             name="Valor Mensal" 
-                            fill="#8884d8"
+                            fill="#8b5cf6"
                             radius={[4, 4, 0, 0]}
                         >
                             <LabelList 

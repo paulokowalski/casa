@@ -93,8 +93,8 @@ const PessoaView: React.FC = () => {
           sx={{ 
             fontWeight: 800,
             mb: 1,
-            color: '#764ba2',
-            textShadow: '0 4px 16px rgba(39,26,69,0.18)',
+            color: '#f5f6fa',
+            textShadow: '0 4px 16px rgba(139, 92, 246, 0.3)',
           }}
         >
           Pessoas
@@ -102,9 +102,9 @@ const PessoaView: React.FC = () => {
         <Typography 
           variant="h6" 
           sx={{ 
-            color: '#764ba2',
+            color: '#a0aec0',
             fontWeight: 400,
-            textShadow: '0 2px 8px rgba(39,26,69,0.18)',
+            textShadow: '0 2px 8px rgba(139, 92, 246, 0.2)',
           }}
         >
           Gerencie os usuários do sistema
@@ -178,7 +178,7 @@ const PessoaView: React.FC = () => {
           <Typography variant="body1" sx={{ color: 'error.main', fontWeight: 500, textAlign: 'center' }}>
             Tem certeza que deseja excluir a pessoa <b>"{deletePessoa?.nome}"</b>?
           </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
+          <Typography variant="body2" sx={{ color: '#a0aec0', textAlign: 'center' }}>
             Esta ação não poderá ser desfeita.
           </Typography>
         </Box>
@@ -200,12 +200,12 @@ const PessoaView: React.FC = () => {
             height: 56,
             borderRadius: '50%',
             p: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+            boxShadow: '0 8px 25px rgba(139, 92, 246, 0.4)',
             '&:hover': {
-              background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+              background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
               transform: 'scale(1.05)',
-              boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
+              boxShadow: '0 12px 35px rgba(139, 92, 246, 0.5)',
             },
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}

@@ -26,13 +26,16 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PeopleIcon from '@mui/icons-material/People';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { Link, useLocation } from 'react-router-dom';
 import { useFinanca } from '../../contexts/FinancaContext';
 
 const drawerWidth = 240;
+const collapsedDrawerWidth = 80;
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const theme = useTheme();
   const location = useLocation();
 
@@ -60,97 +63,110 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     setAnchorEl(null);
   };
 
+  const currentWidth = collapsed ? collapsedDrawerWidth : drawerWidth;
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', background: theme.palette.background.default }}>
       <CssBaseline />
-      {/* Sidebar Premium */}
-      <Drawer
-        variant="permanent"
-        open={open}
+      {/* Sidebar Dark - Completamente Fixo */}
+      <Box
         sx={{
-          width: open ? drawerWidth : 80,
-          flexShrink: 0,
-          whiteSpace: 'nowrap',
-          boxSizing: 'border-box',
-          background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: currentWidth,
+          background: 'linear-gradient(135deg, #23263a 0%, #181a20 100%)',
           backdropFilter: 'blur(18px)',
-          borderRight: 'none',
-          transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-          '& .MuiDrawer-paper': {
-            width: open ? drawerWidth : 80,
-            background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-            backdropFilter: 'blur(18px)',
-            borderRight: 'none',
-            boxShadow: '0 8px 32px rgba(44,62,80,0.18)',
-            transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            overflowX: 'hidden',
-          },
+          borderRight: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          zIndex: 1200,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: open ? 'space-between' : 'center', px: 2, py: 2 }}>
-          {open && (
-            <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: 1, color: '#fff' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between', px: 2, py: 2 }}>
+          {!collapsed && (
+            <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: 1, color: '#f5f6fa' }}>
               Kowalski
             </Typography>
           )}
-          <IconButton onClick={() => setOpen(!open)} size="small" sx={{ ml: open ? 0 : 0, color: '#fff' }}>
-            {open ? <ChevronLeftIcon /> : <MenuIcon />}
-          </IconButton>
+          <Tooltip title={collapsed ? "Expandir menu" : "Recolher menu"}>
+            <IconButton 
+              onClick={() => setCollapsed(!collapsed)} 
+              size="small" 
+              sx={{ color: '#f5f6fa' }}
+            >
+              {collapsed ? <ViewListIcon /> : <ViewModuleIcon />}
+            </IconButton>
+          </Tooltip>
         </Box>
         <List sx={{ mt: 2 }}>
           {navItems.map((item) => {
             const selected = location.pathname === item.to;
             return (
               <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 1 }}>
-                <ListItemButton
-                  component={Link}
-                  to={item.to}
-                  selected={selected}
-                  sx={{
-                    minHeight: 56,
-                    justifyContent: open ? 'initial' : 'center',
-                    px: 2.5,
-                    borderRadius: 3,
-                    boxShadow: selected ? '0 4px 16px rgba(102, 126, 234, 0.25)' : 'none',
-                    background: selected ? 'rgba(255,255,255,0.18)' : 'transparent',
-                    color: selected ? '#fff' : 'rgba(255,255,255,0.85)',
-                    fontWeight: selected ? 700 : 500,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      background: 'rgba(255,255,255,0.12)',
-                      color: '#fff',
-                      boxShadow: '0 2px 8px rgba(102, 126, 234, 0.18)',
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{
-                    minWidth: 0,
-                    mr: open ? 2 : 'auto',
-                    justifyContent: 'center',
-                    color: selected ? '#fff' : 'rgba(255,255,255,0.7)',
-                    fontSize: 30,
-                    transition: 'color 0.3s',
-                  }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  {open && (
-                    <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0, fontWeight: selected ? 700 : 500, color: '#fff' }} />
-                  )}
-                </ListItemButton>
+                <Tooltip title={collapsed ? item.text : ""} placement="right">
+                  <ListItemButton
+                    component={Link}
+                    to={item.to}
+                    selected={selected}
+                    sx={{
+                      minHeight: 56,
+                      justifyContent: collapsed ? 'center' : 'initial',
+                      px: collapsed ? 2 : 2.5,
+                      borderRadius: 3,
+                      boxShadow: selected ? '0 4px 16px rgba(139, 92, 246, 0.25)' : 'none',
+                      background: selected ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                      color: selected ? '#f5f6fa' : 'rgba(245, 246, 250, 0.85)',
+                      fontWeight: selected ? 700 : 500,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        background: 'rgba(139, 92, 246, 0.1)',
+                        color: '#f5f6fa',
+                        boxShadow: '0 2px 8px rgba(139, 92, 246, 0.18)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{
+                      minWidth: 0,
+                      mr: collapsed ? 0 : 2,
+                      justifyContent: 'center',
+                      color: selected ? '#f5f6fa' : 'rgba(245, 246, 250, 0.7)',
+                      fontSize: 30,
+                      transition: 'color 0.3s',
+                    }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    {!collapsed && (
+                      <ListItemText primary={item.text} sx={{ fontWeight: selected ? 700 : 500, color: '#f5f6fa' }} />
+                    )}
+                  </ListItemButton>
+                </Tooltip>
               </ListItem>
             );
           })}
         </List>
-      </Drawer>
-      {/* Header flutuante */}
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'rgba(255,255,255,0.95)', boxShadow: '0 2px 12px rgba(44,62,80,0.08)' }} elevation={2}>
+      </Box>
+      {/* Header Dark */}
+      <AppBar position="fixed" sx={{ 
+        zIndex: (theme) => theme.zIndex.drawer + 1, 
+        background: 'rgba(35, 38, 58, 0.95)', 
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+        left: currentWidth,
+        width: `calc(100% - ${currentWidth}px)`,
+        transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      }} elevation={0}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 64 }}>
-          <Typography variant="h6" sx={{ fontWeight: 800, color: theme.palette.primary.main, letterSpacing: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#f5f6fa', letterSpacing: 1 }}>
             Kowalski House
           </Typography>
-          <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Tooltip title="Notificações">
-              <IconButton color="primary" onClick={handleOpenMenu}>
+              <IconButton sx={{ color: '#f5f6fa' }} onClick={handleOpenMenu}>
                 <Badge badgeContent={despesasProximas.length} color="error">
                   <NotificationsIcon />
                 </Badge>
@@ -162,18 +178,25 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               onClose={handleCloseMenu}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              PaperProps={{
+                sx: {
+                  background: '#23263a',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                }
+              }}
             >
-              <Typography sx={{ px: 2, py: 1, fontWeight: 700 }}>Despesas próximas</Typography>
-              <Divider />
+              <Typography sx={{ px: 2, py: 1, fontWeight: 700, color: '#f5f6fa' }}>Despesas próximas</Typography>
+              <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
               {despesasProximas.length === 0 && (
-                <MenuItem disabled>Nenhuma despesa próxima não paga</MenuItem>
+                <MenuItem disabled sx={{ color: 'rgba(245, 246, 250, 0.5)' }}>Nenhuma despesa próxima não paga</MenuItem>
               )}
               {despesasProximas.map((d, idx) => (
-                <MenuItem key={idx} sx={{ whiteSpace: 'normal', alignItems: 'flex-start' }}>
+                <MenuItem key={idx} sx={{ whiteSpace: 'normal', alignItems: 'flex-start', color: '#f5f6fa' }}>
                   <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{d.descricao}</Typography>
-                    <Typography variant="body2" color="text.secondary">Valor: R$ {Number(d.valor).toFixed(2)}</Typography>
-                    <Typography variant="caption" color="text.secondary">Vencimento: {d.data ? new Date(d.data).toLocaleDateString('pt-BR') : '-'}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#f5f6fa' }}>{d.descricao}</Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(245, 246, 250, 0.7)' }}>Valor: R$ {Number(d.valor).toFixed(2)}</Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(245, 246, 250, 0.5)' }}>Vencimento: {d.data ? new Date(d.data).toLocaleDateString('pt-BR') : '-'}</Typography>
                   </Box>
                 </MenuItem>
               ))}
@@ -184,7 +207,13 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Espaço para não sobrepor o conteúdo */}
       <Toolbar sx={{ minHeight: 64 }} />
       {/* Conteúdo Principal */}
-      <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, sm: 3, md: 4 }, minHeight: '100vh', transition: 'margin 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+      <Box component="main" sx={{ 
+        flexGrow: 1, 
+        p: { xs: 2, sm: 3, md: 4 }, 
+        minHeight: '100vh', 
+        marginLeft: `${currentWidth}px`,
+        transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
         {children}
       </Box>
     </Box>

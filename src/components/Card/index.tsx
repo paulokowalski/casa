@@ -1,5 +1,6 @@
 import React from 'react';
 import { Paper, Box, useTheme } from '@mui/material';
+import { useThemeMode } from '../../contexts/ThemeContext';
 
 interface CardProps {
   children: React.ReactNode;
@@ -17,6 +18,11 @@ export const Card: React.FC<CardProps> = ({
   sx = {},
 }) => {
   const theme = useTheme();
+  const { mode } = useThemeMode();
+
+  // Gradiente escuro para dark mode
+  const darkGradient = 'linear-gradient(135deg, #23263a 0%, #181a20 100%)';
+  const appliedGradient = mode === 'dark' ? darkGradient : gradient;
 
   return (
     <Paper
@@ -50,7 +56,7 @@ export const Card: React.FC<CardProps> = ({
         left: 0,
         right: 0,
         height: 4,
-        background: gradient,
+        background: appliedGradient,
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
       }} />

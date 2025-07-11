@@ -46,7 +46,7 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
             label: 'Nome',
             minWidth: 320,
             render: (value: CompraRow['nomeCompra']) => (
-                <Box sx={{ fontWeight: 500, color: '#2c3e50' }}>{value}</Box>
+                <Box sx={{ fontWeight: 500, color: '#f5f6fa' }}>{value}</Box>
             ),
         },
         {
@@ -59,13 +59,13 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
                     label={toBRDate(value)}
                     size="small"
                     sx={{
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
                         color: '#ffffff',
                         fontWeight: 600,
                         fontSize: '0.65rem',
                         borderRadius: '6px',
                         height: '18px',
-                        boxShadow: '0 2px 4px rgba(102, 126, 234, 0.2)',
+                        boxShadow: '0 2px 4px rgba(139, 92, 246, 0.3)',
                         '& .MuiChip-label': {
                             padding: '0 6px',
                         },
@@ -95,8 +95,8 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
                         height: '18px',
                         boxShadow:
                             value === 'SIM'
-                                ? '0 2px 4px rgba(16, 185, 129, 0.2)'
-                                : '0 2px 4px rgba(245, 158, 11, 0.2)',
+                                ? '0 2px 4px rgba(16, 185, 129, 0.3)'
+                                : '0 2px 4px rgba(245, 158, 11, 0.3)',
                         '& .MuiChip-label': {
                             padding: '0 6px',
                         },
@@ -110,7 +110,7 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
             align: 'center' as const,
             minWidth: 60,
             render: (_: CompraRow['numeroParcela'], row: CompraRow) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', fontWeight: 600, color: '#2c3e50', fontSize: '0.75rem' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', fontWeight: 600, color: '#f5f6fa', fontSize: '0.75rem' }}>
                     {`${row.numeroParcela} de ${row.numeroTotalParcela}`}
                 </Box>
             ),

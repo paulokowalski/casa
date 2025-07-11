@@ -21,19 +21,22 @@ export function GraficoPorCartao() {
   }, [compras]);
 
   if (!dados.length) {
-    return <Typography color="text.secondary">Nenhum gasto encontrado para os cartões selecionados.</Typography>;
+    return <Typography sx={{ color: '#a0aec0' }}>Nenhum gasto encontrado para os cartões selecionados.</Typography>;
   }
 
   return (
-    <Box sx={{ width: '100%', height: 300, display: 'block' }}>
+    <Box sx={{ width: '100%', height: 300, display: 'block', background: '#23263a', borderRadius: 2, p: 2 }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={dados} margin={{ top: 30, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="nomeCartao" />
-          <YAxis tickFormatter={formatCurrency} />
-          <Tooltip formatter={(value: number) => [formatCurrency(value), 'Gasto']} />
-          <Bar dataKey="valor" name="Gasto Total" fill="#36d1dc" radius={[4, 4, 0, 0]}>
-            <LabelList dataKey="valor" position="top" formatter={formatCurrency} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
+          <XAxis dataKey="nomeCartao" tick={{ fill: '#f5f6fa' }} />
+          <YAxis tickFormatter={formatCurrency} tick={{ fill: '#f5f6fa' }} />
+          <Tooltip 
+            formatter={(value: number) => [formatCurrency(value), 'Gasto']} 
+            contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }}
+          />
+          <Bar dataKey="valor" name="Gasto Total" fill="#f59e0b" radius={[4, 4, 0, 0]}>
+            <LabelList dataKey="valor" position="top" formatter={formatCurrency} fill="#f5f6fa" />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

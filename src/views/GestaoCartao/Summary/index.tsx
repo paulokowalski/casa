@@ -27,8 +27,8 @@ export function Summary() {
         {
             title: "Próximo Mês",
             value: formatCurrency(despesa?.valorProximoMes as number),
-            color: "#36d1dc",
-            gradient: "linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)",
+            color: "#8b5cf6",
+            gradient: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
             icon: <CalendarTodayIcon />,
             trend: "up",
             description: "Projeção para o próximo mês"
@@ -36,8 +36,8 @@ export function Summary() {
         {
             title: "Valor Saindo",
             value: formatCurrency(despesa?.valorSaindo as number),
-            color: "#ff6b6b",
-            gradient: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+            color: "#ef4444",
+            gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
             icon: <TrendingDownIcon />,
             trend: "down",
             description: "Valor saindo"
@@ -45,8 +45,8 @@ export function Summary() {
         {
             title: "Parcelas Saindo",
             value: formatCurrency(despesa?.valorParcelaSaindo as number),
-            color: "#feca57",
-            gradient: "linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)",
+            color: "#f59e0b",
+            gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
             icon: <PaymentIcon />,
             trend: "down",
             description: "Valor parcela saindo"
@@ -54,8 +54,8 @@ export function Summary() {
         {
             title: "Total Saindo",
             value: formatCurrency(despesa?.valorSaindoTotal as number),
-            color: "#e91e63",
-            gradient: "linear-gradient(135deg, #e91e63 0%, #9c27b0 100%)",
+            color: "#ec4899",
+            gradient: "linear-gradient(135deg, #ec4899 0%, #be185d 100%)",
             icon: <CreditCardIcon />,
             trend: "down",
             description: "Total de saídas"

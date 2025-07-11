@@ -41,22 +41,22 @@ function CearaTableCard() {
       title="Ceará"
       description="Brasileirão 2025"
       icon={<SportsSoccerIcon />}
-      gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      gradient="linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)"
       badge={`${data.intPoints} pts`}
       badgeColor="success"
     >
       <Box sx={{ textAlign: 'center', py: 0.5 }}>
-        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.2, fontSize: '0.85rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.2, fontSize: '0.85rem', background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
           {data.intRank}º lugar
         </Typography>
-        <Typography variant="caption" color="#7f8c8d" sx={{ mb: 0.2, fontSize: '0.65rem' }}>
+        <Typography variant="caption" sx={{ mb: 0.2, fontSize: '0.65rem', color: '#a0aec0' }}>
           Posição na tabela
         </Typography>
         <Stack direction="row" spacing={0.3} justifyContent="center" flexWrap="wrap" useFlexGap>
-          <Chip label={`J: ${data.intPlayed}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'rgba(255,255,255,0.2)', color: '#2c3e50', fontWeight: 600 }} />
+          <Chip label={`J: ${data.intPlayed}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'rgba(139, 92, 246, 0.2)', color: '#f5f6fa', fontWeight: 600 }} />
           <Chip label={`V: ${data.intWin}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: '#fff', fontWeight: 600 }} />
-          <Chip label={`E: ${data.intDraw}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)', color: '#fff', fontWeight: 600 }} />
-          <Chip label={`D: ${data.intLoss}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)', color: '#fff', fontWeight: 600 }} />
+          <Chip label={`E: ${data.intDraw}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', fontWeight: 600 }} />
+          <Chip label={`D: ${data.intLoss}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: '#fff', fontWeight: 600 }} />
         </Stack>
       </Box>
     </Card>
@@ -91,10 +91,10 @@ function CarFipeCard() {
         <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.2, fontSize: '0.85rem', background: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
           {data.price}
         </Typography>
-        <Typography variant="caption" color="#7f8c8d" sx={{ mb: 0.2, fontSize: '0.65rem' }}>
+        <Typography variant="caption" sx={{ mb: 0.2, fontSize: '0.65rem', color: '#a0aec0' }}>
           Valor FIPE ({data.referenceMonth})
         </Typography>
-        <Chip label={`Código: ${data.codeFipe}`} sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'rgba(255,255,255,0.2)', color: '#2c3e50', fontWeight: 600, mb: 0.5 }} />
+        <Chip label={`Código: ${data.codeFipe}`} sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'rgba(54, 209, 220, 0.2)', color: '#f5f6fa', fontWeight: 600, mb: 0.5 }} />
         <Box display="flex" justifyContent="center">
           <a href={`https://www.webmotors.com.br/carros-usados/${encodeURIComponent(data.brand.split(' - ')[1] || data.brand)}/${encodeURIComponent(data.model.split(' ')[0])}?ano=${data.modelYear}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
             <Chip label="Ver no Mercado" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)', color: '#fff', fontWeight: 600, cursor: 'pointer', '&:hover': { transform: 'scale(1.05)' }, transition: 'transform 0.3s ease' }} />
@@ -131,7 +131,7 @@ function CurrencyCard({ url, icon, label, gradient }: { url: string; icon: React
         <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.2, fontSize: '0.85rem', background: gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
           R$ {Number(data.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}
         </Typography>
-        <Typography variant="caption" color="#7f8c8d" sx={{ fontSize: '0.65rem' }}>
+        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: '#a0aec0' }}>
           Compra • Venda: R$ {Number(data.ask).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}
         </Typography>
       </Box>
@@ -165,13 +165,13 @@ function DespesasVencerCard() {
       title="Despesas a vencer"
       description="Próximos 30 dias"
       icon={<CalendarMonthIcon />}
-      gradient="linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)"
+      gradient="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
       badge={qtd > 0 ? `${qtd}` : undefined}
       badgeColor={qtd > 0 ? 'error' : 'info'}
     >
       <Box sx={{ textAlign: 'center', py: 0.5 }}>
         {loading ? (
-          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>Carregando...</Typography>
+          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: '#a0aec0' }}>Carregando...</Typography>
         ) : qtd > 0 ? (
           <Typography variant="subtitle2" color="error" fontWeight={700} sx={{ fontSize: '0.85rem' }}>{qtd} despesa{qtd > 1 ? 's' : ''} a vencer</Typography>
         ) : (
@@ -200,21 +200,21 @@ function DashboardInfoCard({ icon, title, value, loading, error, label }: {
       px: 2,
       py: 1.2,
       borderRadius: 2,
-      boxShadow: '0 2px 8px rgba(130, 10, 209, 0.10)',
-      background: 'rgba(255,255,255,0.95)',
-      border: '1px solid #eee',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+      background: '#23263a',
+      border: '1px solid #444857',
       flex: '0 0 auto',
       gap: 1.5,
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 36, pt: 0.5 }}>{icon}</Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '1rem', mb: 0.2 }}>{title}</Typography>
+        <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '1rem', mb: 0.2, color: '#f5f6fa' }}>{title}</Typography>
         {loading ? (
-          <Typography variant="caption" color="text.secondary">Carregando...</Typography>
+          <Typography variant="caption" sx={{ color: '#a0aec0' }}>Carregando...</Typography>
         ) : error ? (
           <Typography variant="caption" color="error">Erro</Typography>
         ) : (
-          <Box sx={{ width: '100%' }}>{label} {value}</Box>
+          <Box sx={{ width: '100%', color: '#f5f6fa' }}>{label} {value}</Box>
         )}
       </Box>
     </Paper>
@@ -298,8 +298,8 @@ export function Home() {
             sx={{ 
               fontWeight: 900,
               mb: 2,
-              color: theme => theme.palette.primary.main,
-              textShadow: '0 6px 24px rgba(39,26,69,0.10)',
+              color: '#f5f6fa',
+              textShadow: '0 6px 24px rgba(139, 92, 246, 0.3)',
               letterSpacing: 1.5,
               fontFamily: 'Manrope, Inter, Roboto, Arial, sans-serif',
             }}
@@ -322,20 +322,20 @@ export function Home() {
           ) : cearaError ? (
             <ErrorCard error={cearaError} title="Erro ao carregar dados do Ceará" />
           ) : cearaData ? (
-            <Card gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+            <Card gradient="linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)">
               <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                   {cearaData && cearaData.strBadge ? (
                     <img src={cearaData.strBadge} alt="Escudo Ceará" style={{ width: 22, height: 22, objectFit: 'contain', display: 'block' }} />
                   ) : (
-                    <SportsSoccerIcon sx={{ fontSize: 20, color: '#667eea' }} />
+                    <SportsSoccerIcon sx={{ fontSize: 20, color: '#8b5cf6' }} />
                   )}
-                  <Typography variant="subtitle2" sx={{ color: '#667eea', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
                     Ceará
                   </Typography>
                 </Box>
-                <Typography variant="h4" sx={{ color: '#667eea', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>{cearaData.intRank}º</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>Pontos: <b>{cearaData.intPoints}</b> • Jogos: <b>{cearaData.intPlayed}</b></Typography>
+                <Typography variant="h4" sx={{ color: '#8b5cf6', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>{cearaData.intRank}º</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Pontos: <b>{cearaData.intPoints}</b> • Jogos: <b>{cearaData.intPlayed}</b></Typography>
               </Box>
             </Card>
           ) : null}
@@ -355,7 +355,7 @@ export function Home() {
                   </Typography>
                 </Box>
                 <Typography variant="h4" sx={{ color: '#36d1dc', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>{fipeData.price}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>Ano {fipeData.modelYear} • {fipeData.fuel}</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Ano {fipeData.modelYear} • {fipeData.fuel}</Typography>
               </Box>
             </Card>
           ) : null}
@@ -364,16 +364,16 @@ export function Home() {
           {qtdLoading ? (
             <LoadingCard title="Despesas a vencer" variant="detailed" />
           ) : qtdDespesas !== null ? (
-            <Card gradient="linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)">
+            <Card gradient="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)">
               <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <CalendarMonthIcon sx={{ fontSize: 20, color: '#ff6b6b' }} />
-                  <Typography variant="subtitle2" sx={{ color: '#ff6b6b', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
+                  <CalendarMonthIcon sx={{ fontSize: 20, color: '#ef4444' }} />
+                  <Typography variant="subtitle2" sx={{ color: '#ef4444', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
                     Despesas a vencer
                   </Typography>
                 </Box>
-                <Typography variant="h4" sx={{ color: '#ff6b6b', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>{qtdDespesas}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>Próximos 30 dias</Typography>
+                <Typography variant="h4" sx={{ color: '#ef4444', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>{qtdDespesas}</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Próximos 30 dias</Typography>
               </Box>
             </Card>
           ) : null}
@@ -384,16 +384,16 @@ export function Home() {
           ) : euroError ? (
             <ErrorCard error={euroError} title="Erro ao carregar Euro" variant="compact" />
           ) : euroData ? (
-            <Card gradient="linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)">
+            <Card gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">
               <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <EuroSymbolIcon sx={{ fontSize: 20, color: '#feca57' }} />
-                  <Typography variant="subtitle2" sx={{ color: '#feca57', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
+                  <EuroSymbolIcon sx={{ fontSize: 20, color: '#f59e0b' }} />
+                  <Typography variant="subtitle2" sx={{ color: '#f59e0b', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
                     Euro
                   </Typography>
                 </Box>
-                <Typography variant="h4" sx={{ color: '#feca57', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>R$ {Number(euroData.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>Cotação atual</Typography>
+                <Typography variant="h4" sx={{ color: '#f59e0b', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>R$ {Number(euroData.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Cotação atual</Typography>
               </Box>
             </Card>
           ) : null}
@@ -413,7 +413,7 @@ export function Home() {
                   </Typography>
                 </Box>
                 <Typography variant="h4" sx={{ color: '#4facfe', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>R$ {Number(dollarData.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>Cotação atual</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Cotação atual</Typography>
               </Box>
             </Card>
           ) : null}
@@ -430,7 +430,7 @@ export function Home() {
               <Typography variant="h4" sx={{ color: '#fbbf24', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>
                 {geracaoValor !== null ? `${geracaoValor} kWh` : '—'}
               </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+              <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>
                 Geração total do dia
               </Typography>
             </Box>
@@ -446,15 +446,17 @@ export function Home() {
           ) : geracaoError ? (
             <ErrorCard error={geracaoError} title="Erro ao carregar geração solar" />
           ) : (
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={potencias} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="horario" />
-                <YAxis label={{ value: 'Potência (W)', angle: -90, position: 'insideLeft' }} />
-                <RechartsTooltip />
-                <Line type="monotone" dataKey="potencia" stroke="#fbbf24" dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            <Box sx={{ background: '#23263a', borderRadius: 2, p: 2 }}>
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart data={potencias} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
+                  <XAxis dataKey="horario" tick={{ fill: '#f5f6fa' }} />
+                  <YAxis label={{ value: 'Potência (W)', angle: -90, position: 'insideLeft', fill: '#f5f6fa' }} tick={{ fill: '#f5f6fa' }} />
+                  <RechartsTooltip contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }} />
+                  <Line type="monotone" dataKey="potencia" stroke="#fbbf24" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
           )}
         </Box>
       </Container>

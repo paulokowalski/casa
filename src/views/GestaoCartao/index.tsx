@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { Card } from '../../components/Card';
 import { Alert as CustomAlert } from '../../components/ui/Alert';
 import React from 'react';
+import { Theme } from '@mui/material/styles';
 
 export function GestaoCartao() {
     const [openCadastroModal, setOpenCadastroModal] = useState(false);
@@ -57,7 +58,7 @@ export function GestaoCartao() {
             title: 'Resumo Financeiro',
             icon: <TrendingUpIcon />, 
             component: <Summary />, 
-            color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
         },
         {
             title: 'Transações',
@@ -74,7 +75,7 @@ export function GestaoCartao() {
                     <Box sx={{ flex: 1 }}><GraficoPorCartao /></Box>
                 </Box>
             ),
-            color: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)',
+            color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
         },
     ];
 
@@ -89,8 +90,8 @@ export function GestaoCartao() {
                             sx={{ 
                                 fontWeight: 800,
                                 mb: 1,
-                                color: '#764ba2',
-                                textShadow: '0 4px 16px rgba(39,26,69,0.18)',
+                                color: '#f5f6fa',
+                                textShadow: '0 4px 16px rgba(139, 92, 246, 0.3)',
                             }}
                         >
                             Gestão de Cartão
@@ -99,7 +100,7 @@ export function GestaoCartao() {
 
                     {/* Filtros em card, logo abaixo do título */}
                     <Card 
-                        sx={{ mb: 3, borderRadius: 0.5, background: 'rgba(255,255,255,0.18)', boxShadow: '0 8px 32px rgba(130, 10, 209, 0.08)', minHeight: 80, width: '100%', maxWidth: '100%', px: { xs: 1, sm: 4 } }}
+                        sx={{ mb: 3, borderRadius: 0.5, background: (theme: Theme) => theme.palette.background.paper, boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)', minHeight: 80, width: '100%', maxWidth: '100%', px: { xs: 1, sm: 4 } }}
                     >
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3, flexWrap: { xs: 'nowrap', sm: 'wrap' }, justifyContent: 'stretch', alignItems: 'center', width: '100%', py: 1 }}>
                             <Box sx={{ flex: 1 }}>
@@ -118,12 +119,12 @@ export function GestaoCartao() {
                         {/* Coluna esquerda: Summary + Tabela */}
                         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
                             <Card
-                                gradient={'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}
+                                gradient={'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'}
                                 sx={{
                                     mb: 3,
                                     borderRadius: 0.5,
-                                    background: 'rgba(255,255,255,0.18)',
-                                    boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+                                    background: (theme: Theme) => theme.palette.background.paper,
+                                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                     width: '100%',
                                     maxWidth: '100%',
                                     px: { xs: 1, sm: 4 },
@@ -136,8 +137,8 @@ export function GestaoCartao() {
                                 sx={{
                                     mb: 3,
                                     borderRadius: 0.5,
-                                    background: 'rgba(255,255,255,0.18)',
-                                    boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+                                    background: (theme: Theme) => theme.palette.background.paper,
+                                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                     width: '100%',
                                     maxWidth: '100%',
                                     px: { xs: 1, sm: 4 },
@@ -149,12 +150,12 @@ export function GestaoCartao() {
                         {/* Coluna direita: Gráficos */}
                         <Box sx={{ flex: 1, minWidth: 350, display: 'flex', flexDirection: 'column', gap: 3 }}>
                             <Card
-                                gradient={'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)'}
+                                gradient={'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}
                                 sx={{
                                     mb: 3,
                                     borderRadius: 0.5,
-                                    background: 'rgba(255,255,255,0.18)',
-                                    boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+                                    background: (theme: Theme) => theme.palette.background.paper,
+                                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                     width: '100%',
                                     maxWidth: '100%',
                                     px: 0,
@@ -163,12 +164,12 @@ export function GestaoCartao() {
                                 <GraficoBarras />
                             </Card>
                             <Card
-                                gradient={'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)'}
+                                gradient={'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}
                                 sx={{
                                     mb: 3,
                                     borderRadius: 0.5,
-                                    background: 'rgba(255,255,255,0.18)',
-                                    boxShadow: '0 8px 32px rgba(130, 10, 209, 0.18)',
+                                    background: (theme: Theme) => theme.palette.background.paper,
+                                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                     width: '100%',
                                     maxWidth: '100%',
                                     px: 0,
@@ -195,8 +196,12 @@ export function GestaoCartao() {
                             aria-label="adicionar transação"
                             onClick={handleOpenCadastroModal}
                             sx={{
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                                background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                                boxShadow: '0 8px 25px rgba(139, 92, 246, 0.4)',
+                                '&:hover': {
+                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                    boxShadow: '0 12px 35px rgba(139, 92, 246, 0.5)',
+                                },
                             }}
                         >
                             <AddIcon />
