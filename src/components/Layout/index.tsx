@@ -28,6 +28,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import SolarPowerIcon from '@mui/icons-material/SolarPower';
 import { Link, useLocation } from 'react-router-dom';
 import { useFinanca } from '../../contexts/FinancaContext';
 
@@ -35,7 +36,7 @@ const drawerWidth = 240;
 const collapsedDrawerWidth = 80;
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const theme = useTheme();
   const location = useLocation();
 
@@ -43,6 +44,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     { text: 'Dashboard', icon: <DashboardIcon />, to: '/' },
     { text: 'Finanças', icon: <MonetizationOnIcon />, to: '/financa' },
     { text: 'Gestão de Cartão', icon: <AccountBalanceWalletIcon />, to: '/gestao-cartao' },
+    { text: 'Energia Solar', icon: <SolarPowerIcon />, to: '/energia' },
     { text: 'Pessoas', icon: <PeopleIcon />, to: '/pessoa' },
   ];
 

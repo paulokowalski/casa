@@ -7,6 +7,7 @@ import { Home } from "./views/Home";
 import { GestaoCartao } from './views/GestaoCartao';
 import PessoaView from './views/Pessoa';
 import { Financa, FinancaProvider } from './views/Financa';
+import { EnergiaWithProvider } from './views/Energia';
 import { PessoaProvider } from './contexts/PessoaContext';
 
 // ErrorBoundary simples
@@ -42,6 +43,7 @@ function App() {
               <Route path="/financa" element={<Financa />} />
               <Route path="/gestao-cartao" element={<GestaoCartao />} />
               <Route path="/pessoa" element={<PessoaView />} />
+              <Route path="/energia" element={<EnergiaWithProvider />} />
             </Routes>
           </Layout>
         </FinancaProvider>

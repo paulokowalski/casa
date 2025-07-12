@@ -264,21 +264,54 @@ export function Home() {
         const payload = res.data;
         // Exibe todos os registros recebidos, sem agrupar
         let dadosGrafico: { horario: string, potencia: number }[] = [];
+        
+        // Verificar diferentes possíveis estruturas de dados
+        let listaDados = null;
         if (payload && payload.potencias) {
-          dadosGrafico = payload.potencias.map((item: any) => {
-            const [ano, mes, dia, hora, minuto, segundo] = item.data;
-            const horario = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
+          listaDados = payload.potencias;
+        } else if (payload && payload.valores) {
+          listaDados = payload.valores;
+        }
+        
+        if (listaDados && Array.isArray(listaDados)) {
+          dadosGrafico = listaDados.map((item: any) => {
+            let horario = '';
+            let potencia = 0;
+            
+            // Verificar diferentes formatos de data
+            if (item.data && Array.isArray(item.data) && item.data.length >= 6) {
+              const [ano, mes, dia, hora, minuto, segundo] = item.data;
+              horario = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
+            } else if (typeof item.data === 'string') {
+              const partes = item.data.split('T')[1]?.split(':');
+              if (partes && partes.length >= 2) {
+                horario = `${partes[0]}:${partes[1]}`;
+              }
+            }
+            
+            // Verificar diferentes nomes do campo de potência
+            potencia = item.potencia !== undefined ? item.potencia : 
+                     item.valor !== undefined ? item.valor : 0;
+            
             return {
               horario,
-              potencia: item.potencia,
+              potencia,
             };
           });
         }
         setPotencias(dadosGrafico);
-        if (payload && payload.geracao !== undefined) {
-          setGeracaoValor(payload.geracao);
+        console.log('Dashboard - Payload completo:', payload);
+        console.log('Dashboard - payload.gerado:', payload.gerado);
+        console.log('Dashboard - payload.geracao:', payload.geracao);
+        console.log('Dashboard - Dados do gráfico:', dadosGrafico);
+        console.log('Dashboard - Quantidade de pontos:', dadosGrafico.length);
+        if (payload && (payload.gerado !== undefined || payload.geracao !== undefined)) {
+          const valor = payload.gerado !== undefined ? payload.gerado : payload.geracao;
+          setGeracaoValor(valor);
+          console.log('Dashboard - GeracaoValor definido como:', valor);
         } else {
           setGeracaoValor(null);
+          console.log('Dashboard - GeracaoValor definido como null');
         }
         setGeracaoLoading(false);
       })
@@ -447,15 +480,23 @@ export function Home() {
             <ErrorCard error={geracaoError} title="Erro ao carregar geração solar" />
           ) : (
             <Box sx={{ background: '#23263a', borderRadius: 2, p: 2 }}>
-              <ResponsiveContainer width="100%" height={320}>
-                <LineChart data={potencias} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
-                  <XAxis dataKey="horario" tick={{ fill: '#f5f6fa' }} />
-                  <YAxis label={{ value: 'Potência (W)', angle: -90, position: 'insideLeft', fill: '#f5f6fa' }} tick={{ fill: '#f5f6fa' }} />
-                  <RechartsTooltip contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }} />
-                  <Line type="monotone" dataKey="potencia" stroke="#fbbf24" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
+              {potencias.length > 0 ? (
+                <ResponsiveContainer width="100%" height={320}>
+                  <LineChart data={potencias} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
+                    <XAxis dataKey="horario" tick={{ fill: '#f5f6fa' }} />
+                    <YAxis label={{ value: 'Potência (W)', angle: -90, position: 'insideLeft', fill: '#f5f6fa' }} tick={{ fill: '#f5f6fa' }} />
+                    <RechartsTooltip contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }} formatter={(v: any) => `${v} W`} />
+                    <Line type="monotone" dataKey="potencia" stroke="#fbbf24" dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box sx={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="body1" sx={{ color: '#f5f6fa', textAlign: 'center' }}>
+                    Nenhum dado de potência disponível para hoje
+                  </Typography>
+                </Box>
+              )}
             </Box>
           )}
         </Box>
