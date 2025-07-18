@@ -20,7 +20,8 @@ export function formatCurrencyInput(valor: string): string {
 // Exemplo: parseCurrency('R$ 1.234,56') => 1234.56
 export function parseCurrency(valor: string): number {
   if (!valor) return 0;
-  const clean = valor.replace(/[^\d,]/g, '').replace(',', '.');
+  // Permite o sinal de menos no início
+  const clean = valor.replace(/[^\d,-]/g, '').replace(',', '.');
   return parseFloat(clean) || 0;
 }
 

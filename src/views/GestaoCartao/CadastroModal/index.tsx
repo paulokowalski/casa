@@ -8,7 +8,7 @@ import {
     MenuItem,
     InputAdornment,
 } from '@mui/material';
-import { formatCurrency, parseCurrency, toISODate } from '../../../functions/global';
+import { formatCurrency, parseCurrency, toISODate, formatCurrencyInput } from '../../../functions/global';
 import { Modal } from '../../../components/ui/Modal';
 
 interface CadastroModalProps {
@@ -29,6 +29,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
     const [cartao, setCartao] = useState('');
     const [success, setSuccess] = useState(false);
     const { pessoas } = usePessoa();
+    const [valorEmEdicao, setValorEmEdicao] = useState(false);
 
     const cartoes = [
         'VIRTUAL C6',
@@ -111,9 +112,34 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
     }
 
     const handleValorChange = (e: ChangeEvent<HTMLInputElement>) => {
-        let valor = e.target.value.replace(/\D/g, '');
-        valor = formatCurrency(Number(valor) / 100);
-        setValorProduto(valor);
+        let valor = e.target.value;
+        // Permite apenas números e o sinal de menos no início
+        valor = valor.replace(/(?!^-)[^\d]/g, '');
+        let negativo = false;
+        if (valor.startsWith('-')) {
+            negativo = true;
+            valor = valor.substring(1);
+        }
+        if (valor === '') {
+            setValorProduto(negativo ? '-' : '');
+            return;
+        }
+        let numero = parseInt(valor, 10);
+        if (isNaN(numero)) numero = 0;
+        let valorFormatado = (numero / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (negativo) valorFormatado = '-' + valorFormatado;
+        setValorProduto(valorFormatado);
+    };
+
+    const handleValorBlur = () => {
+        if (valorProduto === '' || valorProduto === '-') return;
+        const num = parseFloat(valorProduto.replace(',', '.'));
+        if (!isNaN(num)) setValorProduto((num < 0 ? '-' : '') + String(Math.abs(num)).replace('.', ','));
+        setValorEmEdicao(false);
+    };
+
+    const handleValorFocus = () => {
+        setValorEmEdicao(true);
     };
 
     const handleDataChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -137,113 +163,77 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
             <Modal
                 open={open}
                 onClose={handleCloseModal}
-                title="Nova Transação"
+                title={compra ? 'Editar Transação' : 'Cadastrar Transação'}
                 maxWidth="sm"
                 actions={
                     <>
-                        <Button onClick={handleCloseModal} color="secondary" variant="contained">
-                            Cancelar
-                        </Button>
-                        {!success && <Button onClick={handleSubmit} color="primary" variant="contained">
-                            {compra ? 'Salvar' : 'Cadastrar'}
-                        </Button>}
-                        {success && <Button onClick={handleCloseModal} color="primary" variant="contained">
-                            OK
-                        </Button>}
+                        <Button onClick={handleCloseModal}>Cancelar</Button>
+                        {!success && <Button onClick={handleSubmit} variant="contained">{compra ? 'Salvar' : 'Cadastrar'}</Button>}
+                        {success && <Button onClick={handleCloseModal} variant="contained">OK</Button>}
                     </>
                 }
             >
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 8 }}>
                     {!success && (
                         <>
                             <TextField
-                                fullWidth
                                 label="Produto"
                                 value={produto}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setProduto(e.target.value)}
-                                variant="outlined"
-                                size="small"
+                                fullWidth
                             />
                             <TextField
-                                fullWidth
                                 label="Valor Compra"
                                 value={valorProduto}
                                 onChange={handleValorChange}
-                                variant="outlined"
-                                size="small"
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start">R$</InputAdornment>,
-                                }}
+                                fullWidth
+                                inputProps={{ inputMode: 'numeric', pattern: '[0-9,.\-]*' }}
                             />
                             <TextField
-                                fullWidth
                                 label="Data Compra"
                                 value={dataCompra}
                                 onChange={handleDataChange}
-                                variant="outlined"
-                                size="small"
+                                fullWidth
                                 type="date"
-                                InputLabelProps={{ 
-                                    shrink: true,
-                                    sx: { color: 'rgba(0, 0, 0, 0.6)' }
-                                }}
-                                inputProps={{
-                                    max: getTodayISO()
-                                }}
-                                sx={{
-                                    '& input::-webkit-calendar-picker-indicator': {
-                                        cursor: 'pointer'
-                                    }
-                                }}
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{ max: getTodayISO() }}
                             />
                             <TextField
                                 select
-                                fullWidth
                                 label="Parcelas"
                                 value={parcela}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setParcela(e.target.value)}
-                                variant="outlined"
-                                size="small"
+                                fullWidth
                             >
                                 {parcelasOptions.map((num) => (
-                                    <MenuItem key={num} value={num}>
-                                        {num}x
-                                    </MenuItem>
+                                    <MenuItem key={num} value={num}>{num}x</MenuItem>
                                 ))}
                             </TextField>
                             <TextField
                                 select
-                                fullWidth
                                 label="Pessoa"
                                 value={pessoa}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setPessoa(e.target.value)}
-                                variant="outlined"
-                                size="small"
+                                fullWidth
                             >
                                 {pessoas.map((p) => (
-                                    <MenuItem key={p.id} value={p.nome}>
-                                        {p.nome.toUpperCase()}
-                                    </MenuItem>
+                                    <MenuItem key={p.id} value={p.nome}>{p.nome.toUpperCase()}</MenuItem>
                                 ))}
                             </TextField>
                             <TextField
                                 select
-                                fullWidth
                                 label="Cartão"
                                 value={cartao}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setCartao(e.target.value)}
-                                variant="outlined"
-                                size="small"
+                                fullWidth
                             >
                                 {cartoes.map((c) => (
-                                    <MenuItem key={c} value={c}>
-                                        {c.toUpperCase()}
-                                    </MenuItem>
+                                    <MenuItem key={c} value={c}>{c.toUpperCase()}</MenuItem>
                                 ))}
                             </TextField>
                         </>
                     )}
-                </Box>
+                </div>
             </Modal>
         </>
     );
