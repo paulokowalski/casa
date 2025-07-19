@@ -50,9 +50,6 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
         
         const res = await getGeracaoSolar(dataStr);
         const payload = res.data;
-        // Logs para debug (remover em produção)
-        console.log('Payload completo da API:', payload);
-        console.log('Chaves do payload:', Object.keys(payload));
         
         if (payload && payload.potencias) {
           // Converter dados do formato do dashboard para o formato da tela de energia
@@ -77,7 +74,6 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
           setDadosEnergia(dadosEnergia);
           
           // Usar o valor de geração total da API (em kWh)
-          console.log('Valor de geracao da API:', payload.geracao);
           
           // Verificar diferentes possíveis nomes do campo
           const possiveisCampos = ['gerado', 'geracao', 'geracaoTotal', 'totalGeracao', 'energia', 'energiaTotal', 'totalEnergia', 'kwh', 'totalKwh'];
@@ -87,7 +83,6 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
           for (const campo of possiveisCampos) {
             if (payload[campo] !== undefined) {
               valorGeracao = payload[campo];
-              console.log(`Campo encontrado: ${campo} = ${valorGeracao}`);
               break;
             }
           }
@@ -98,7 +93,6 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
               for (const campo of possiveisCampos) {
                 if (payload.data[campo] !== undefined) {
                   valorGeracao = payload.data[campo];
-                  console.log(`Campo encontrado em payload.data: ${campo} = ${valorGeracao}`);
                   break;
                 }
               }
@@ -112,7 +106,6 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
                   for (const campo of possiveisCampos) {
                     if (potencia[campo] !== undefined) {
                       valorGeracao = potencia[campo];
-                      console.log(`Campo encontrado em potencia: ${campo} = ${valorGeracao}`);
                       break;
                     }
                   }
@@ -124,14 +117,12 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
           
           if (valorGeracao !== null) {
             setGeracaoTotal(valorGeracao);
-            console.log('GeracaoTotal definido como:', valorGeracao);
           } else {
             // Se não encontrar o campo de geração, calcular baseado nas potências
             // Assumindo que cada registro representa 1 minuto de medição
             const totalWatts = dadosEnergia.reduce((acc: number, dado: DadosEnergia) => acc + dado.geracao, 0);
             const totalKwh = (totalWatts * 1) / (1000 * 60); // 1 minuto = 1/60 hora
             setGeracaoTotal(totalKwh);
-            console.log('GeracaoTotal calculado como:', totalKwh, 'kWh (baseado nas potências)');
           }
         } else {
           setDadosEnergia([]);
@@ -206,7 +197,6 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
           for (const campo of possiveisCampos) {
             if (payload[campo] !== undefined) {
               valorGeracao = payload[campo];
-              console.log(`Campo encontrado (recarregar): ${campo} = ${valorGeracao}`);
               break;
             }
           }
@@ -217,7 +207,6 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
               for (const campo of possiveisCampos) {
                 if (payload.data[campo] !== undefined) {
                   valorGeracao = payload.data[campo];
-                  console.log(`Campo encontrado em payload.data (recarregar): ${campo} = ${valorGeracao}`);
                   break;
                 }
               }
@@ -231,7 +220,6 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
                   for (const campo of possiveisCampos) {
                     if (potencia[campo] !== undefined) {
                       valorGeracao = potencia[campo];
-                      console.log(`Campo encontrado em potencia (recarregar): ${campo} = ${valorGeracao}`);
                       break;
                     }
                   }
@@ -243,14 +231,12 @@ export function EnergiaProvider({ children }: { children: React.ReactNode }) {
           
           if (valorGeracao !== null) {
             setGeracaoTotal(valorGeracao);
-            console.log('GeracaoTotal definido como (recarregar):', valorGeracao);
           } else {
             // Se não encontrar o campo de geração, calcular baseado nas potências
             // Assumindo que cada registro representa 1 minuto de medição
             const totalWatts = dadosEnergia.reduce((acc: number, dado: DadosEnergia) => acc + dado.geracao, 0);
             const totalKwh = (totalWatts * 1) / (1000 * 60); // 1 minuto = 1/60 hora
             setGeracaoTotal(totalKwh);
-            console.log('GeracaoTotal calculado como (recarregar):', totalKwh, 'kWh (baseado nas potências)');
           }
         } else {
           setDadosEnergia([]);

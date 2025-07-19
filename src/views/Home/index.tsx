@@ -300,18 +300,11 @@ export function Home() {
           });
         }
         setPotencias(dadosGrafico);
-        console.log('Dashboard - Payload completo:', payload);
-        console.log('Dashboard - payload.gerado:', payload.gerado);
-        console.log('Dashboard - payload.geracao:', payload.geracao);
-        console.log('Dashboard - Dados do gráfico:', dadosGrafico);
-        console.log('Dashboard - Quantidade de pontos:', dadosGrafico.length);
         if (payload && (payload.gerado !== undefined || payload.geracao !== undefined)) {
           const valor = payload.gerado !== undefined ? payload.gerado : payload.geracao;
           setGeracaoValor(valor);
-          console.log('Dashboard - GeracaoValor definido como:', valor);
         } else {
           setGeracaoValor(null);
-          console.log('Dashboard - GeracaoValor definido como null');
         }
         setGeracaoLoading(false);
       })

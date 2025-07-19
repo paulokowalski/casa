@@ -14,7 +14,6 @@ api.interceptors.request.use(config => {
         // Garante que headers existe e é do tipo correto
         (config.headers as AxiosRequestHeaders)['X-API-KEY'] = token;
     }
-    console.log('Enviando X-API-KEY:', (config.headers as AxiosRequestHeaders)['X-API-KEY']);
     return config;
 });
 

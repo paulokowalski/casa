@@ -198,7 +198,6 @@ export function GraficoLinhasPotenciaDia({ diaSelecionado }: Props) {
         for (const campo of possiveisCampos) {
           if (payload[campo] !== undefined) {
             valorGeracao = payload[campo];
-            console.log(`Campo de geração encontrado: ${campo} = ${valorGeracao}`);
             break;
           }
         }
