@@ -1,17 +1,20 @@
 import axios from "axios";
 import { API_BASE_URL } from '../config/urls';
 import { API_URLS } from '../config/urls';
+import type { AxiosRequestHeaders } from 'axios';
 
 export const api = axios.create({
     baseURL: API_BASE_URL
 });
 
-// Interceptor para adicionar token de autenticação
+// Interceptor para adicionar token de autenticação no header X-API-KEY (tudo maiúsculo)
 api.interceptors.request.use(config => {
-    const token = localStorage.getItem('token');
+    const token = import.meta.env.VITE_API_KEY;
     if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        // Garante que headers existe e é do tipo correto
+        (config.headers as AxiosRequestHeaders)['X-API-KEY'] = token;
     }
+    console.log('Enviando X-API-KEY:', (config.headers as AxiosRequestHeaders)['X-API-KEY']);
     return config;
 });
 
