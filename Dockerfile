@@ -15,6 +15,7 @@ COPY . .
 # Adicionar suporte a build arg para VITE_API_BASE_URL
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_API_KEY=${VITE_API_KEY}
 
 # Build de produção com Vite
 RUN npm run build
