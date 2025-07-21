@@ -12,9 +12,9 @@ export function Energia() {
   const [diaSelecionado, setDiaSelecionado] = useState<number | null>(null);
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 } }}>
+    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 }, mt: 10 }}>
       {/* Header da página */}
-      <Box sx={{ mt: 4, mb: 2, textAlign: 'center', width: '100%' }}>
+      <Box sx={{ mb: 2, textAlign: 'center', width: '100%' }}>
         <Typography 
           variant="h3" 
           sx={{ 

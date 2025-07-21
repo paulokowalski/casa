@@ -100,7 +100,7 @@ export const ErrorCard: React.FC<ErrorCardProps> = ({
         },
       }}
     >
-      <CardContent sx={{ p: 3, textAlign: 'center' }}>
+      <CardContent sx={{ p: 3, textAlign: 'center', py: 2 }}>
         <ErrorOutlineIcon sx={{ fontSize: 48, color: '#ef4444', mb: 2 }} />
         <Typography variant="h6" sx={{ color: '#1a202c' }} gutterBottom>
           {title}

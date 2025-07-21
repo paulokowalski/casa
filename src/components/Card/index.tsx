@@ -65,6 +65,7 @@ export const Card: React.FC<CardProps> = ({
         width: '100%', 
         flex: 1, 
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'stretch',
+        py: 2,
       }}>
         {children}
       </Box>

@@ -86,8 +86,8 @@ const PessoaView: React.FC = () => {
   ];
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ mt: 10, mb: 4, textAlign: 'center' }} className="fade-in">
+    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 }, mt: 10 }}>
+      <Box sx={{ mb: 2, textAlign: 'center' }} className="fade-in">
         <Typography 
           variant="h3" 
           sx={{ 
@@ -110,7 +110,7 @@ const PessoaView: React.FC = () => {
           Gerencie os usuários do sistema
         </Typography>
       </Box>
-      <Card title="Lista de Pessoas">
+      <Card>
         <LoadingOverlay loading={loading} text="Carregando...">
           <Table<Pessoa>
             columns={columns}
@@ -216,7 +216,7 @@ const PessoaView: React.FC = () => {
           </svg>
         </Button>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

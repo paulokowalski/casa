@@ -318,7 +318,7 @@ export function Home() {
     <Box sx={{ minHeight: '100vh', background: theme => theme.palette.background.default, py: 0 }}>
       <Container maxWidth="xl" sx={{ py: { xs: 4, md: 8 } }}>
         {/* Header da página */}
-        <Box sx={{ mt: 6, mb: 6, textAlign: 'center' }}>
+        <Box sx={{ mt: 10, mb: 6, textAlign: 'center' }}>
           <Typography 
             variant="h2" 
             sx={{ 
