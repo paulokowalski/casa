@@ -1,9 +1,6 @@
-// Arquivo central de URLs do sistema
-
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const API_URLS = {
-  CEARA: 'https://www.thesportsdb.com/api/v1/json/3/lookuptable.php?l=4351&s=2025',
   FIPE: 'https://parallelum.com.br/fipe/api/v2/cars/brands/23/models/9048/years/2021-1',
   DOLLAR: 'https://economia.awesomeapi.com.br/last/USD-BRL',
   EURO: 'https://economia.awesomeapi.com.br/last/EUR-BRL',
@@ -22,4 +19,6 @@ export const API_URLS = {
   FILTRO_PESSOAS: (ano: string|number, mes: string|number) => `/v1/filtro/pessoas/${ano}/${mes}`,
   FILTRO_CARTAO: (ano: string|number, mes: string|number, pessoa: string|number) => `/v1/filtro/cartao/${ano}/${mes}/${pessoa}`,
   GERACAO_SOLAR: (data: string) => `/v1/geracao-solar?data=${data}`,
+  API_BRASILEIRAO_POSICAO: (idTime: string|number) =>`/v1/brasileirao-serie-a/posicao/${idTime}`,
+  API_BRASILEIRAO_RODADA: (idTime: string|number) => `/v1/brasileirao-serie-a/rodada-atual/${idTime}`,
 }; 

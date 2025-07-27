@@ -85,3 +85,13 @@ export function atualizarTransacaoSerie(idSerie: string, transacao: Record<strin
 export function getGeracaoSolar(data: string) {
   return api.get(API_URLS.GERACAO_SOLAR(data));
 }
+
+// Função para buscar dados do Ceará na nova API
+export function getCearaNova(idTime: string|number) {
+  return api.get(API_URLS.API_BRASILEIRAO_POSICAO(idTime));
+}
+
+// Função para buscar o próximo confronto do time
+export function getRodadaAtual(idTime: string|number) {
+  return api.get(API_URLS.API_BRASILEIRAO_RODADA(idTime));
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FipeData, CurrencyData, CearaData, CearaApiResponse } from '../types/api';
+import { FipeData, CurrencyData } from '../types/api';
 
 // Estados possíveis para as requisições
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
@@ -84,40 +84,3 @@ export function useCurrencyData(url: string) {
     refetch,
   };
 }
-
-// Hook específico para dados do Ceará
-export function useCearaData(url: string) {
-  const { data, loading, error, refetch } = useApiData<CearaApiResponse>(url);
-  
-  // Encontra os dados do Ceará na tabela
-  const cearaData = data?.table?.find((team: CearaData) => team.strTeam === 'Ceará') || null;
-  
-  return {
-    data: cearaData,
-    loading,
-    error,
-    refetch,
-  };
-}
-
-export function useBitcoinPrice() {
-  const [data, setData] = useState<{ usd: number, brl: number } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLoading(true);
-    fetch('https://blockchain.info/ticker')
-      .then(res => res.json())
-      .then(json => {
-        setData({ usd: json.USD.last, brl: json.BRL.last });
-        setLoading(false);
-      })
-      .catch(err => {
-        setError('Erro ao buscar valor do Bitcoin');
-        setLoading(false);
-      });
-  }, []);
-
-  return { data, loading, error };
-} 

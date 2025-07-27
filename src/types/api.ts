@@ -30,7 +30,26 @@ export interface CearaData {
   strBadge?: string;
 }
 
-// Interface para resposta da API do Ceará
-export interface CearaApiResponse {
-  table: CearaData[];
+export interface CearaNovaApiResponse {
+    nomeTime: string;
+    imagem: string;
+    posicao: number;
+    pontos: number;
+    vitorias: number;
+    empates: number;
+    derrotas: number;
+    golsPro: number;
+    golsContra: number;
+    saldoGols: number;
+}
+
+export interface RodadaAtualApiResponse {
+    rodada: number;
+    dataJogo: string;
+    timeCasa: string;
+    imagemTimeCasa: string;
+    golsTimeCasa: number;
+    timeVisitante: string;
+    imagemTimeVisitante: string;
+    golsTimeVisitante: number;
 } 

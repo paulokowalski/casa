@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Avatar, Chip, Stack, Tooltip, Container, Paper } from '@mui/material';
+import React from 'react';
+import { Box, Typography, Container, Paper } from '@mui/material';
 import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import EuroSymbolIcon from '@mui/icons-material/EuroSymbol';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 
 // Componentes profissionais
@@ -13,174 +12,16 @@ import { LoadingCard } from '../../components/ui/LoadingCard';
 import { ErrorCard } from '../../components/ui/ErrorCard';
 import { Card } from '../../components/Card';
 import { getGeracaoSolar } from '../../services/api';
+import { getCearaNova } from '../../services/api';
+import type { CearaNovaApiResponse } from '../../types/api';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { getRodadaAtual } from '../../services/api';
+import type { RodadaAtualApiResponse } from '../../types/api';
 
 // Configurações
 import { API_URLS } from '../../config/urls';
-import { useCearaData, useFipeData, useCurrencyData, useBitcoinPrice } from '../../hooks/useApiData';
+import { useFipeData, useCurrencyData } from '../../hooks/useApiData';
 import { useFinanca } from '../../contexts/FinancaContext';
-import { DESIGN_CONFIG } from '../../config/constants';
-
-function CearaTableCard() {
-  const { data, loading, error, refetch } = useCearaData(API_URLS.CEARA);
-
-  if (loading === 'loading') {
-    return <LoadingCard title="Ceará" variant="detailed" />;
-  }
-
-  if (error) {
-    return <ErrorCard error={error} onRetry={refetch} title="Erro ao carregar dados do Ceará" />;
-  }
-
-  if (!data) {
-    return <ErrorCard error="Nenhum dado disponível" title="Dados não encontrados" />;
-  }
-
-  return (
-    <Card
-      title="Ceará"
-      description="Brasileirão 2025"
-      icon={<SportsSoccerIcon />}
-      gradient="linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)"
-      badge={`${data.intPoints} pts`}
-      badgeColor="success"
-    >
-      <Box sx={{ textAlign: 'center', py: 0.5 }}>
-        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.2, fontSize: '0.85rem', background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-          {data.intRank}º lugar
-        </Typography>
-        <Typography variant="caption" sx={{ mb: 0.2, fontSize: '0.65rem', color: '#a0aec0' }}>
-          Posição na tabela
-        </Typography>
-        <Stack direction="row" spacing={0.3} justifyContent="center" flexWrap="wrap" useFlexGap>
-          <Chip label={`J: ${data.intPlayed}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'rgba(139, 92, 246, 0.2)', color: '#f5f6fa', fontWeight: 600 }} />
-          <Chip label={`V: ${data.intWin}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: '#fff', fontWeight: 600 }} />
-          <Chip label={`E: ${data.intDraw}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', fontWeight: 600 }} />
-          <Chip label={`D: ${data.intLoss}`} size="small" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: '#fff', fontWeight: 600 }} />
-        </Stack>
-      </Box>
-    </Card>
-  );
-}
-
-function CarFipeCard() {
-  const { data, loading, error, refetch } = useFipeData(API_URLS.FIPE);
-
-  if (loading === 'loading') {
-    return <LoadingCard title="Valor FIPE" variant="detailed" />;
-  }
-
-  if (error) {
-    return <ErrorCard error={error} onRetry={refetch} title="Erro ao carregar dados da FIPE" />;
-  }
-
-  if (!data) {
-    return <ErrorCard error="Nenhum dado disponível" title="Dados não encontrados" />;
-  }
-
-  return (
-    <Card
-      title={`${data.brand} ${data.model}`}
-      description={`Ano ${data.modelYear} • ${data.fuel}`}
-      icon={<DirectionsCarFilledIcon />}
-      gradient="linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)"
-      badge="FIPE"
-      badgeColor="info"
-    >
-      <Box sx={{ textAlign: 'center', py: 0.5 }}>
-        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.2, fontSize: '0.85rem', background: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-          {data.price}
-        </Typography>
-        <Typography variant="caption" sx={{ mb: 0.2, fontSize: '0.65rem', color: '#a0aec0' }}>
-          Valor FIPE ({data.referenceMonth})
-        </Typography>
-        <Chip label={`Código: ${data.codeFipe}`} sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'rgba(54, 209, 220, 0.2)', color: '#f5f6fa', fontWeight: 600, mb: 0.5 }} />
-        <Box display="flex" justifyContent="center">
-          <a href={`https://www.webmotors.com.br/carros-usados/${encodeURIComponent(data.brand.split(' - ')[1] || data.brand)}/${encodeURIComponent(data.model.split(' ')[0])}?ano=${data.modelYear}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-            <Chip label="Ver no Mercado" sx={{ fontSize: '0.65rem', height: 16, px: 0.5, background: 'linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)', color: '#fff', fontWeight: 600, cursor: 'pointer', '&:hover': { transform: 'scale(1.05)' }, transition: 'transform 0.3s ease' }} />
-          </a>
-        </Box>
-      </Box>
-    </Card>
-  );
-}
-
-function CurrencyCard({ url, icon, label, gradient }: { url: string; icon: React.ReactNode; label: string; gradient: string }) {
-  const { data, loading, error, refetch } = useCurrencyData(url);
-
-  if (loading === 'loading') {
-    return <LoadingCard title={label} variant="compact" height={DESIGN_CONFIG.COMPACT_CARD_HEIGHT} />;
-  }
-
-  if (error) {
-    return <ErrorCard error={error} onRetry={refetch} title={`Erro ao carregar ${label}`} variant="compact" />;
-  }
-
-  if (!data) {
-    return <ErrorCard error="Nenhum dado disponível" title="Dados não encontrados" variant="compact" />;
-  }
-
-  return (
-    <Card
-      title={label}
-      description="Cotação atual"
-      icon={icon}
-      gradient={gradient}
-    >
-      <Box sx={{ textAlign: 'center', py: 0.5 }}>
-        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.2, fontSize: '0.85rem', background: gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-          R$ {Number(data.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}
-        </Typography>
-        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: '#a0aec0' }}>
-          Compra • Venda: R$ {Number(data.ask).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}
-        </Typography>
-      </Box>
-    </Card>
-  );
-}
-
-function DespesasVencerCard() {
-  const { getDespesasProximasTodasPessoas } = useFinanca();
-  const [qtd, setQtd] = useState(0);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    setLoading(true);
-    getDespesasProximasTodasPessoas().then(despesas => {
-      // Filtrar só as que vencem em até 30 dias e NÃO estão pagas
-      const hoje = new Date();
-      const proximas30 = despesas.filter((t: any) => {
-        if (t.paga) return false; // só não pagas!
-        const dataVenc = Array.isArray(t.data)
-          ? new Date(t.data[0], t.data[1] - 1, t.data[2])
-          : new Date(t.data);
-        const diff = (dataVenc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
-        return diff >= 0 && diff <= 30;
-      });
-      setQtd(proximas30.length);
-      setLoading(false);
-    });
-  }, [getDespesasProximasTodasPessoas]);
-  return (
-    <Card
-      title="Despesas a vencer"
-      description="Próximos 30 dias"
-      icon={<CalendarMonthIcon />}
-      gradient="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
-      badge={qtd > 0 ? `${qtd}` : undefined}
-      badgeColor={qtd > 0 ? 'error' : 'info'}
-    >
-      <Box sx={{ textAlign: 'center', py: 0.5 }}>
-        {loading ? (
-          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: '#a0aec0' }}>Carregando...</Typography>
-        ) : qtd > 0 ? (
-          <Typography variant="subtitle2" color="error" fontWeight={700} sx={{ fontSize: '0.85rem' }}>{qtd} despesa{qtd > 1 ? 's' : ''} a vencer</Typography>
-        ) : (
-          <Typography variant="caption" color="success.main" sx={{ fontSize: '0.65rem' }}>Nenhuma despesa a vencer nos próximos 30 dias.</Typography>
-        )}
-      </Box>
-    </Card>
-  );
-}
 
 // Novo componente para card compacto e informativo
 function DashboardInfoCard({ icon, title, value, loading, error, label }: {
@@ -221,13 +62,104 @@ function DashboardInfoCard({ icon, title, value, loading, error, label }: {
   );
 }
 
+function CearaNovaCard({ compact }: { compact?: boolean }) {
+  const [data, setData] = React.useState<CearaNovaApiResponse | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [rodada, setRodada] = React.useState<RodadaAtualApiResponse | null>(null);
+  const [loadingRodada, setLoadingRodada] = React.useState(true);
+  const [errorRodada, setErrorRodada] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setLoading(true);
+    getCearaNova(1837)
+      .then(res => {
+        setData(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError('Erro ao buscar dados do Ceará');
+        setLoading(false);
+      });
+    setLoadingRodada(true);
+    getRodadaAtual(1837)
+      .then(res => {
+        setRodada(res.data);
+        setLoadingRodada(false);
+      })
+      .catch(err => {
+        setErrorRodada('Erro ao buscar próximo confronto');
+        setLoadingRodada(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <LoadingCard title="Ceará" variant="detailed" />;
+  }
+  if (error) {
+    return <ErrorCard error={error} title="Erro ao carregar dados do Ceará" />;
+  }
+  if (!data) {
+    return <ErrorCard error="Nenhum dado disponível" title="Dados não encontrados" />;
+  }
+
+  return (
+    <Card gradient="linear-gradient(135deg, #23263a 0%, #6366f1 100%)" sx={{ p: compact ? 2 : { xs: 2, md: 3 }, minHeight: compact ? 220 : 320 }}>
+      <Box sx={{ width: '100%', display: 'flex', flexDirection: compact ? 'row' : 'column', alignItems: 'center', justifyContent: compact ? 'flex-start' : 'flex-start', py: 1, gap: compact ? 2 : 0 }}>
+        {/* Header: escudo, nome, posição */}
+        <Box sx={{ background: 'transparent', borderRadius: '50%', p: 0.5, boxShadow: 2, minWidth: 48 }}>
+          {data.imagem ? (
+            <img src={data.imagem} alt={data.nomeTime} style={{ width: 48, height: 48, objectFit: 'contain', display: 'block', borderRadius: '50%' }} />
+          ) : (
+            <SportsSoccerIcon sx={{ fontSize: 48, color: '#8b5cf6' }} />
+          )}
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0, textAlign: compact ? 'left' : 'center' }}>
+          <Typography variant={compact ? 'subtitle1' : 'h6'} sx={{ color: '#f5f6fa', fontWeight: 800, fontSize: compact ? '1rem' : '1.2rem', letterSpacing: 1 }}>{data.nomeTime}</Typography>
+          <Typography variant="caption" sx={{ color: '#a0aec0', fontWeight: 600, fontSize: compact ? '0.85rem' : '0.95rem' }}>Posição: <b>{data.posicao}º</b></Typography>
+          <Typography variant={compact ? 'h5' : 'h3'} sx={{ color: '#8b5cf6', fontWeight: 900, mb: compact ? 0.5 : 1, letterSpacing: 2, textShadow: '0 2px 8px #23263a' }}>{data.pontos} pts</Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: compact ? 'flex-start' : 'center', gap: 0.5, mb: 1 }}>
+            <Box sx={{ bgcolor: '#10b981', color: '#fff', borderRadius: 2, px: 1, py: 0.2, fontWeight: 700, fontSize: '0.75rem' }}>V: {data.vitorias}</Box>
+            <Box sx={{ bgcolor: '#f59e42', color: '#fff', borderRadius: 2, px: 1, py: 0.2, fontWeight: 700, fontSize: '0.75rem' }}>E: {data.empates}</Box>
+            <Box sx={{ bgcolor: '#ef4444', color: '#fff', borderRadius: 2, px: 1, py: 0.2, fontWeight: 700, fontSize: '0.75rem' }}>D: {data.derrotas}</Box>
+            <Box sx={{ bgcolor: '#6366f1', color: '#fff', borderRadius: 2, px: 1, py: 0.2, fontWeight: 700, fontSize: '0.75rem' }}>GP: {data.golsPro}</Box>
+            <Box sx={{ bgcolor: '#6366f1', color: '#fff', borderRadius: 2, px: 1, py: 0.2, fontWeight: 700, fontSize: '0.75rem' }}>GC: {data.golsContra}</Box>
+            <Box sx={{ bgcolor: data.saldoGols >= 0 ? '#10b981' : '#ef4444', color: '#fff', borderRadius: 2, px: 1, py: 0.2, fontWeight: 700, fontSize: '0.75rem' }}>SG: {data.saldoGols}</Box>
+          </Box>
+        </Box>
+      </Box>
+      {/* Footer: Próximo confronto */}
+      <Box sx={{ width: '100%', mt: 1, p: 1, borderRadius: 2, background: 'rgba(99,102,241,0.10)', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', boxShadow: 0 }}>
+        {loadingRodada ? (
+          <Typography variant="caption" sx={{ color: '#a0aec0' }}>Carregando confronto...</Typography>
+        ) : errorRodada ? (
+          <Typography variant="caption" color="error">{errorRodada}</Typography>
+        ) : rodada ? (
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <img src={rodada.imagemTimeCasa} alt={rodada.timeCasa} style={{ width: 24, height: 24, objectFit: 'contain', borderRadius: 12, border: '1px solid #eee', background: 'transparent' }} />
+              <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 700 }}>{rodada.timeCasa}</Typography>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#8b5cf6', fontWeight: 900, fontSize: '1rem', mx: 1 }}>{rodada.golsTimeCasa} <span style={{ color: '#a0aec0', fontWeight: 400 }}>x</span> {rodada.golsTimeVisitante}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <img src={rodada.imagemTimeVisitante} alt={rodada.timeVisitante} style={{ width: 24, height: 24, objectFit: 'contain', borderRadius: 12, border: '1px solid #eee', background: 'transparent' }} />
+              <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 700 }}>{rodada.timeVisitante}</Typography>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#a0aec0', fontWeight: 600, ml: 2 }}>
+              {rodada.dataJogo ? new Date(rodada.dataJogo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''}
+            </Typography>
+          </>
+        ) : null}
+      </Box>
+    </Card>
+  );
+}
+
 export function Home() {
   // Hooks para dados reais
-  const { data: cearaData, loading: cearaLoading, error: cearaError } = useCearaData(API_URLS.CEARA);
   const { data: fipeData, loading: fipeLoading, error: fipeError } = useFipeData(API_URLS.FIPE);
   const { data: dollarData, loading: dollarLoading, error: dollarError } = useCurrencyData(API_URLS.DOLLAR);
   const { data: euroData, loading: euroLoading, error: euroError } = useCurrencyData(API_URLS.EURO);
-  const { data: bitcoinData, loading: bitcoinLoading, error: bitcoinError } = useBitcoinPrice();
   const { getDespesasProximasTodasPessoas } = useFinanca();
   const [qtdDespesas, setQtdDespesas] = React.useState<number | null>(null);
   const [qtdLoading, setQtdLoading] = React.useState(true);
@@ -336,131 +268,61 @@ export function Home() {
         {/* Grid responsivo de cards padrão do sistema */}
         <Box sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-          gap: 5,
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
+          gap: 3,
           justifyContent: 'center',
           alignItems: 'stretch',
           pb: 2,
         }}>
-          {/* Card Ceará */}
-          {cearaLoading === 'loading' ? (
-            <LoadingCard title="Ceará" variant="detailed" />
-          ) : cearaError ? (
-            <ErrorCard error={cearaError} title="Erro ao carregar dados do Ceará" />
-          ) : cearaData ? (
-            <Card gradient="linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)">
-              <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  {cearaData && cearaData.strBadge ? (
-                    <img src={cearaData.strBadge} alt="Escudo Ceará" style={{ width: 22, height: 22, objectFit: 'contain', display: 'block' }} />
-                  ) : (
-                    <SportsSoccerIcon sx={{ fontSize: 20, color: '#8b5cf6' }} />
-                  )}
-                  <Typography variant="subtitle2" sx={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
-                    Ceará
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ color: '#8b5cf6', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>{cearaData.intRank}º</Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Pontos: <b>{cearaData.intPoints}</b> • Jogos: <b>{cearaData.intPlayed}</b></Typography>
-              </Box>
-            </Card>
-          ) : null}
-
-          {/* Card FIPE */}
-          {fipeLoading === 'loading' ? (
-            <LoadingCard title="Valor FIPE" variant="detailed" />
-          ) : fipeError ? (
-            <ErrorCard error={fipeError} title="Erro ao carregar dados da FIPE" />
-          ) : fipeData ? (
-            <Card gradient="linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%)">
-              <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <DirectionsCarFilledIcon sx={{ fontSize: 20, color: '#36d1dc' }} />
-                  <Typography variant="subtitle2" sx={{ color: '#36d1dc', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
-                    {fipeData.brand} {fipeData.model}
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ color: '#36d1dc', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>{fipeData.price}</Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Ano {fipeData.modelYear} • {fipeData.fuel}</Typography>
-              </Box>
-            </Card>
-          ) : null}
-
           {/* Card Despesas a vencer */}
-          {qtdLoading ? (
-            <LoadingCard title="Despesas a vencer" variant="detailed" />
-          ) : qtdDespesas !== null ? (
-            <Card gradient="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)">
-              <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <CalendarMonthIcon sx={{ fontSize: 20, color: '#ef4444' }} />
-                  <Typography variant="subtitle2" sx={{ color: '#ef4444', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
-                    Despesas a vencer
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ color: '#ef4444', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>{qtdDespesas}</Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Próximos 30 dias</Typography>
-              </Box>
-            </Card>
-          ) : null}
-
-          {/* Card Euro */}
-          {euroLoading === 'loading' ? (
-            <LoadingCard title="Euro" variant="compact" height={220} />
-          ) : euroError ? (
-            <ErrorCard error={euroError} title="Erro ao carregar Euro" variant="compact" />
-          ) : euroData ? (
-            <Card gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">
-              <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <EuroSymbolIcon sx={{ fontSize: 20, color: '#f59e0b' }} />
-                  <Typography variant="subtitle2" sx={{ color: '#f59e0b', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
-                    Euro
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ color: '#f59e0b', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>R$ {Number(euroData.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}</Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Cotação atual</Typography>
-              </Box>
-            </Card>
-          ) : null}
-
-          {/* Card Dólar */}
-          {dollarLoading === 'loading' ? (
-            <LoadingCard title="Dólar" variant="compact" height={220} />
-          ) : dollarError ? (
-            <ErrorCard error={dollarError} title="Erro ao carregar Dólar" variant="compact" />
-          ) : dollarData ? (
-            <Card gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-              <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <MonetizationOnIcon sx={{ fontSize: 20, color: '#4facfe' }} />
-                  <Typography variant="subtitle2" sx={{ color: '#4facfe', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
-                    Dólar
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ color: '#4facfe', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>R$ {Number(dollarData.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}</Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>Cotação atual</Typography>
-              </Box>
-            </Card>
-          ) : null}
-
+          <DashboardInfoCard
+            icon={<CalendarMonthIcon sx={{ color: '#ef4444', fontSize: 28 }} />}
+            title="Despesas a vencer"
+            value={qtdLoading === true ? '...' : qtdDespesas !== null ? qtdDespesas : '--'}
+            loading={qtdLoading === true}
+            error={false}
+            label="Próx. 30 dias"
+          />
           {/* Card Geração Solar */}
-          <Card gradient="linear-gradient(135deg, #fbbf24 0%, #f59e42 100%)">
-            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                <WbSunnyIcon sx={{ fontSize: 20, color: '#fbbf24' }} />
-                <Typography variant="subtitle2" sx={{ color: '#fbbf24', fontWeight: 600, fontSize: '0.95rem', opacity: 0.85 }}>
-                  Geração Solar
-                </Typography>
-              </Box>
-              <Typography variant="h4" sx={{ color: '#fbbf24', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 0 }}>
-                {geracaoValor !== null ? `${geracaoValor} kWh` : '—'}
-              </Typography>
-              <Typography variant="caption" sx={{ fontSize: '0.75rem', mt: 0.5, color: '#a0aec0' }}>
-                Geração total do dia
-              </Typography>
-            </Box>
-          </Card>
+          <DashboardInfoCard
+            icon={<WbSunnyIcon sx={{ color: '#fbbf24', fontSize: 28 }} />}
+            title="Geração Solar"
+            value={geracaoValor !== null ? `${geracaoValor} kWh` : '—'}
+            loading={geracaoLoading}
+            error={!!geracaoError}
+            label="Hoje"
+          />
+          {/* Card Dólar */}
+          <DashboardInfoCard
+            icon={<MonetizationOnIcon sx={{ color: '#4facfe', fontSize: 28 }} />}
+            title="Dólar"
+            value={dollarLoading === 'loading' ? '...' : dollarError ? 'Erro' : dollarData ? `R$ ${Number(dollarData.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}` : '--'}
+            loading={dollarLoading === 'loading'}
+            error={!!dollarError}
+            label="Cotação"
+          />
+          {/* Card Euro */}
+          <DashboardInfoCard
+            icon={<EuroSymbolIcon sx={{ color: '#f59e0b', fontSize: 28 }} />}
+            title="Euro"
+            value={euroLoading === 'loading' ? '...' : euroError ? 'Erro' : euroData ? `R$ ${Number(euroData.bid).toLocaleString('pt-BR', { minimumFractionDigits: 4 })}` : '--'}
+            loading={euroLoading === 'loading'}
+            error={!!euroError}
+            label="Cotação"
+          />
+          {/* Card FIPE */}
+          <DashboardInfoCard
+            icon={<DirectionsCarFilledIcon sx={{ color: '#36d1dc', fontSize: 28 }} />}
+            title="FIPE"
+            value={fipeLoading === 'loading' ? '...' : fipeError ? 'Erro' : fipeData ? `R$ ${fipeData.price}` : '--'}
+            loading={fipeLoading === 'loading'}
+            error={!!fipeError}
+            label={fipeData ? `${fipeData.brand} ${fipeData.model}` : ''}
+          />
+          {/* Card Ceará Nova API - compacto, ocupa 2 colunas no desktop */}
+          <Box sx={{ gridColumn: { xs: 'span 1', lg: 'span 2' }, minWidth: 0 }}>
+            <CearaNovaCard compact />
+          </Box>
         </Box>
         {/* Gráfico de Potência Solar */}
         <Box sx={{ mt: 6, mb: 4 }}>
