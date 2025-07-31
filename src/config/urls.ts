@@ -4,7 +4,6 @@ export const API_URLS = {
   FIPE: 'https://parallelum.com.br/fipe/api/v2/cars/brands/23/models/9048/years/2021-1',
   DOLLAR: 'https://economia.awesomeapi.com.br/last/USD-BRL',
   EURO: 'https://economia.awesomeapi.com.br/last/EUR-BRL',
-  // API interna
   TRANSACOES: '/v1/transacoes',
   TRANSACAO_ID: (id: string|number) => `/v1/transacoes/${id}`,
   PESSOAS: '/v1/pessoas',

@@ -1,9 +1,6 @@
-// Configurações de design
 export const DESIGN_CONFIG = {
   CARD_HEIGHT: 260,
   COMPACT_CARD_HEIGHT: 150,
   BORDER_RADIUS: 4,
   SHADOW: 4,
 } as const;
-
-// Remover TIME_CONFIG, GRADIENTS, ICON_COLORS, CATEGORIAS_DESPESA_PADRAO 

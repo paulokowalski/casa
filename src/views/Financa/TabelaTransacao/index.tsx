@@ -31,12 +31,10 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoP
       label: 'Data',
       render: (value: Transacao['data']) => {
         if (!value) return '';
-        // Espera yyyy-MM-dd ou yyyy-MM-ddTHH:mm:ss
         const match = String(value).match(/(\d{4})-(\d{2})-(\d{2})/);
         if (match) {
           return `${match[3]}/${match[2]}/${match[1]}`;
         }
-        // Se vier timestamp ou outro formato
         const d = new Date(value);
         if (!isNaN(d.getTime())) {
           return d.toLocaleDateString('pt-BR');
@@ -65,17 +63,14 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoP
       label: 'Ações',
       align: 'right' as const,
       render: (_: undefined, row: Transacao) => {
-        // Não exibir ações para a linha de despesas de cartão de crédito agrupada
         if (row.categoria === 'Despesa' && row.descricao === 'Despesas no cartão de crédito') {
           return null;
         }
         return (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
-            {/* Só exibe o ícone de edição se não estiver paga */}
             {!(row.paga && row.tipo === 'despesa') && (
               <IconButton size="small" onClick={() => onEditar(row)}><EditIcon fontSize="small" /></IconButton>
             )}
-            {/* Só exibe o ícone de remover se não estiver paga */}
             {!(row.paga && row.tipo === 'despesa') && (
               <IconButton size="small" color="error" onClick={() => onExcluir(row)}><DeleteIcon fontSize="small" /></IconButton>
             )}
@@ -100,9 +95,6 @@ export function TabelaTransacao({ transacoes, onEditar, onExcluir, onMarcarComoP
       },
     },
   ];
-
-  // Exemplo: simular loading (substitua por prop real do seu contexto)
-  const isLoading = false; // Troque para true para testar o efeito
 
   const data = transacoes;
 

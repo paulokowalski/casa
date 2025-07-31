@@ -30,7 +30,6 @@ const PessoaView: React.FC = () => {
     carregarPessoas();
   }, []);
 
-  // Editar pessoa
   const handleEdit = (pessoa: Pessoa) => {
     setEditPessoa(pessoa);
     setEditNome(pessoa.nome);
@@ -48,7 +47,6 @@ const PessoaView: React.FC = () => {
     }
   };
 
-  // Excluir pessoa
   const handleDelete = (pessoa: Pessoa) => {
     setDeletePessoa(pessoa);
   };
@@ -126,7 +124,6 @@ const PessoaView: React.FC = () => {
         onClose={() => setOpenModal(false)}
         onSuccess={carregarPessoas}
       />
-      {/* Modal de edição */}
       <Modal
         open={!!editPessoa}
         onClose={() => setEditPessoa(null)}
@@ -156,7 +153,6 @@ const PessoaView: React.FC = () => {
           margin="normal"
         />
       </Modal>
-      {/* Modal de confirmação de exclusão */}
       <Modal
         open={!!deletePessoa}
         onClose={() => setDeletePessoa(null)}
@@ -183,7 +179,6 @@ const PessoaView: React.FC = () => {
           </Typography>
         </Box>
       </Modal>
-      {/* FAB Moderno */}
       <Box sx={{ 
         position: 'fixed', 
         bottom: 24, 

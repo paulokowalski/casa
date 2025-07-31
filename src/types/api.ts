@@ -1,4 +1,3 @@
-// Interface para dados da FIPE
 export interface FipeData {
   brand: string;
   model: string;
@@ -9,7 +8,6 @@ export interface FipeData {
   codeFipe: string;
 }
 
-// Interface para dados de cotações
 export interface CurrencyData {
   bid: string;
   ask: string;
@@ -18,7 +16,6 @@ export interface CurrencyData {
   low: string;
 }
 
-// Interface para dados do Ceará
 export interface CearaData {
   strTeam: string;
   intRank: number;

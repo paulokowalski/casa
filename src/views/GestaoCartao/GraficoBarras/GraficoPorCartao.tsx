@@ -7,7 +7,6 @@ import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
 export function GraficoPorCartao() {
   const { compras } = useContext(GestaoCartaoContext);
 
-  // Agrupa os valores por cartão
   const dados = useMemo(() => {
     const mapa: Record<string, number> = {};
     compras.forEach(compra => {

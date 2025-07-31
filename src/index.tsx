@@ -1,9 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { ptBR } from '@mui/material/locale';
-import { lightTheme } from './styles/theme';
+import { ThemeProvider } from '@mui/material/styles';
 import App from './App';
 import { ThemeModeProvider, useThemeMode } from './contexts/ThemeContext';
 

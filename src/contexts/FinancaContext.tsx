@@ -54,14 +54,12 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
 
   const { pessoas, carregarPessoas } = usePessoa();
 
-  // Carregar pessoas automaticamente ao inicializar o contexto
   useEffect(() => {
     if (!pessoas || pessoas.length === 0) {
       carregarPessoas();
     }
   }, []);
 
-  // Função auxiliar para controle de loading
   function makeLoadingController(setLoading: (v: boolean) => void) {
     let transacoesProntas = false;
     let cartaoPronto = false;
@@ -77,7 +75,6 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     };
   }
 
-  // Não carregar nada automaticamente. Só buscar quando o usuário selecionar pessoa, ano e mês explicitamente.
   useEffect(() => {
     if (pessoa && ano && mes) {
       setLoading(true);
@@ -86,7 +83,6 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
         setTransacoes(res.data);
         loadingCtrl.transacoesOk();
       });
-      // Buscar transações do próximo mês
       let proxMes = Number(mes) + 1;
       let proxAno = Number(ano);
       if (proxMes > 12) {
@@ -96,7 +92,6 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
       getTransacoes({ pessoaId: pessoa, ano: String(proxAno), mes: String(proxMes).padStart(2, '0') }).then(res => {
         setTransacoesProxMes(res.data);
       });
-      // Buscar despesas de cartão de crédito
       const pessoaObj = pessoas.find(p => String(p.id) === String(pessoa));
       const nomePessoa = pessoaObj ? pessoaObj.nome : '';
       if (nomePessoa) {
@@ -153,26 +148,22 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     });
   }
   function editar(id: string, t: Omit<Transacao, 'id'>) {
-    // Converter data para objeto LocalDate se for string yyyy-MM-dd
-    let dataObj: any = t.data;
-    if (typeof t.data === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(t.data)) {
-      const [year, month, day] = t.data.split('-').map(Number);
-      dataObj = { year, month, day };
-    }
-    // Montar payload compatível com o backend
+
     const payload = {
       tipo: t.tipo,
       descricao: t.descricao,
       valor: t.valor,
-      data: dataObj,
+      data: t.data,
       fixa: t.fixa,
       pessoa: t.pessoa ? Number(t.pessoa) : undefined,
       paga: t.paga ?? false,
     };
+
     atualizarTransacao(id, payload).then(res => {
       setTransacoes(prev => prev.map(item => item.id === id ? res.data : item));
       recarregarTransacoes();
     });
+
   }
   function excluir(id: string) {
     removerTransacao(id).then(() => {
@@ -198,9 +189,7 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Função para buscar despesas próximas do vencimento para todas as pessoas
   const getDespesasProximasTodasPessoas = useCallback(async () => {
-    // Buscar pessoas do backend se ainda não estiverem carregadas
     let pessoasList = pessoas;
     if (!pessoasList || pessoasList.length === 0) {
       const res = await api.get(API_URLS.PESSOAS);
@@ -211,12 +200,9 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
     let todasDespesas: any[] = [];
     for (const pessoaObj of pessoasList) {
-      // Buscar todas as despesas dos próximos 30 dias (mês corrente e próximo mês)
       let despesas: any[] = [];
-      // Buscar mês corrente
       const resCorrente = await getTransacoes({ pessoaId: pessoaObj.id, ano: String(anoAtual), mes: mesAtual });
       despesas.push(...(resCorrente.data || []));
-      // Buscar próximo mês
       let proxMes = Number(mesAtual) + 1;
       let proxAno = anoAtual;
       if (proxMes > 12) {
@@ -225,7 +211,7 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
       }
       const resProx = await getTransacoes({ pessoaId: pessoaObj.id, ano: String(proxAno), mes: String(proxMes).padStart(2, '0') });
       despesas.push(...(resProx.data || []));
-      // Filtrar despesas nos próximos 30 dias
+
       const despesasProximas = despesas.filter((t: any) => {
         if (t.tipo !== 'despesa' || !t.data) return false;
         const dataVenc = Array.isArray(t.data)

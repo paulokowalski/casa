@@ -5,7 +5,6 @@ import { useEnergia } from '../../../contexts/EnergiaContext';
 export function Filtro() {
   const { ano, setAno, mes, setMes } = useEnergia();
   
-  // Gerar lista de anos de 2025 a 2035
   const anos = Array.from({ length: 11 }, (_, i) => 2025 + i);
   const meses = [
     { value: '01', label: 'Janeiro' },
@@ -22,7 +21,6 @@ export function Filtro() {
     { value: '12', label: 'Dezembro' },
   ];
 
-  // Definir valores padrão se não estiverem definidos
   useEffect(() => {
     if (!ano) {
       const anoAtual = new Date().getFullYear();

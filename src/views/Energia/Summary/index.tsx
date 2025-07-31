@@ -21,7 +21,7 @@ export function Summary() {
     const registros = dadosEnergia.length;
 
     return {
-      totalGeracao: geracaoTotal, // Valor já em kWh da API
+      totalGeracao: geracaoTotal,
       maxPotencia,
       mediaPotencia,
       registros,

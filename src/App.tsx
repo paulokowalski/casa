@@ -10,25 +10,24 @@ import { Financa, FinancaProvider } from './views/Financa';
 import { EnergiaWithProvider } from './views/Energia';
 import { PessoaProvider } from './contexts/PessoaContext';
 
-// ErrorBoundary simples
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+
   constructor(props: {children: React.ReactNode}) {
     super(props);
     this.state = { hasError: false };
   }
+
   static getDerivedStateFromError(error: any) {
     return { hasError: true };
   }
-  componentDidCatch(error: any, errorInfo: any) {
-    // Aqui você pode logar o erro em um serviço externo se quiser
-    // console.error(error, errorInfo);
-  }
+
   render() {
     if (this.state.hasError) {
       return <div style={{padding: 32, textAlign: 'center'}}><h2>Ocorreu um erro inesperado.</h2><p>Tente recarregar a página.</p></div>;
     }
     return this.props.children;
   }
+  
 }
 
 function App() {

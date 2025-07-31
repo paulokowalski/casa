@@ -86,10 +86,8 @@ export function Financa() {
     }
   }, [showSuccess]);
 
-  // Unir transações normais e despesas de cartão adaptadas para a tabela
   const transacoesComCartao = useMemo(() => {
     const transacoesArray = Array.isArray(transacoes) ? transacoes : [];
-    // Somar todas as despesas de cartão
     const totalCartao = (cartaoDespesas || []).reduce((acc, c) => acc + (Number(c.valorParcela) || 0), 0);
     const cartaoLinha = totalCartao > 0 ? [{
       id: `cartao-agrupado-unico-${pessoa}-${ano}-${mes}`,
@@ -104,18 +102,13 @@ export function Financa() {
       mes: '',
       paga: false,
     }] : [];
-    // Não adicionar investimento virtual
     const transacoesOrdenadas = transacoesArray
       .sort((a, b) => {
-        // 1. Receitas primeiro
         if (a.tipo === 'receita' && b.tipo !== 'receita') return -1;
         if (a.tipo !== 'receita' && b.tipo === 'receita') return 1;
-        // 2. Entre despesas: não pagas antes de pagas
         if (a.tipo === 'despesa' && b.tipo === 'despesa') {
           if (a.paga !== b.paga) return a.paga ? 1 : -1;
         }
-        // 3. Dentro do grupo, ordenar por data crescente
-        // Se não houver data, considerar como maior (vai para o final)
         const dataA = a.data ? new Date(a.data) : new Date(8640000000000000);
         const dataB = b.data ? new Date(b.data) : new Date(8640000000000000);
         return dataA.getTime() - dataB.getTime();
@@ -150,7 +143,6 @@ export function Financa() {
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 }, mt: 10 }}>
-      {/* Header da página */}
       <Box sx={{ mb: 2, textAlign: 'center', width: '100%' }}>
         <Typography 
           variant="h3" 
@@ -165,7 +157,6 @@ export function Financa() {
         </Typography>
       </Box>
 
-      {/* Filtros em card, logo abaixo do título */}
       {pessoas.length === 0 && (
         <Box sx={{ mb: 2, color: '#ef4444', fontWeight: 600, textAlign: 'center' }}>
           Nenhuma pessoa encontrada. Cadastre uma pessoa para continuar.
@@ -205,14 +196,12 @@ export function Financa() {
         </Box>
       </Card>
 
-      {/* Grid de seções lado a lado em telas médias/grandes */}
       <Box sx={{
         display: 'flex',
         flexDirection: { xs: 'column', md: 'row' },
         gap: 3,
         width: '100%',
       }}>
-        {/* Coluna esquerda: Summary + Tabela */}
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card
             gradient={'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'}
@@ -243,7 +232,6 @@ export function Financa() {
             <TabelaTransacao transacoes={transacoesComCartao} onEditar={handleEditar} onExcluir={handleExcluir} onMarcarComoPaga={handleMarcarComoPaga} loading={loading} />
           </Card>
         </Box>
-        {/* Coluna direita: Gráficos */}
         <Box sx={{ flex: 1, minWidth: 350, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Card
             gradient={'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}
@@ -262,7 +250,6 @@ export function Financa() {
         </Box>
       </Box>
 
-      {/* Modal de Cadastro */}
       <CadastroModal
         open={openCadastroModal}
         onClose={handleCloseCadastroModal}
@@ -270,7 +257,6 @@ export function Financa() {
         onSuccess={handleCadastroSuccess}
       />
 
-      {/* Modal de Exclusão */}
       {excluindo && (
         <ExclusaoModal
           key={excluindo.id}
@@ -281,7 +267,6 @@ export function Financa() {
         />
       )}
 
-      {/* FAB Moderno */}
       <Box sx={{
         position: 'fixed',
         bottom: 24,
@@ -305,7 +290,6 @@ export function Financa() {
         </Fab>
       </Box>
 
-      {/* Alerta fixo de feedback, sem animação */}
       {showSuccess && (
         <Box sx={{ position: 'fixed', top: 16, left: 0, right: 0, zIndex: 2000, display: 'flex', justifyContent: 'center' }}>
           <CustomAlert onClose={() => setShowSuccess(false)} severity="success">

@@ -21,10 +21,8 @@ export function GraficoBarrasJulho({ onDiaClick, diaSelecionado }: GraficoBarras
     setLoading(true);
     api.get(`/v1/geracao-solar/ano/${ano}/mes/07`)
       .then(res => {
-        // Espera-se um objeto { valores: [{ valor, data }], ano, mes }
         const obj = res.data || {};
         const lista = Array.isArray(obj.valores) ? obj.valores : [];
-        // Agrupar e somar por dia
         const map: Record<number, number> = {};
         lista.forEach((item: any) => {
           let dia = undefined;
@@ -41,7 +39,6 @@ export function GraficoBarrasJulho({ onDiaClick, diaSelecionado }: GraficoBarras
             map[dia] = (map[dia] ?? 0) + (item.valor ?? 0);
           }
         });
-        // Montar array final com todos os dias
         const dadosGrafico = diasJulho.map((dia) => ({
           dia: String(dia),
           geracao: map[dia] ?? 0,

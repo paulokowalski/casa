@@ -7,7 +7,6 @@ import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 
-// Componentes profissionais
 import { LoadingCard } from '../../components/ui/LoadingCard';
 import { ErrorCard } from '../../components/ui/ErrorCard';
 import { Card } from '../../components/Card';
@@ -18,12 +17,10 @@ import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGri
 import { getRodadaAtual } from '../../services/api';
 import type { RodadaAtualApiResponse } from '../../types/api';
 
-// Configurações
 import { API_URLS } from '../../config/urls';
 import { useFipeData, useCurrencyData } from '../../hooks/useApiData';
 import { useFinanca } from '../../contexts/FinancaContext';
 
-// Novo componente para card compacto e informativo
 function DashboardInfoCard({ icon, title, value, loading, error, label }: {
   icon: React.ReactNode,
   title: string,

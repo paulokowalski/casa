@@ -20,7 +20,6 @@ export const Card: React.FC<CardProps> = ({
   const theme = useTheme();
   const { mode } = useThemeMode();
 
-  // Gradiente escuro para dark mode
   const darkGradient = 'linear-gradient(135deg, #23263a 0%, #181a20 100%)';
   const appliedGradient = mode === 'dark' ? darkGradient : gradient;
 
@@ -49,7 +48,6 @@ export const Card: React.FC<CardProps> = ({
       }}
       className={`system-card ${className}`}
     >
-      {/* Gradiente no topo (opcional, pode remover se quiser ainda mais clean) */}
       <Box sx={{
         position: 'absolute',
         top: 0,
@@ -60,7 +58,6 @@ export const Card: React.FC<CardProps> = ({
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
       }} />
-      {/* Conteúdo do Card */}
       <Box sx={{ 
         width: '100%', 
         flex: 1, 
@@ -73,7 +70,6 @@ export const Card: React.FC<CardProps> = ({
   );
 };
 
-// Animação fadeInUp
 const style = document.createElement('style');
 style.innerHTML = `
 @keyframes fadeInUp {

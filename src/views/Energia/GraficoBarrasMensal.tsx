@@ -23,9 +23,7 @@ export function GraficoBarrasMensal() {
     setLoading(true);
     api.get(`/v1/geracao-solar/ano/${ano}`)
       .then(res => {
-        // Espera-se uma lista de { month, year, value }
         const lista = Array.isArray(res.data) ? res.data : [];
-        // Montar um mapa para lookup rápido
         const map: Record<string, number> = {};
         lista.forEach((item: any) => {
           let idx = -1;
@@ -38,7 +36,6 @@ export function GraficoBarrasMensal() {
             map[idx] = item.value ?? 0;
           }
         });
-        // Montar array final com todos os meses
         const dadosGrafico = mesesPt.map((mes, idx) => ({
           mes,
           geracao: map[idx] ?? 0,

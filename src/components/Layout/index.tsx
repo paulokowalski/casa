@@ -51,7 +51,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     });
   }, [getDespesasProximasTodasPessoas]);
 
-  // Estado do menu do sino
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -60,14 +59,12 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     setAnchorEl(null);
   };
 
-  // Estado do Drawer mobile
   const [drawerOpen, setDrawerOpen] = useState(false);
   const handleDrawerToggle = () => setDrawerOpen((open) => !open);
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', background: theme.palette.background.default }}>
       <CssBaseline />
-      {/* AppBar no topo */}
       <AppBar position="fixed" sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
         background: 'rgba(35, 38, 58, 0.95)',
@@ -94,7 +91,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               Kowalski House
             </Typography>
           </Box>
-          {/* Navegação */}
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {navItems.map((item) => {
@@ -129,7 +125,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               })}
             </Box>
           )}
-          {/* Notificações */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Tooltip title="Notificações">
               <IconButton sx={{ color: '#f5f6fa' }} onClick={handleOpenMenu}>
@@ -170,7 +165,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           </Box>
         </Toolbar>
       </AppBar>
-      {/* Drawer para mobile */}
       <Drawer
         anchor="left"
         open={drawerOpen}
@@ -221,9 +215,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           })}
         </List>
       </Drawer>
-      {/* Espaço para não sobrepor o conteúdo */}
       <Toolbar sx={{ minHeight: 64 }} />
-      {/* Conteúdo Principal */}
       <Box component="main" sx={{
         flexGrow: 1,
         p: { xs: 2, sm: 3, md: 4 },

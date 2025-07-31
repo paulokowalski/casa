@@ -43,14 +43,11 @@ export function CadastroModal({ open, onClose, transacao, onSuccess }: CadastroM
     }
   }, [transacao, open]);
 
-  // Handler para input de valor
   function handleValorChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value;
-    // Permite colar valores já formatados ou só números
     setValor(formatCurrencyInput(raw));
   }
 
-  // Handler para colar valor
   function handleValorPaste(e: React.ClipboardEvent<HTMLInputElement>) {
     const pasted = e.clipboardData.getData('Text');
     setValor(formatCurrencyInput(pasted));
@@ -179,7 +176,6 @@ export function CadastroModal({ open, onClose, transacao, onSuccess }: CadastroM
           />
         </div>
       </Modal>
-      {/* Modal de confirmação para editar série */}
       <MuiDialog open={modalSerie} onClose={() => setModalSerie(false)}>
         <DialogTitle>Editar transação fixa</DialogTitle>
         <DialogContent>
