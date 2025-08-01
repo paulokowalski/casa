@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { GestaoCartaoContext } from "../../../contexts/GestaoCartaoContext";
 import { Box, Chip, IconButton, Tooltip } from "@mui/material";
 import { Table } from '../../../components/ui/Table';

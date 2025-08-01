@@ -1,8 +1,7 @@
 import { useContext } from "react";
 import { formatCurrency } from '../../../functions/global';
-import { DespesaContext } from "../../../contexts/DespesaContext";
-import { Box, Typography, Icon } from '@mui/material';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { GestaoCartaoContext } from "../../../contexts/GestaoCartaoContext";
+import { Box, Typography } from '@mui/material';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -12,8 +11,7 @@ import { Card } from '../../../components/Card';
 import { LoadingCard } from '../../../components/ui/LoadingCard';
 
 export function Summary() {
-    const { despesa, loading } = useContext(DespesaContext);
-
+    const { despesa, loading } = useContext(GestaoCartaoContext);
     const summaryItems = [
         {
             title: "Total",

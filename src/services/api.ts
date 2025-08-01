@@ -53,7 +53,7 @@ export function criarTransacao(transacao: Record<string, unknown>) {
 }
 
 export function atualizarTransacao(id: string | number, transacao: Record<string, unknown>) {
-  return api.put(`/v1/transacoes/${id}`, transacao);
+  return api.put(API_URLS.TRANSACAO_ID(id), transacao);
 }
 
 export function removerTransacao(id: string | number) {
@@ -62,7 +62,7 @@ export function removerTransacao(id: string | number) {
 
 export function atualizarTransacaoSerie(idSerie: string, transacao: Record<string, unknown>, aPartirDe?: string) {
   const params = aPartirDe ? { params: { aPartirDe } } : {};
-  return api.put(`/v1/transacoes/serie/${idSerie}`, transacao, params);
+  return api.put(API_URLS.TRANSACAO_SERIE(idSerie), transacao, params);
 }
 
 export function getGeracaoSolar(data: string) {

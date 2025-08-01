@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useEnergia } from '../../contexts/EnergiaContext';
-import { api } from '../../services/api';
 import { Card } from '../../components/Card';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -153,71 +152,32 @@ function MiniCardsInsights({ dados, geracaoDia }: { dados: { horario: string, po
 }
 
 export function GraficoLinhasPotenciaDia({ diaSelecionado }: Props) {
-  const { ano } = useEnergia();
-  const [dados, setDados] = useState<{ horario: string, potencia: number }[]>([]);
-  const [geracaoDia, setGeracaoDia] = useState<number | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
+  const { ano, mes, dadosPotenciaDia, geracaoDia, loadingPotencia, carregarDadosPotenciaDia } = useEnergia();
 
   useEffect(() => {
-    if (!ano || !diaSelecionado) {
-      setDados([]);
-      setGeracaoDia(undefined);
-      return;
+    if (diaSelecionado) {
+      carregarDadosPotenciaDia(diaSelecionado);
     }
-    setLoading(true);
-    const dataStr = `${ano}-07-${String(diaSelecionado).padStart(2, '0')}`;
-    api.get(`/v1/geracao-solar?data=${dataStr}`)
-      .then(res => {
-        // Espera-se um objeto { valores: [{ valor, data }], geracao }
-        const payload = res.data || {};
-        const lista = Array.isArray(payload.valores) ? payload.valores : [];
-        const dadosGrafico = lista.map((item: any) => {
-          let horario = '';
-          if (item.data) {
-            // data pode ser array [ano, mes, dia, hora, minuto, segundo] ou string
-            if (Array.isArray(item.data) && item.data.length >= 6) {
-              horario = `${String(item.data[3]).padStart(2, '0')}:${String(item.data[4]).padStart(2, '0')}`;
-            } else if (typeof item.data === 'string') {
-              const partes = item.data.split('T')[1]?.split(':');
-              if (partes && partes.length >= 2) {
-                horario = `${partes[0]}:${partes[1]}`;
-              }
-            }
-          }
-          return {
-            horario,
-            potencia: item.valor ?? 0,
-          };
-        });
-        setDados(dadosGrafico);
-        
-        // Capturar valor de geração do dia
-        const possiveisCampos = ['gerado', 'geracao', 'geracaoTotal', 'totalGeracao', 'energia', 'energiaTotal', 'totalEnergia', 'kwh', 'totalKwh'];
-        let valorGeracao = undefined;
-        
-        for (const campo of possiveisCampos) {
-          if (payload[campo] !== undefined) {
-            valorGeracao = payload[campo];
-            break;
-          }
-        }
-        
-        setGeracaoDia(valorGeracao);
-      })
-      .finally(() => setLoading(false));
-  }, [ano, diaSelecionado]);
+  }, [diaSelecionado, carregarDadosPotenciaDia]);
 
   if (!diaSelecionado) return null;
 
+  // Obter nome do mês para exibição
+  const meses = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+  const nomeMes = meses[parseInt(mes) - 1] || '';
+
   return (
     <Box sx={{ mt: 6 }}>
-      <MiniCardsInsights dados={dados} geracaoDia={geracaoDia} />
+      <MiniCardsInsights dados={dadosPotenciaDia} geracaoDia={geracaoDia} />
       <Typography variant="h6" sx={{ color: '#f5f6fa', mb: 2 }}>
-        Potência ao longo do dia {diaSelecionado}/07/{ano}
+        Potência ao longo do dia {diaSelecionado}/{mes}/{ano} ({nomeMes})
       </Typography>
       <Box sx={{ height: 340, background: '#23263a', borderRadius: 2, p: 2 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={dados} margin={{ top: 16, right: 24, left: 0, bottom: 32 }}>
+          <LineChart data={dadosPotenciaDia} margin={{ top: 16, right: 24, left: 0, bottom: 32 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
             <XAxis dataKey="horario" tick={{ fill: '#f5f6fa' }} />
             <YAxis tick={{ fill: '#f5f6fa' }} axisLine={{ stroke: '#444857' }} />
@@ -225,7 +185,7 @@ export function GraficoLinhasPotenciaDia({ diaSelecionado }: Props) {
             <Line type="monotone" dataKey="potencia" stroke="#fbbf24" strokeWidth={3} dot={false} />
           </LineChart>
         </ResponsiveContainer>
-        {loading && (
+        {loadingPotencia && (
           <Typography align="center" sx={{ mt: 2, color: '#f5f6fa' }}>
             Carregando potência do dia...
           </Typography>

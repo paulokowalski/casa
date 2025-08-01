@@ -1,77 +1,20 @@
-import { useEffect, useState, useContext } from 'react';
-import { api } from '../../../services/api';
-import { API_URLS } from '../../../config/urls';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
+import { useContext } from 'react';
 import { Box, Typography } from '@mui/material';
-import { formatCurrency } from '../../../functions/global';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
-
-interface DadosGrafico {
-    mes: string;
-    valorMes: number;
-}
-
-interface ValorMesAPI {
-    valorMes: number;
-    valorProximoMes: number;
-    valorSaindo: number;
-    valorParcelaSaindo: number;
-    valorSaindoTotal: number;
-}
-
-interface RespostaAPI {
-    pessoa: string;
-    ano: string;
-    despesasPorMes: Record<string, ValorMesAPI>;
-}
+import { formatCurrency } from '../../../functions/global';
 
 const renderCustomLabel = (props: any) => {
     const { x, y, width, value } = props;
     return (
-        <text 
-            x={x + width / 2} 
-            y={y - 10} 
-            fill="#f5f6fa"
-            textAnchor="middle"
-            fontSize="12"
-        >
+        <text x={x + width / 2} y={y - 10} fill="#f5f6fa" textAnchor="middle" dominantBaseline="middle" fontSize={12}>
             {formatCurrency(value)}
         </text>
     );
 };
 
 export function GraficoBarras() {
-    const [dados, setDados] = useState<DadosGrafico[]>([]);
-    const { ultimosFiltros } = useContext(GestaoCartaoContext);
-
-    useEffect(() => {
-        if (
-            ultimosFiltros.ano &&
-            ultimosFiltros.pessoa &&
-            ultimosFiltros.pessoa !== 'TODOS'
-        ) {
-            api.get(API_URLS.DESPESA_SEM_MES(ultimosFiltros.ano, ultimosFiltros.pessoa))
-                .then(response => {
-                    const respostaAPI = response.data as RespostaAPI;
-                    if (respostaAPI.despesasPorMes) {
-                        const dadosFormatados = Object.entries(respostaAPI.despesasPorMes)
-                            .map(([chave, valorObj]) => ({
-                                mes: chave.padStart(2, '0'),
-                                valorMes: valorObj?.valorMes ?? 0
-                            }))
-                            .sort((a, b) => parseInt(a.mes) - parseInt(b.mes));
-                        setDados(dadosFormatados);
-                    } else {
-                        setDados([]);
-                    }
-                })
-                .catch(() => {
-                    setDados([]);
-                });
-        } else {
-            setDados([]);
-        }
-    }, [ultimosFiltros]);
+    const { ultimosFiltros, dadosGrafico, loadingGrafico } = useContext(GestaoCartaoContext);
 
     if (!ultimosFiltros.ano || !ultimosFiltros.pessoa || ultimosFiltros.pessoa === 'TODOS') {
         return (
@@ -81,7 +24,7 @@ export function GraficoBarras() {
         );
     }
 
-    if (dados.length === 0) {
+    if (dadosGrafico.length === 0) {
         return (
             <>
                 <Typography variant="h6" gutterBottom sx={{ color: '#f5f6fa' }}>
@@ -102,7 +45,7 @@ export function GraficoBarras() {
             <Box sx={{ width: '100%', height: 360, display: 'block', background: '#23263a', borderRadius: 2, p: 2 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
-                        data={dados}
+                        data={dadosGrafico}
                         margin={{
                             top: 60,
                             right: 30,
@@ -137,6 +80,11 @@ export function GraficoBarras() {
                     </BarChart>
                 </ResponsiveContainer>
             </Box>
+            {loadingGrafico && (
+                <Typography align="center" sx={{ mt: 2, color: '#f5f6fa' }}>
+                    Carregando dados do gráfico...
+                </Typography>
+            )}
         </>
     );
 } 

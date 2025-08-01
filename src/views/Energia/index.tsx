@@ -1,15 +1,20 @@
 import { Box, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filtro } from './Filtro';
-import { EnergiaProvider } from '../../contexts/EnergiaContext';
+import { EnergiaProvider, useEnergia } from '../../contexts/EnergiaContext';
 import { Card } from '../../components/Card';
 import { Theme } from '@mui/material/styles';
 import { GraficoBarrasMensal } from './GraficoBarrasMensal';
-import { GraficoBarrasJulho } from './GraficoBarrasJulho';
+import { GraficoBarrasDiario } from './GraficoBarrasDiario';
 import { GraficoLinhasPotenciaDia } from './GraficoLinhasPotenciaDia';
 
 export function Energia() {
   const [diaSelecionado, setDiaSelecionado] = useState<number | null>(null);
+  const { mes } = useEnergia();
+
+  useEffect(() => {
+    setDiaSelecionado(null);
+  }, [mes]);
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 }, mt: 10 }}>
@@ -53,7 +58,7 @@ export function Energia() {
           <GraficoBarrasMensal />
         </Box>
         <Box sx={{ flex: 1 }}>
-          <GraficoBarrasJulho onDiaClick={setDiaSelecionado} diaSelecionado={diaSelecionado} />
+          <GraficoBarrasDiario onDiaClick={setDiaSelecionado} diaSelecionado={diaSelecionado} />
         </Box>
       </Box>
 

@@ -18,12 +18,15 @@ export interface Transacao {
   paga: boolean;
 }
 
+interface DadosGraficoAno {
+  mes: string;
+  Receita: number;
+  Despesa: number;
+}
+
 interface FinancaContextData {
+  // Estados existentes
   transacoes: Transacao[];
-  adicionar: (t: Omit<Transacao, 'id'>) => void;
-  editar: (id: string, t: Omit<Transacao, 'id'>) => void;
-  excluir: (id: string) => void;
-  recarregarTransacoes: () => void;
   pessoa: string;
   setPessoa: (p: string) => void;
   ano: string;
@@ -35,14 +38,33 @@ interface FinancaContextData {
   pessoas: { id: number, nome: string }[];
   cartaoDespesasAgrupadas: { [nomeCartao: string]: any[] };
   transacoesProxMes: Transacao[];
-  getDespesasProximasTodasPessoas: () => Promise<any[]>;
   loading: boolean;
   setLoading: (v: boolean) => void;
+  
+  // Novos estados para gráfico
+  dadosGraficoAno: DadosGraficoAno[];
+  loadingGraficoAno: boolean;
+  
+  // Funções existentes
+  adicionar: (t: Omit<Transacao, 'id'>) => void;
+  editar: (id: string, t: Omit<Transacao, 'id'>) => void;
+  excluir: (id: string) => void;
+  recarregarTransacoes: () => void;
+  getDespesasProximasTodasPessoas: () => Promise<any[]>;
+  
+  // Novas funções para gráfico
+  carregarDadosGraficoAno: () => void;
 }
+
 const FinancaContext = createContext<FinancaContextData>({} as any);
 export const useFinanca = () => useContext(FinancaContext);
 
+const MESES = [
+  'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+];
+
 export function FinancaProvider({ children }: { children: React.ReactNode }) {
+  // Estados existentes
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [transacoesProxMes, setTransacoesProxMes] = useState<Transacao[]>([]);
   const [pessoa, setPessoa] = useState('');
@@ -51,6 +73,10 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
   const [cartaoDespesas, setCartaoDespesas] = useState<any[]>([]);
   const [gastosPorCartao, setGastosPorCartao] = useState<{ [nomeCartao: string]: number }>({});
   const [loading, setLoading] = useState(false);
+
+  // Novos estados para gráfico
+  const [dadosGraficoAno, setDadosGraficoAno] = useState<DadosGraficoAno[]>([]);
+  const [loadingGraficoAno, setLoadingGraficoAno] = useState(false);
 
   const { pessoas, carregarPessoas } = usePessoa();
 
@@ -75,6 +101,77 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     };
   }
 
+  // Carregar dados do gráfico anual
+  const carregarDadosGraficoAno = useCallback(async () => {
+    if (!pessoa || !ano) {
+      setDadosGraficoAno([]);
+      return;
+    }
+
+    setLoadingGraficoAno(true);
+    try {
+      const receitas: number[] = Array(12).fill(0);
+      const despesas: number[] = Array(12).fill(0);
+      const despesasCartao: number[] = Array(12).fill(0);
+      
+      // Descobrir nome da pessoa
+      const pessoaObj = pessoas.find(p => String(p.id) === String(pessoa));
+      const pessoaNome = pessoaObj ? pessoaObj.nome : '';
+      
+      await Promise.all(
+        Array.from({ length: 12 }, (_, i) => i + 1).map(async (mes) => {
+          // Buscar transações normais
+          const res = await getTransacoes({ pessoaId: pessoa, ano, mes: String(mes).padStart(2, '0') });
+          const transacoes = Array.isArray(res.data) ? res.data : [];
+          receitas[mes - 1] = transacoes.filter((t: any) => t.tipo === 'receita').reduce((acc, t) => acc + t.valor, 0);
+          despesas[mes - 1] = transacoes.filter((t: any) => t.tipo === 'despesa').reduce((acc, t) => acc + t.valor, 0);
+          
+          // Buscar despesas de cartão de crédito
+          try {
+            if (pessoaNome) {
+              const url = API_URLS.COMPRA_SEM_CARTAO(ano, String(mes).padStart(2, '0'), pessoaNome);
+              const cartaoRes = await api.get(url);
+              let despesasCartaoArr = cartaoRes.data;
+              if (despesasCartaoArr && Array.isArray(despesasCartaoArr.compras)) {
+                despesasCartaoArr = despesasCartaoArr.compras;
+              } else if (!Array.isArray(despesasCartaoArr)) {
+                if (despesasCartaoArr && Array.isArray(despesasCartaoArr.data)) {
+                  despesasCartaoArr = despesasCartaoArr.data;
+                } else if (despesasCartaoArr && Array.isArray(despesasCartaoArr.items)) {
+                  despesasCartaoArr = despesasCartaoArr.items;
+                } else if (despesasCartaoArr && typeof despesasCartaoArr === 'object') {
+                  despesasCartaoArr = Object.values(despesasCartaoArr);
+                } else {
+                  despesasCartaoArr = [];
+                }
+              }
+              despesasCartao[mes - 1] = (despesasCartaoArr || []).reduce((acc: number, c: any) => acc + (Number(c.valorParcela) || 0), 0);
+            }
+          } catch {}
+        })
+      );
+      
+      // Montar dados para o gráfico
+      const data = MESES.map((mes, idx) => ({
+        mes,
+        Receita: receitas[idx],
+        Despesa: despesas[idx] + despesasCartao[idx],
+      }));
+      
+      setDadosGraficoAno(data);
+    } catch (error) {
+      console.error('Erro ao carregar dados do gráfico anual:', error);
+      setDadosGraficoAno([]);
+    } finally {
+      setLoadingGraficoAno(false);
+    }
+  }, [pessoa, ano, pessoas]);
+
+  // Carregar dados do gráfico quando pessoa ou ano mudarem
+  useEffect(() => {
+    carregarDadosGraficoAno();
+  }, [carregarDadosGraficoAno]);
+
   useEffect(() => {
     if (pessoa && ano && mes) {
       setLoading(true);
@@ -98,88 +195,70 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
         (async () => {
           try {
             const res = await api.get(API_URLS.COMPRA_SEM_CARTAO(ano, mes, nomePessoa));
-            let despesas = res.data;
-            if (despesas && Array.isArray(despesas.compras)) {
-              despesas = despesas.compras;
-            } else if (!Array.isArray(despesas)) {
-              if (despesas && Array.isArray(despesas.data)) {
-                despesas = despesas.data;
-              } else if (despesas && Array.isArray(despesas.items)) {
-                despesas = despesas.items;
-              } else if (despesas && typeof despesas === 'object') {
-                despesas = Object.values(despesas);
+            let despesasCartaoArr = res.data;
+            if (despesasCartaoArr && Array.isArray(despesasCartaoArr.compras)) {
+              despesasCartaoArr = despesasCartaoArr.compras;
+            } else if (!Array.isArray(despesasCartaoArr)) {
+              if (despesasCartaoArr && Array.isArray(despesasCartaoArr.data)) {
+                despesasCartaoArr = despesasCartaoArr.data;
+              } else if (despesasCartaoArr && Array.isArray(despesasCartaoArr.items)) {
+                despesasCartaoArr = despesasCartaoArr.items;
+              } else if (despesasCartaoArr && typeof despesasCartaoArr === 'object') {
+                despesasCartaoArr = Object.values(despesasCartaoArr);
               } else {
-                despesas = [];
+                despesasCartaoArr = [];
               }
             }
-            setCartaoDespesas(Array.isArray(despesas) ? despesas : []);
-            const totais: { [nomeCartao: string]: number } = {};
-            if (Array.isArray(despesas)) {
-              despesas.forEach((despesa: any) => {
-                if (!despesa || typeof despesa !== 'object') return;
-                if (!('nomeCartao' in despesa)) return;
-                const nomeCartao = String(despesa.nomeCartao);
-                totais[nomeCartao] = (totais[nomeCartao] || 0) + (Number(despesa.valorParcela) || 0);
-              });
-            }
-            setGastosPorCartao(totais);
-          } catch {
+            setCartaoDespesas(despesasCartaoArr || []);
+            const gastosPorCartaoMap: { [nomeCartao: string]: number } = {};
+            (despesasCartaoArr || []).forEach((compra: any) => {
+              const nomeCartao = compra.nomeCartao || 'Sem cartão';
+              gastosPorCartaoMap[nomeCartao] = (gastosPorCartaoMap[nomeCartao] || 0) + (Number(compra.valorParcela) || 0);
+            });
+            setGastosPorCartao(gastosPorCartaoMap);
+            loadingCtrl.cartaoOk();
+          } catch (error) {
+            console.error('Erro ao carregar despesas de cartão:', error);
             setCartaoDespesas([]);
             setGastosPorCartao({});
+            loadingCtrl.cartaoOk();
           }
-          loadingCtrl.cartaoOk();
         })();
       } else {
         setCartaoDespesas([]);
         setGastosPorCartao({});
         loadingCtrl.cartaoOk();
       }
-    } else {
-      setTransacoes([]);
-      setTransacoesProxMes([]);
-      setCartaoDespesas([]);
-      setGastosPorCartao({});
     }
   }, [pessoa, ano, mes, pessoas]);
 
-  function adicionar(t: Omit<Transacao, 'id'>) {
-    return criarTransacao(t).then(res => {
-      setTransacoes(prev => [...prev, res.data]);
-    });
-  }
-  function editar(id: string, t: Omit<Transacao, 'id'>) {
-
-    const payload = {
-      tipo: t.tipo,
-      descricao: t.descricao,
-      valor: t.valor,
-      data: t.data,
-      fixa: t.fixa,
-      pessoa: t.pessoa ? Number(t.pessoa) : undefined,
-      paga: t.paga ?? false,
-    };
-
-    atualizarTransacao(id, payload).then(res => {
-      setTransacoes(prev => prev.map(item => item.id === id ? res.data : item));
-      recarregarTransacoes();
-    });
-
-  }
-  function excluir(id: string) {
-    removerTransacao(id).then(() => {
-      setTransacoes(prev => prev.filter(item => item.id !== id));
-    });
-  }
-
   const cartaoDespesasAgrupadas = useMemo(() => {
-    const agrupado: { [nomeCartao: string]: any[] } = {};
-    cartaoDespesas.forEach((despesa: any) => {
-      const nomeCartao = despesa && despesa.nomeCartao ? String(despesa.nomeCartao) : 'Desconhecido';
-      if (!agrupado[nomeCartao]) agrupado[nomeCartao] = [];
-      agrupado[nomeCartao].push(despesa);
+    const agrupadas: { [nomeCartao: string]: any[] } = {};
+    cartaoDespesas.forEach(compra => {
+      const nomeCartao = compra.nomeCartao || 'Sem cartão';
+      if (!agrupadas[nomeCartao]) {
+        agrupadas[nomeCartao] = [];
+      }
+      agrupadas[nomeCartao].push(compra);
     });
-    return agrupado;
+    return agrupadas;
   }, [cartaoDespesas]);
+
+  function adicionar(t: Omit<Transacao, 'id'>) {
+    const novaTransacao = {
+      ...t,
+      id: Date.now().toString(),
+    };
+    setTransacoes(prev => [...prev, novaTransacao]);
+  }
+
+  function editar(id: string, t: Omit<Transacao, 'id'>) {
+    setTransacoes(prev => prev.map(item => item.id === id ? { ...t, id } : item));
+  }
+
+  function excluir(id: string) {
+    setTransacoes(prev => prev.filter(item => item.id !== id));
+  }
 
   function recarregarTransacoes() {
     if (pessoa && ano && mes) {
@@ -189,44 +268,48 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const getDespesasProximasTodasPessoas = useCallback(async () => {
-    let pessoasList = pessoas;
-    if (!pessoasList || pessoasList.length === 0) {
-      const res = await api.get(API_URLS.PESSOAS);
-      pessoasList = res.data;
+  async function getDespesasProximasTodasPessoas() {
+    try {
+      const transacoes = await api.get(API_URLS.TRANSACOES_PROXIMOS_30_DIAS);
+      return transacoes.data;
+    } catch (error) {
+      console.error('Erro ao carregar despesas próximas:', error);
+      return [];
     }
-    const hoje = new Date();
-    const anoAtual = hoje.getFullYear();
-    const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
-    let todasDespesas: any[] = [];
-    for (const pessoaObj of pessoasList) {
-      let despesas: any[] = [];
-      const resCorrente = await getTransacoes({ pessoaId: pessoaObj.id, ano: String(anoAtual), mes: mesAtual });
-      despesas.push(...(resCorrente.data || []));
-      let proxMes = Number(mesAtual) + 1;
-      let proxAno = anoAtual;
-      if (proxMes > 12) {
-        proxMes = 1;
-        proxAno++;
-      }
-      const resProx = await getTransacoes({ pessoaId: pessoaObj.id, ano: String(proxAno), mes: String(proxMes).padStart(2, '0') });
-      despesas.push(...(resProx.data || []));
-
-      const despesasProximas = despesas.filter((t: any) => {
-        if (t.tipo !== 'despesa' || !t.data) return false;
-        const dataVenc = Array.isArray(t.data)
-          ? new Date(t.data[0], t.data[1] - 1, t.data[2])
-          : new Date(t.data);
-        const diff = (dataVenc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
-        return diff >= 0 && diff <= 30;
-      });
-      todasDespesas.push(...despesasProximas.map((d: any) => ({ ...d, pessoaNome: pessoaObj.nome, pessoaId: pessoaObj.id })));
-    }
-    return todasDespesas;
-  }, [pessoas]);
+  }
 
   return (
-    <FinancaContext.Provider value={{ transacoes, adicionar, editar, excluir, recarregarTransacoes, pessoa, setPessoa, ano, setAno, mes, setMes, gastosPorCartao, cartaoDespesas, pessoas, cartaoDespesasAgrupadas, transacoesProxMes, getDespesasProximasTodasPessoas, loading, setLoading }}>
+    <FinancaContext.Provider value={{
+      // Estados existentes
+      transacoes,
+      pessoa,
+      setPessoa,
+      ano,
+      setAno,
+      mes,
+      setMes,
+      gastosPorCartao,
+      cartaoDespesas,
+      pessoas,
+      cartaoDespesasAgrupadas,
+      transacoesProxMes,
+      loading,
+      setLoading,
+      
+      // Novos estados para gráfico
+      dadosGraficoAno,
+      loadingGraficoAno,
+      
+      // Funções existentes
+      adicionar,
+      editar,
+      excluir,
+      recarregarTransacoes,
+      getDespesasProximasTodasPessoas,
+      
+      // Novas funções para gráfico
+      carregarDadosGraficoAno,
+    }}>
       {children}
     </FinancaContext.Provider>
   );

@@ -32,7 +32,7 @@ export function PessoaProvider({ children }: { children: React.ReactNode }) {
   const editarPessoa = async (id: number, nome: string, email: string) => {
     setLoading(true);
     try {
-      await api.put(`/v1/pessoas/${id}`, { nome, email });
+      await api.put(API_URLS.PESSOA_ID(id), { nome, email });
       carregarPessoas();
     } finally {
       setLoading(false);

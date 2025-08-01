@@ -43,6 +43,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     { text: 'Pessoas', icon: <PeopleIcon />, to: '/pessoa' },
   ];
 
+
   const { getDespesasProximasTodasPessoas } = useFinanca();
   const [despesasProximas, setDespesasProximas] = useState<any[]>([]);
   useEffect(() => {
