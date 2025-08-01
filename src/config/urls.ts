@@ -1,7 +1,7 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const API_URLS = {
-  FIPE: 'https://parallelum.com.br/fipe/api/v2/cars/brands/23/models/9048/years/2021-1',
+  FIPE: 'https://parallelum.com.br/fipe/api/v2/cars/brands/23/models/9048/years/2021-5',
   DOLLAR: 'https://economia.awesomeapi.com.br/last/USD-BRL',
   EURO: 'https://economia.awesomeapi.com.br/last/EUR-BRL',
   TRANSACOES: '/v1/transacoes',
