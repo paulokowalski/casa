@@ -74,7 +74,19 @@ export function Financa() {
   };
 
   const handleMarcarComoPaga = (transacao: Transacao) => {
-    editar(transacao.id, transacao);
+    const { id } = transacao;
+    editar(id, {
+      tipo: transacao.tipo,
+      descricao: transacao.descricao,
+      valor: Number(transacao.valor),
+      data: transacao.data,
+      fixa: transacao.fixa,
+      ano: Number(String(transacao.ano)),
+      mes: Number(String(transacao.mes)),
+      pessoa: typeof transacao.pessoa === 'object' ? Number(transacao.pessoa.id) : Number(transacao.pessoa),
+      idSerie: 'idSerie' in transacao ? (transacao.idSerie as string | undefined) : undefined,
+      paga: transacao.paga,
+    });
     setSuccessMessage(transacao.paga ? 'Transação marcada como paga!' : 'Transação desmarcada como paga!');
     setShowSuccess(true);
   };

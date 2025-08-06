@@ -244,20 +244,31 @@ export function FinancaProvider({ children }: { children: React.ReactNode }) {
     return agrupadas;
   }, [cartaoDespesas]);
 
-  function adicionar(t: Omit<Transacao, 'id'>) {
-    const novaTransacao = {
-      ...t,
-      id: Date.now().toString(),
-    };
-    setTransacoes(prev => [...prev, novaTransacao]);
+  async function adicionar(t: Omit<Transacao, 'id'>) {
+    try {
+      await criarTransacao(t);
+      recarregarTransacoes();
+    } catch (error) {
+      console.error('Erro ao adicionar transação:', error);
+    }
   }
 
-  function editar(id: string, t: Omit<Transacao, 'id'>) {
-    setTransacoes(prev => prev.map(item => item.id === id ? { ...t, id } : item));
+  async function editar(id: string, t: Omit<Transacao, 'id'>) {
+    try {
+      await atualizarTransacao(id, t);
+      recarregarTransacoes();
+    } catch (error) {
+      console.error('Erro ao editar transação:', error);
+    }
   }
 
-  function excluir(id: string) {
-    setTransacoes(prev => prev.filter(item => item.id !== id));
+  async function excluir(id: string) {
+    try {
+      await removerTransacao(id);
+      recarregarTransacoes();
+    } catch (error) {
+      console.error('Erro ao excluir transação:', error);
+    }
   }
 
   function recarregarTransacoes() {
