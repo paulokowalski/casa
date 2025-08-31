@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useCallback } from "react";
 import { api } from "../services/api";
 import { API_URLS } from "../config/urls";
 import Item from "../interface/Item";
+import { Categoria } from "../services/gestaocartao.service";
 
 interface CompraCartao {
     nomeCartao: string,
@@ -22,6 +23,7 @@ interface Compra {
     valorParcela: number,
     valorTotal: number,
     comprasCartao: CompraCartao[],
+    categoriaId?: string,
     categoria?: string
 }
 
@@ -73,6 +75,7 @@ interface GestaoCartaoContextData {
     itemsMeses: Item[];
     itemsPessoas: Item[];
     itemsCartoes: Item[];
+    itemsCategorias: Item[];
     loadingFiltros: boolean;
     
     anoSelecionado: string;
@@ -87,12 +90,13 @@ interface GestaoCartaoContextData {
     removerCompra: (idCompra: string) => void;
     consultar: (ano: string, mes: string, pessoa: string, cartao: string, ultimaParcelaSelecionado: string) => void;
     buscarGestaoCartao: (ano: Item, mes: Item, pessoa: Item, cartao: Item, ultimaParcelaSelecionado: Item) => void;
-    cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => void;
-    editarCompra: (id: string, nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) => Promise<void>;
+    cadastrarCompra: (nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string, categoriaId?: string) => void;
+    editarCompra: (id: string, nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string, categoriaId?: string) => Promise<void>;
     excluirCompra: (id: string) => void;
     buscarDespesa: (ano: string, mes: string, pessoa: string) => void;
     
     carregarAnos: () => void;
+    carregarCategorias: () => void;
     selecionarAno: (codigo: string) => void;
     selecionarMes: (codigo: string) => void;
     selecionarPessoa: (codigo: string) => void;
@@ -125,6 +129,7 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
     const [itemsMeses, setItemsMeses] = useState<Item[]>([]);
     const [itemsPessoas, setItemsPessoas] = useState<Item[]>([]);
     const [itemsCartoes, setItemsCartoes] = useState<Item[]>([]);
+    const [itemsCategorias, setItemsCategorias] = useState<Item[]>([]);
     const [loadingFiltros, setLoadingFiltros] = useState(false);
     
     const [anoSelecionado, setAnoSelecionado] = useState('');
@@ -158,6 +163,18 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             setItemsAnos(response.data);
         } catch (error) {
             setItemsAnos([]);
+        } finally {
+            setLoadingFiltros(false);
+        }
+    }, []);
+
+    const carregarCategorias = useCallback(async () => {
+        setLoadingFiltros(true);
+        try {
+            const response = await api.get(API_URLS.FILTRO_CATEGORIAS);
+            setItemsCategorias(response.data);
+        } catch (error) {
+            setItemsCategorias([]);
         } finally {
             setLoadingFiltros(false);
         }
@@ -259,7 +276,8 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
 
     useEffect(() => {
         carregarAnos();
-    }, [carregarAnos]);
+        carregarCategorias();
+    }, [carregarAnos, carregarCategorias]);
 
     useEffect(() => {
         carregarDadosGrafico();
@@ -296,15 +314,17 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             .catch(() => setLoading(false));
     }
 
-    async function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) {
+    async function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string, categoriaId?: string) {
         try {
+            console.log('Cadastrando compra com categoriaId:', categoriaId);
             const response = await api.post(API_URLS.COMPRA_ID(), {
                 nomeProduto,
                 valorProduto: Number(valorProduto),
                 dataCompra,
                 numeroParcelas: Number(numeroParcelas),
                 nomePessoaCompra,
-                nomeCartao
+                nomeCartao,
+                categoriaId: categoriaId || null
             });
             if (response.status === 201) {
                 consultar(
@@ -316,6 +336,7 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
                 );
             }
         } catch (error) {
+            console.error('Erro ao cadastrar compra:', error);
         }
     }
 
@@ -344,15 +365,17 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
         }
     }
 
-    async function editarCompra(id: string, nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string) {
+    async function editarCompra(id: string, nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string, categoriaId?: string) {
         try {
+            console.log('Editando compra com categoriaId:', categoriaId);
             const response = await api.put(API_URLS.COMPRA_ID(id), {
                 nomeProduto,
                 valorProduto: Number(valorProduto),
                 dataCompra,
                 numeroParcelas: Number(numeroParcelas),
                 nomePessoaCompra,
-                nomeCartao
+                nomeCartao,
+                categoriaId: categoriaId || null
             });
             if (response.status === 200) {
                 consultar(
@@ -380,6 +403,7 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             itemsMeses,
             itemsPessoas,
             itemsCartoes,
+            itemsCategorias,
             loadingFiltros,
             
             anoSelecionado,
@@ -399,6 +423,7 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             excluirCompra,
 
             carregarAnos,
+            carregarCategorias,
             selecionarAno,
             selecionarMes,
             selecionarPessoa,

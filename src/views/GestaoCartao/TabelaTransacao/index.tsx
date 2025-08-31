@@ -19,6 +19,8 @@ interface CompraRow {
     valorParcela: number;
     valorFaltante: number;
     valorTotal: number;
+    categoriaId?: string;
+    categoria?: string;
     acoes?: never;
 }
 
@@ -116,6 +118,31 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
             ),
         },
         { id: 'nomeCartao', label: 'Cartão', minWidth: 80 },
+        {
+            id: 'categoria',
+            label: 'Categoria',
+            minWidth: 100,
+            render: (value: CompraRow['categoria']) => {
+                return (
+                    <Chip
+                        label={value || 'Sem categoria'}
+                        size="small"
+                        sx={{
+                            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                            color: '#ffffff',
+                            fontWeight: 600,
+                            fontSize: '0.65rem',
+                            borderRadius: '6px',
+                            height: '18px',
+                            boxShadow: '0 2px 4px rgba(139, 92, 246, 0.3)',
+                            '& .MuiChip-label': {
+                                padding: '0 6px',
+                            },
+                        }}
+                    />
+                );
+            },
+        },
         {
             id: 'valorParcela',
             label: 'Valor Parcela',

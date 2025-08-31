@@ -11,6 +11,7 @@ import {
 import { formatCurrency, parseCurrency, toISODate, formatCurrencyInput } from '../../../functions/global';
 import { Modal } from '../../../components/ui/Modal';
 
+
 interface CadastroModalProps {
     open: boolean;
     onClose: () => void;
@@ -20,13 +21,14 @@ interface CadastroModalProps {
 }
 
 export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: CadastroModalProps) {
-    const { cadastrarCompra, editarCompra, consultar } = useContext(GestaoCartaoContext);
+    const { cadastrarCompra, editarCompra, consultar, itemsCategorias } = useContext(GestaoCartaoContext);
     const [produto, setProduto] = useState('');
     const [valorProduto, setValorProduto] = useState('');
     const [dataCompra, setDataCompra] = useState(getTodayISO());
     const [parcela, setParcela] = useState('1');
     const [pessoa, setPessoa] = useState('');
     const [cartao, setCartao] = useState('');
+    const [categoriaId, setCategoriaId] = useState('');
     const [success, setSuccess] = useState(false);
     const { pessoas } = usePessoa();
     const [valorEmEdicao, setValorEmEdicao] = useState(false);
@@ -40,6 +42,8 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
         'AMAZON',
     ];
 
+    const categorias = itemsCategorias;
+
     // Preencher o formulário ao abrir para edição
     useEffect(() => {
         if (compra) {
@@ -51,6 +55,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
             setParcela(String(compra.numeroTotalParcela || '1'));
             setPessoa(compra.nomePessoa || '');
             setCartao(compra.nomeCartao || '');
+            setCategoriaId(compra.categoriaId || '');
         } else {
             setProduto('');
             setValorProduto('');
@@ -58,6 +63,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
             setParcela('1');
             setPessoa('');
             setCartao('');
+            setCategoriaId('');
         }
         setSuccess(false);
     }, [compra, open]);
@@ -69,6 +75,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
         setParcela('1');
         setPessoa('');
         setCartao('');
+        setCategoriaId('');
     }
 
     async function handleSubmit() {
@@ -87,7 +94,8 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                     dataFormatada,
                     parcela,
                     nomePessoa,
-                    cartao.trim()
+                    cartao.trim(),
+                    categoriaId
                 );
                 consultar('2024', '06', pessoa, 'TODOS', 'TODOS');
                 setSuccess(true);
@@ -100,7 +108,8 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                     dataFormatada,
                     parcela,
                     nomePessoa,
-                    cartao.trim()
+                    cartao.trim(),
+                    categoriaId
                 );
                 consultar('2024', '06', pessoa, 'TODOS', 'TODOS');
                 setSuccess(true);
@@ -229,6 +238,17 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                             >
                                 {cartoes.map((c) => (
                                     <MenuItem key={c} value={c}>{c.toUpperCase()}</MenuItem>
+                                ))}
+                            </TextField>
+                            <TextField
+                                select
+                                label="Categoria"
+                                value={categoriaId}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setCategoriaId(e.target.value)}
+                                fullWidth
+                            >
+                                {categorias.map((cat) => (
+                                    <MenuItem key={cat.codigo} value={cat.codigo}>{cat.descricao}</MenuItem>
                                 ))}
                             </TextField>
                         </>

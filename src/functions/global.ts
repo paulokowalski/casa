@@ -14,8 +14,11 @@ export function formatCurrencyInput(valor: string): string {
 
 export function parseCurrency(valor: string): number {
   if (!valor) return 0;
-  const clean = valor.replace(/[^\d,-]/g, '').replace(',', '.');
-  return parseFloat(clean) || 0;
+  // Preserva o sinal de menos e remove outros caracteres não numéricos
+  const isNegative = valor.includes('-');
+  const clean = valor.replace(/[^\d,]/g, '').replace(',', '.');
+  const number = parseFloat(clean) || 0;
+  return isNegative ? -number : number;
 }
 
 export function toISODate(dateStr: string): string {

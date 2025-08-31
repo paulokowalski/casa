@@ -7,6 +7,7 @@ import { Filtro } from "./Filtro";
 import { TabelaTransacao } from "./TabelaTransacao";
 import { GraficoBarras } from "./GraficoBarras";
 import { GraficoPorCartao } from './GraficoBarras/GraficoPorCartao';
+import { GraficoPorCategoria } from './GraficoBarras/GraficoPorCategoria';
 import { useState, useEffect } from "react";
 import { Card } from '../../components/Card';
 import { Alert as CustomAlert } from '../../components/ui/Alert';
@@ -147,6 +148,22 @@ export function GestaoCartao() {
                         </Card>
                     </Box>
                 </Box>
+
+                {/* Gráfico de Categorias - Linha separada ocupando toda a largura */}
+                <Card
+                    gradient={'linear-gradient(135deg, #10b981 0%, #059669 100%)'}
+                    sx={{
+                        mb: 3,
+                        borderRadius: 0.5,
+                        background: (theme: Theme) => theme.palette.background.paper,
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                        width: '100%',
+                        maxWidth: '100%',
+                        px: 0,
+                    }}
+                >
+                    <GraficoPorCategoria />
+                </Card>
 
                 {/* Modal de Cadastro */}
                 <CadastroModal 

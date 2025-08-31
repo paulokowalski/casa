@@ -2,6 +2,11 @@ import { api } from './api';
 import { API_URLS } from '../config/urls';
 import Item from '../interface/Item';
 
+export interface Categoria {
+    codigo: string;
+    descricao: string;
+}
+
 export interface Compra {
     id: string;
     dataParcela: string;
@@ -15,6 +20,8 @@ export interface Compra {
     valorFaltante: number;
     valorParcela: number;
     valorTotal: number;
+    categoriaId?: string;
+    categoria?: string;
     comprasCartao: CompraCartao[];
 }
 
@@ -69,6 +76,7 @@ class GestaoCartaoService {
         numeroParcelas: string;
         nomePessoaCompra: string;
         nomeCartao: string;
+        categoriaId?: string;
     }): Promise<void> {
         await api.post(API_URLS.COMPRA_ID(''), dados);
     }
@@ -94,6 +102,11 @@ class GestaoCartaoService {
 
     async buscarCartoes(ano: string, mes: string, pessoa: string): Promise<Item[]> {
         const response = await api.get(API_URLS.FILTRO_CARTAO(ano, mes, pessoa));
+        return response.data;
+    }
+
+    async buscarCategorias(): Promise<Item[]> {
+        const response = await api.get(API_URLS.FILTRO_CATEGORIAS);
         return response.data;
     }
 }
