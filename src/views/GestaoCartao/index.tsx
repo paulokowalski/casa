@@ -19,6 +19,15 @@ export function GestaoCartao() {
     const [successMessage, setSuccessMessage] = useState<string>('');
     const [showSuccess, setShowSuccess] = useState(false);
     const [itemParaExcluir, setItemParaExcluir] = useState<any | null>(null);
+    const [categoriaSelecionada, setCategoriaSelecionada] = useState<string | null>(null);
+
+    const handleToggleCategoria = (categoria?: string | null) => {
+        if (!categoria) {
+            setCategoriaSelecionada(null);
+            return;
+        }
+        setCategoriaSelecionada(prev => (prev === categoria ? null : categoria));
+    };
 
     const handleOpenCadastroModal = () => {
         setCompraParaEditar(null);
@@ -113,7 +122,14 @@ export function GestaoCartao() {
                                 px: { xs: 1, sm: 4 },
                             }}
                         >
-                            <TabelaTransacao onEditCompra={handleEditCompra} itemParaExcluir={itemParaExcluir} setItemParaExcluir={setItemParaExcluir} handleExclusaoSuccess={handleExclusaoSuccess} />
+                            <TabelaTransacao
+                                onEditCompra={handleEditCompra}
+                                itemParaExcluir={itemParaExcluir}
+                                setItemParaExcluir={setItemParaExcluir}
+                                handleExclusaoSuccess={handleExclusaoSuccess}
+                                categoriaSelecionada={categoriaSelecionada}
+                                onToggleCategoria={handleToggleCategoria}
+                            />
                         </Card>
                     </Box>
                     {/* Coluna direita: Gráficos */}
@@ -162,7 +178,10 @@ export function GestaoCartao() {
                         px: 0,
                     }}
                 >
-                    <GraficoPorCategoria />
+                    <GraficoPorCategoria
+                        categoriaSelecionada={categoriaSelecionada}
+                        onToggleCategoria={handleToggleCategoria}
+                    />
                 </Card>
 
                 {/* Modal de Cadastro */}

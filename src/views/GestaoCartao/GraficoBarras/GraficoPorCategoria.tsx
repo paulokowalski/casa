@@ -13,7 +13,12 @@ const renderCustomLabel = (props: any) => {
     );
 };
 
-export function GraficoPorCategoria() {
+interface GraficoPorCategoriaProps {
+    categoriaSelecionada?: string | null;
+    onToggleCategoria?: (categoria?: string | null) => void;
+}
+
+export function GraficoPorCategoria({ categoriaSelecionada, onToggleCategoria }: Readonly<GraficoPorCategoriaProps>) {
     const { compras, ultimosFiltros, loading } = useContext(GestaoCartaoContext);
 
     const dadosPorCategoria = useMemo(() => {
@@ -61,7 +66,7 @@ export function GraficoPorCategoria() {
             <Typography variant="h6" gutterBottom sx={{ color: '#f5f6fa' }}>
                 Gastos por Categoria - {ultimosFiltros.mes}/{ultimosFiltros.ano}
             </Typography>
-            <Box sx={{ width: '100%', height: 400, display: 'block', background: '#23263a', borderRadius: 2, p: 2 }}>
+            <Box sx={{ width: '100%', height: 430, display: 'block', background: '#23263a', borderRadius: 2, p: 2 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={dadosPorCategoria}
@@ -69,7 +74,7 @@ export function GraficoPorCategoria() {
                             top: 60,
                             right: 30,
                             left: 20,
-                            bottom: 80,
+                            bottom: 90,
                         }}
                     >
                         <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
@@ -95,6 +100,7 @@ export function GraficoPorCategoria() {
                             name="Valor Parcela" 
                             fill="#8b5cf6"
                             radius={[4, 4, 0, 0]}
+                            onClick={(data) => onToggleCategoria && onToggleCategoria(data?.categoria)}
                         >
                             <LabelList 
                                 dataKey="valorParcela" 
@@ -105,6 +111,11 @@ export function GraficoPorCategoria() {
                     </BarChart>
                 </ResponsiveContainer>
             </Box>
+            {categoriaSelecionada && (
+                <Typography align="center" sx={{ mt: 1, color: '#a0aec0', cursor: 'pointer' }} onClick={() => onToggleCategoria && onToggleCategoria(null)}>
+                    Filtrando por categoria: <strong>{categoriaSelecionada}</strong> (clique para limpar)
+                </Typography>
+            )}
             {loading && (
                 <Typography align="center" sx={{ mt: 2, color: '#f5f6fa' }}>
                     Carregando dados do gráfico...

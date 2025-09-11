@@ -29,9 +29,11 @@ interface TabelaTransacaoProps {
     itemParaExcluir: CompraRow | null;
     setItemParaExcluir: (item: CompraRow | null) => void;
     handleExclusaoSuccess: () => void;
+    categoriaSelecionada?: string | null;
+    onToggleCategoria?: (categoria?: string | null) => void;
 }
 
-export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcluir, handleExclusaoSuccess }: TabelaTransacaoProps) {
+export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcluir, handleExclusaoSuccess, categoriaSelecionada, onToggleCategoria }: TabelaTransacaoProps) {
     const { compras, loading } = useContext(GestaoCartaoContext);
 
     const handleExcluir = (item: CompraRow) => {
@@ -127,14 +129,20 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
                     <Chip
                         label={value || 'Sem categoria'}
                         size="small"
+                        onClick={() => onToggleCategoria && onToggleCategoria(value || 'Sem categoria')}
                         sx={{
-                            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                            background: categoriaSelecionada && categoriaSelecionada === (value || 'Sem categoria')
+                                ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+                                : 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                            cursor: 'pointer',
                             color: '#ffffff',
                             fontWeight: 600,
                             fontSize: '0.65rem',
                             borderRadius: '6px',
                             height: '18px',
-                            boxShadow: '0 2px 4px rgba(139, 92, 246, 0.3)',
+                            boxShadow: categoriaSelecionada && categoriaSelecionada === (value || 'Sem categoria')
+                                ? '0 2px 6px rgba(34, 197, 94, 0.35)'
+                                : '0 2px 4px rgba(139, 92, 246, 0.3)',
                             '& .MuiChip-label': {
                                 padding: '0 6px',
                             },
@@ -170,7 +178,11 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
         },
     ];
 
-    const data = compras;
+    const data = (compras || []).filter(c => {
+        if (!categoriaSelecionada) return true;
+        const categoria = c.categoria || 'Sem categoria';
+        return categoria === categoriaSelecionada;
+    });
 
     return (
         <Box>
