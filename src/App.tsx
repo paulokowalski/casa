@@ -6,7 +6,6 @@ import { Layout } from "./components/Layout";
 import { Home } from "./views/Home";
 import { GestaoCartao } from './views/GestaoCartao';
 import PessoaView from './views/Pessoa';
-import { Financa, FinancaProvider } from './views/Financa';
 import { EnergiaWithProvider } from './views/Energia';
 import { PessoaProvider } from './contexts/PessoaContext';
 
@@ -35,17 +34,14 @@ function App() {
     <ErrorBoundary>
       <PessoaProvider>
         <Global styles={globalStyles} />
-        <FinancaProvider>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/financa" element={<Financa />} />
-              <Route path="/gestao-cartao" element={<GestaoCartao />} />
-              <Route path="/pessoa" element={<PessoaView />} />
-              <Route path="/energia" element={<EnergiaWithProvider />} />
-            </Routes>
-          </Layout>
-        </FinancaProvider>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/gestao-cartao" element={<GestaoCartao />} />
+            <Route path="/pessoa" element={<PessoaView />} />
+            <Route path="/energia" element={<EnergiaWithProvider />} />
+          </Routes>
+        </Layout>
       </PessoaProvider>
     </ErrorBoundary>
   )

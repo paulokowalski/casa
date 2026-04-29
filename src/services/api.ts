@@ -40,33 +40,12 @@ api.interceptors.response.use(
     }
 );
 
-export function getTransacoes(params: Record<string, unknown>) {
-  return api.get(API_URLS.TRANSACOES, { params });
-}
-
-export function getTransacaoById(id: string | number) {
-  return api.get(API_URLS.TRANSACAO_ID(id));
-}
-
-export function criarTransacao(transacao: Record<string, unknown>) {
-  return api.post(API_URLS.TRANSACOES, transacao);
-}
-
-export function atualizarTransacao(id: string | number, transacao: Record<string, unknown>) {
-  return api.put(API_URLS.TRANSACAO_ID(id), transacao);
-}
-
-export function removerTransacao(id: string | number) {
-  return api.delete(API_URLS.TRANSACAO_ID(id));
-}
-
-export function atualizarTransacaoSerie(idSerie: string, transacao: Record<string, unknown>, aPartirDe?: string) {
-  const params = aPartirDe ? { params: { aPartirDe } } : {};
-  return api.put(API_URLS.TRANSACAO_SERIE(idSerie), transacao, params);
-}
-
 export function getGeracaoSolar(data: string) {
   return api.get(API_URLS.GERACAO_SOLAR(data));
+}
+
+export function getCarroFipe(codigoFipe: string) {
+  return api.get(API_URLS.CARRO_FIPE(codigoFipe));
 }
 
 export function getCearaNova(idTime: string|number) {

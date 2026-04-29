@@ -4,7 +4,6 @@ import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import EuroSymbolIcon from '@mui/icons-material/EuroSymbol';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 
 import { LoadingCard } from '../../components/ui/LoadingCard';
@@ -15,11 +14,11 @@ import { getCearaNova } from '../../services/api';
 import type { CearaNovaApiResponse } from '../../types/api';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { getRodadaAtual } from '../../services/api';
+import { getCarroFipe } from '../../services/api';
 import type { RodadaAtualApiResponse } from '../../types/api';
 
 import { API_URLS } from '../../config/urls';
 import { useFipeData, useCurrencyData } from '../../hooks/useApiData';
-import { useFinanca } from '../../contexts/FinancaContext';
 
 function DashboardInfoCard({ icon, title, value, loading, error, label }: {
   icon: React.ReactNode,
@@ -157,31 +156,15 @@ export function Home() {
   const { data: fipeData, loading: fipeLoading, error: fipeError } = useFipeData(API_URLS.FIPE);
   const { data: dollarData, loading: dollarLoading, error: dollarError } = useCurrencyData(API_URLS.DOLLAR);
   const { data: euroData, loading: euroLoading, error: euroError } = useCurrencyData(API_URLS.EURO);
-  const { getDespesasProximasTodasPessoas } = useFinanca();
-  const [qtdDespesas, setQtdDespesas] = React.useState<number | null>(null);
-  const [qtdLoading, setQtdLoading] = React.useState(true);
-  React.useEffect(() => {
-    setQtdLoading(true);
-    getDespesasProximasTodasPessoas().then(despesas => {
-      const hoje = new Date();
-      const proximas30 = despesas.filter((t: any) => {
-        if (t.paga) return false;
-        const dataVenc = Array.isArray(t.data)
-          ? new Date(t.data[0], t.data[1] - 1, t.data[2])
-          : new Date(t.data);
-        const diff = (dataVenc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
-        return diff >= 0 && diff <= 30;
-      });
-      setQtdDespesas(proximas30.length);
-      setQtdLoading(false);
-    });
-  }, [getDespesasProximasTodasPessoas]);
 
   // Estado para geração solar
   const [potencias, setPotencias] = React.useState<any[]>([]);
   const [geracaoLoading, setGeracaoLoading] = React.useState(true);
   const [geracaoError, setGeracaoError] = React.useState<string | null>(null);
   const [geracaoValor, setGeracaoValor] = React.useState<number | null>(null);
+  const [fipeHistorico, setFipeHistorico] = React.useState<Array<{ referencia: string; valor: number }>>([]);
+  const [fipeHistoricoLoading, setFipeHistoricoLoading] = React.useState(true);
+  const [fipeHistoricoError, setFipeHistoricoError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     // Buscar geração solar do dia atual
@@ -243,6 +226,55 @@ export function Home() {
       });
   }, []);
 
+  React.useEffect(() => {
+    setFipeHistoricoLoading(true);
+    getCarroFipe('004525-0')
+      .then(res => {
+        const payload = res.data;
+        const historicoBruto = Array.isArray(payload)
+          ? payload
+          : payload?.historico ?? payload?.valores ?? payload?.dados ?? [];
+
+        const normalizado = (Array.isArray(historicoBruto) ? historicoBruto : [])
+          .map((item: any, idx: number) => {
+            const referencia = item?.mesReferencia
+              ?? item?.referencia
+              ?? item?.dataReferencia
+              ?? item?.data
+              ?? `${idx + 1}`;
+
+            const valorBruto = item?.valor
+              ?? item?.preco
+              ?? item?.price
+              ?? item?.valorFipe
+              ?? item;
+
+            const valor = typeof valorBruto === 'number'
+              ? valorBruto
+              : Number(
+                String(valorBruto)
+                  .replace('R$', '')
+                  .replace(/\./g, '')
+                  .replace(',', '.')
+                  .trim(),
+              );
+
+            return {
+              referencia: String(referencia),
+              valor: Number.isFinite(valor) ? valor : 0,
+            };
+          })
+          .filter((item: { valor: number }) => item.valor > 0);
+
+        setFipeHistorico(normalizado);
+        setFipeHistoricoLoading(false);
+      })
+      .catch(() => {
+        setFipeHistoricoError('Erro ao buscar histórico FIPE do veículo');
+        setFipeHistoricoLoading(false);
+      });
+  }, []);
+
   return (
     <Box sx={{ minHeight: '100vh', background: theme => theme.palette.background.default, py: 0 }}>
       <Container maxWidth="xl" sx={{ py: { xs: 4, md: 8 } }}>
@@ -271,15 +303,6 @@ export function Home() {
           alignItems: 'stretch',
           pb: 2,
         }}>
-          {/* Card Despesas a vencer */}
-          <DashboardInfoCard
-            icon={<CalendarMonthIcon sx={{ color: '#ef4444', fontSize: 28 }} />}
-            title="Despesas a vencer"
-            value={qtdLoading === true ? '...' : qtdDespesas !== null ? qtdDespesas : '--'}
-            loading={qtdLoading === true}
-            error={false}
-            label="Próx. 30 dias"
-          />
           {/* Card Geração Solar */}
           <DashboardInfoCard
             icon={<WbSunnyIcon sx={{ color: '#fbbf24', fontSize: 28 }} />}
@@ -346,6 +369,43 @@ export function Home() {
                 <Box sx={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Typography variant="body1" sx={{ color: '#f5f6fa', textAlign: 'center' }}>
                     Nenhum dado de potência disponível para hoje
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          )}
+        </Box>
+        {/* Gráfico de histórico FIPE do veículo */}
+        <Box sx={{ mt: 2, mb: 4 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#36d1dc' }}>
+            Histórico FIPE do Veículo
+          </Typography>
+          {fipeHistoricoLoading ? (
+            <LoadingCard title="Histórico FIPE" variant="detailed" />
+          ) : fipeHistoricoError ? (
+            <ErrorCard error={fipeHistoricoError} title="Erro ao carregar histórico FIPE" />
+          ) : (
+            <Box sx={{ background: '#23263a', borderRadius: 2, p: 2 }}>
+              {fipeHistorico.length > 0 ? (
+                <ResponsiveContainer width="100%" height={320}>
+                  <LineChart data={fipeHistorico} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
+                    <XAxis dataKey="referencia" tick={{ fill: '#f5f6fa' }} />
+                    <YAxis
+                      tick={{ fill: '#f5f6fa' }}
+                      tickFormatter={(v: number) => `R$ ${Number(v).toLocaleString('pt-BR')}`}
+                    />
+                    <RechartsTooltip
+                      contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }}
+                      formatter={(v: any) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                    />
+                    <Line type="monotone" dataKey="valor" stroke="#36d1dc" dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <Box sx={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="body1" sx={{ color: '#f5f6fa', textAlign: 'center' }}>
+                    Nenhum histórico FIPE disponível para este veículo
                   </Typography>
                 </Box>
               )}
