@@ -2,11 +2,10 @@ import { useContext } from "react";
 import { formatCurrency } from '../../../functions/global';
 import { GestaoCartaoContext } from "../../../contexts/GestaoCartaoContext";
 import { Box, Typography } from '@mui/material';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import HistoryIcon from '@mui/icons-material/History';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import PaymentIcon from '@mui/icons-material/Payment';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { Card } from '../../../components/Card';
 import { LoadingCard } from '../../../components/ui/LoadingCard';
 
@@ -14,49 +13,40 @@ export function Summary() {
     const { despesa, loading } = useContext(GestaoCartaoContext);
     const summaryItems = [
         {
+            title: "Mês Anterior",
+            value: formatCurrency(despesa?.residual as number),
+            color: "#64748b",
+            gradient: "linear-gradient(135deg, #cbd5e1 0%, #64748b 100%)",
+            icon: <HistoryIcon />,
+            trend: "down",
+            description: "Residual Mês Anterior"
+        },
+        {
+            title: "Gastos no Cartão",
+            value: formatCurrency(despesa?.gastoNoCartao as number),
+            color: "#ef4444",
+            gradient: "linear-gradient(135deg, #fca5a5 0%, #ef4444 100%)",
+            icon: <CreditCardIcon />,
+            trend: "down",
+            description: "Gastos no Cartão"
+        },
+        {
+            title: "Compras Parceladas",
+            value: formatCurrency(despesa?.valorParcelaEntrando as number),
+            color: "#f59e0b",
+            gradient: "linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%)",
+            icon: <ReceiptLongIcon />,
+            trend: "down",
+            description: "Compras Parceladas"
+        },
+        {
             title: "Total",
             value: formatCurrency(despesa?.valorMes as number),
-            color: "#4facfe",
-            gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+            color: "#10b981",
+            gradient: "linear-gradient(135deg, #6ee7b7 0%, #10b981 100%)",
             icon: <AccountBalanceWalletIcon />,
             trend: "up",
             description: "Valor total do mês"
-        },
-        {
-            title: "Próximo Mês",
-            value: formatCurrency(despesa?.valorProximoMes as number),
-            color: "#8b5cf6",
-            gradient: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
-            icon: <CalendarTodayIcon />,
-            trend: "up",
-            description: "Projeção para o próximo mês"
-        },
-        {
-            title: "Valor Saindo",
-            value: formatCurrency(despesa?.valorSaindo as number),
-            color: "#ef4444",
-            gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-            icon: <TrendingDownIcon />,
-            trend: "down",
-            description: "Valor saindo"
-        },
-        {
-            title: "Parcelas Saindo",
-            value: formatCurrency(despesa?.valorParcelaSaindo as number),
-            color: "#f59e0b",
-            gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-            icon: <PaymentIcon />,
-            trend: "down",
-            description: "Valor parcela saindo"
-        },
-        {
-            title: "Total Saindo",
-            value: formatCurrency(despesa?.valorSaindoTotal as number),
-            color: "#ec4899",
-            gradient: "linear-gradient(135deg, #ec4899 0%, #be185d 100%)",
-            icon: <CreditCardIcon />,
-            trend: "down",
-            description: "Total de saídas"
         }
     ];
 
@@ -68,7 +58,7 @@ export function Summary() {
                     xs: '1fr',
                     sm: 'repeat(2, 1fr)',
                     md: 'repeat(3, 1fr)',
-                    lg: 'repeat(5, 1fr)'
+                    lg: 'repeat(4, 1fr)'
                 },
                 gap: { xs: 2, md: 3 },
                 width: '100%',
@@ -77,6 +67,7 @@ export function Summary() {
                 <LoadingCard title="Próximo Mês" variant="compact" />
                 <LoadingCard title="Valor Saindo" variant="compact" />
                 <LoadingCard title="Parcelas Saindo" variant="compact" />
+                <LoadingCard title="Parcelas Entrando" variant="compact" />
                 <LoadingCard title="Total Saindo" variant="compact" />
             </Box>
         );
@@ -89,7 +80,7 @@ export function Summary() {
                 xs: '1fr',
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(3, 1fr)',
-                lg: 'repeat(5, 1fr)'
+                lg: 'repeat(4, 1fr)'
             },
             gap: { xs: 2, md: 3 },
             width: '100%',

@@ -339,10 +339,6 @@ export function Home() {
             error={!!fipeError}
             label={fipeData ? `${fipeData.brand} ${fipeData.model}` : ''}
           />
-          {/* Card Ceará Nova API - compacto, ocupa 2 colunas no desktop */}
-          <Box sx={{ gridColumn: { xs: 'span 1', lg: 'span 2' }, minWidth: 0 }}>
-            <CearaNovaCard compact />
-          </Box>
         </Box>
         {/* Gráfico de Potência Solar */}
         <Box sx={{ mt: 6, mb: 4 }}>

@@ -2,13 +2,11 @@ import { useContext, useState, ChangeEvent, useEffect } from "react";
 import { GestaoCartaoContext } from "../../../contexts/GestaoCartaoContext";
 import { usePessoa } from '../../../contexts/PessoaContext';
 import { 
-    Box, 
     TextField, 
     Button, 
-    MenuItem,
-    InputAdornment,
+    MenuItem
 } from '@mui/material';
-import { formatCurrency, parseCurrency, toISODate, formatCurrencyInput } from '../../../functions/global';
+import { formatCurrency, parseCurrency, toISODate } from '../../../functions/global';
 import { Modal } from '../../../components/ui/Modal';
 
 
@@ -21,17 +19,16 @@ interface CadastroModalProps {
 }
 
 export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: CadastroModalProps) {
-    const { cadastrarCompra, editarCompra, consultar, itemsCategorias } = useContext(GestaoCartaoContext);
+    const { cadastrarCompra, editarCompra, itemsCategorias } = useContext(GestaoCartaoContext);
     const [produto, setProduto] = useState('');
     const [valorProduto, setValorProduto] = useState('');
     const [dataCompra, setDataCompra] = useState(getTodayISO());
     const [parcela, setParcela] = useState('1');
-    const [pessoa, setPessoa] = useState('');
+    const [pessoasSelecionadas, setPessoasSelecionadas] = useState<string[]>([]);
     const [cartao, setCartao] = useState('');
     const [categoriaId, setCategoriaId] = useState('');
     const [success, setSuccess] = useState(false);
     const { pessoas } = usePessoa();
-    const [valorEmEdicao, setValorEmEdicao] = useState(false);
 
     const cartoes = [
         'VIRTUAL C6',
@@ -53,7 +50,11 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
             );
             setDataCompra(compra.dataCompra ? toISODate(compra.dataCompra) : getTodayISO());
             setParcela(String(compra.numeroTotalParcela || '1'));
-            setPessoa(compra.nomePessoa || '');
+            setPessoasSelecionadas(
+                compra.nomePessoa
+                    ? compra.nomePessoa.split(',').map((p: string) => p.trim()).filter(Boolean)
+                    : []
+            );
             setCartao(compra.nomeCartao || '');
             setCategoriaId(compra.categoriaId || '');
         } else {
@@ -61,7 +62,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
             setValorProduto('');
             setDataCompra(getTodayISO());
             setParcela('1');
-            setPessoa('');
+            setPessoasSelecionadas([]);
             setCartao('');
             setCategoriaId('');
         }
@@ -73,7 +74,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
         setValorProduto('');
         setDataCompra(getTodayISO());
         setParcela('1');
-        setPessoa('');
+        setPessoasSelecionadas([]);
         setCartao('');
         setCategoriaId('');
     }
@@ -82,8 +83,13 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
         const valor = parseCurrency(valorProduto);
         const dataFormatada = dataCompra;
 
-        const pessoaSelecionada = pessoas.find(p => p.nome === pessoa);
-        const nomePessoa = pessoaSelecionada ? pessoaSelecionada.nome : pessoa;
+        const nomesPessoasSelecionadas = pessoasSelecionadas
+            .map((nome) => {
+                const pessoaSelecionada = pessoas.find((p) => p.nome === nome);
+                return pessoaSelecionada ? pessoaSelecionada.nome : nome;
+            })
+            .filter(Boolean);
+        const nomePessoas = nomesPessoasSelecionadas.join(',');
         try {
             if (compra && compra.id) {
                 // Edição
@@ -93,11 +99,10 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                     String(valor),
                     dataFormatada,
                     parcela,
-                    nomePessoa,
+                    nomePessoas,
                     cartao.trim(),
                     categoriaId
                 );
-                consultar('2024', '06', pessoa, 'TODOS', 'TODOS');
                 setSuccess(true);
                 if (onEdit) onEdit();
             } else {
@@ -107,11 +112,10 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                     String(valor),
                     dataFormatada,
                     parcela,
-                    nomePessoa,
+                    nomePessoas,
                     cartao.trim(),
                     categoriaId
                 );
-                consultar('2024', '06', pessoa, 'TODOS', 'TODOS');
                 setSuccess(true);
                 if (onSuccess) onSuccess();
             }
@@ -138,17 +142,6 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
         let valorFormatado = (numero / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         if (negativo) valorFormatado = '-' + valorFormatado;
         setValorProduto(valorFormatado);
-    };
-
-    const handleValorBlur = () => {
-        if (valorProduto === '' || valorProduto === '-') return;
-        const num = parseFloat(valorProduto.replace(',', '.'));
-        if (!isNaN(num)) setValorProduto((num < 0 ? '-' : '') + String(Math.abs(num)).replace('.', ','));
-        setValorEmEdicao(false);
-    };
-
-    const handleValorFocus = () => {
-        setValorEmEdicao(true);
     };
 
     const handleDataChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -221,9 +214,21 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                             <TextField
                                 select
                                 label="Pessoa"
-                                value={pessoa}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => setPessoa(e.target.value)}
+                                value={pessoasSelecionadas}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setPessoasSelecionadas(
+                                        typeof value === 'string'
+                                            ? value.split(',').map((p) => p.trim()).filter(Boolean)
+                                            : value
+                                    );
+                                }}
                                 fullWidth
+                                SelectProps={{
+                                    multiple: !compra,
+                                    renderValue: (selected) =>
+                                        Array.isArray(selected) ? selected.join(', ') : String(selected ?? '')
+                                }}
                             >
                                 {pessoas.map((p) => (
                                     <MenuItem key={p.id} value={p.nome}>{p.nome.toUpperCase()}</MenuItem>
