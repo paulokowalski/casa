@@ -52,12 +52,8 @@ interface GestaoCartaoProviderProps {
 
 interface Despesa {
     valorMes: number,
-    valorProximoMes: number,
-    gastoNoCartao: number,
-    valorParcelaSaindo: number,
-    valorParcelaEntrando: number,
-    valorSaindoTotal: number,
-    residual: number
+    comprasParceladas: number,
+    gastosNoCartao: number
 }
 
 interface GestaoCartaoContextData {
@@ -152,12 +148,8 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
 
     const [despesa, setDespesa] = useState<Despesa>({
         valorMes: 0,
-        valorProximoMes: 0,
-        gastoNoCartao: 0,
-        valorParcelaSaindo: 0,
-        valorParcelaEntrando: 0,
-        valorSaindoTotal: 0,
-        residual: 0
+        comprasParceladas: 0,
+        gastosNoCartao: 0
     });
 
     const carregarAnos = useCallback(async () => {

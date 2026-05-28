@@ -13,17 +13,8 @@ export function Summary() {
     const { despesa, loading } = useContext(GestaoCartaoContext);
     const summaryItems = [
         {
-            title: "Mês Anterior",
-            value: formatCurrency(despesa?.residual as number),
-            color: "#64748b",
-            gradient: "linear-gradient(135deg, #cbd5e1 0%, #64748b 100%)",
-            icon: <HistoryIcon />,
-            trend: "down",
-            description: "Residual Mês Anterior"
-        },
-        {
             title: "Gastos no Cartão",
-            value: formatCurrency(despesa?.gastoNoCartao as number),
+            value: formatCurrency(despesa?.gastosNoCartao as number),
             color: "#ef4444",
             gradient: "linear-gradient(135deg, #fca5a5 0%, #ef4444 100%)",
             icon: <CreditCardIcon />,
@@ -32,7 +23,7 @@ export function Summary() {
         },
         {
             title: "Compras Parceladas",
-            value: formatCurrency(despesa?.valorParcelaEntrando as number),
+            value: formatCurrency(despesa?.comprasParceladas as number),
             color: "#f59e0b",
             gradient: "linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%)",
             icon: <ReceiptLongIcon />,
@@ -58,7 +49,7 @@ export function Summary() {
                     xs: '1fr',
                     sm: 'repeat(2, 1fr)',
                     md: 'repeat(3, 1fr)',
-                    lg: 'repeat(4, 1fr)'
+                    lg: 'repeat(3, 1fr)'
                 },
                 gap: { xs: 2, md: 3 },
                 width: '100%',
@@ -80,7 +71,7 @@ export function Summary() {
                 xs: '1fr',
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(3, 1fr)',
-                lg: 'repeat(4, 1fr)'
+                lg: 'repeat(3, 1fr)'
             },
             gap: { xs: 2, md: 3 },
             width: '100%',
