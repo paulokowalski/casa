@@ -47,11 +47,3 @@ export function getGeracaoSolar(data: string) {
 export function getCarroFipe(codigoFipe: string) {
   return api.get(API_URLS.CARRO_FIPE(codigoFipe));
 }
-
-export function getCearaNova(idTime: string|number) {
-  return api.get(API_URLS.API_BRASILEIRAO_POSICAO(idTime));
-}
-
-export function getRodadaAtual(idTime: string|number) {
-  return api.get(API_URLS.API_BRASILEIRAO_RODADA(idTime));
-}

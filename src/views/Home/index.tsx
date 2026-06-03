@@ -3,19 +3,13 @@ import { Box, Typography, Paper } from '@mui/material';
 import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import EuroSymbolIcon from '@mui/icons-material/EuroSymbol';
-import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 
 import { LoadingCard } from '../../components/ui/LoadingCard';
 import { ErrorCard } from '../../components/ui/ErrorCard';
-import { Card } from '../../components/Card';
 import { getGeracaoSolar } from '../../services/api';
-import { getCearaNova } from '../../services/api';
-import type { CearaNovaApiResponse } from '../../types/api';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { getRodadaAtual } from '../../services/api';
 import { getCarroFipe } from '../../services/api';
-import type { RodadaAtualApiResponse } from '../../types/api';
 
 import { API_URLS } from '../../config/urls';
 import { useFipeData, useCurrencyData } from '../../hooks/useApiData';
@@ -69,97 +63,6 @@ function DashboardInfoCard({ icon, title, value, loading, error, label, accentKe
         )}
       </Box>
     </Paper>
-  );
-}
-
-function CearaNovaCard({ compact }: { compact?: boolean }) {
-  const [data, setData] = React.useState<CearaNovaApiResponse | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [rodada, setRodada] = React.useState<RodadaAtualApiResponse | null>(null);
-  const [loadingRodada, setLoadingRodada] = React.useState(true);
-  const [errorRodada, setErrorRodada] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    setLoading(true);
-    getCearaNova(1837)
-      .then(res => {
-        setData(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError('Erro ao buscar dados do Ceará');
-        setLoading(false);
-      });
-    setLoadingRodada(true);
-    getRodadaAtual(1837)
-      .then(res => {
-        setRodada(res.data);
-        setLoadingRodada(false);
-      })
-      .catch(err => {
-        setErrorRodada('Erro ao buscar próximo confronto');
-        setLoadingRodada(false);
-      });
-  }, []);
-
-  if (loading) {
-    return <LoadingCard title="Ceará" variant="detailed" />;
-  }
-  if (error) {
-    return <ErrorCard error={error} title="Erro ao carregar dados do Ceará" />;
-  }
-  if (!data) {
-    return <ErrorCard error="Nenhum dado disponível" title="Dados não encontrados" />;
-  }
-
-  return (
-    <Card gradient={colors.primary.light} sx={{ p: compact ? 2 : { xs: 2, md: 3 }, minHeight: compact ? 220 : 320 }}>
-      <Box sx={{ width: '100%', display: 'flex', flexDirection: compact ? 'row' : 'column', alignItems: 'center', justifyContent: compact ? 'flex-start' : 'flex-start', py: 1, gap: compact ? 2 : 0 }}>
-        <Box sx={{ background: 'transparent', borderRadius: '50%', p: 0.5, minWidth: 48 }}>
-          {data.imagem ? (
-            <img src={data.imagem} alt={data.nomeTime} style={{ width: 48, height: 48, objectFit: 'contain', display: 'block', borderRadius: '50%' }} />
-          ) : (
-            <SportsSoccerIcon sx={{ fontSize: 48, color: colors.primary.light }} />
-          )}
-        </Box>
-        <Box sx={{ flex: 1, minWidth: 0, textAlign: compact ? 'left' : 'center' }}>
-          <Typography variant={compact ? 'subtitle1' : 'h6'} sx={{ color: colors.text.primary, fontWeight: 700, fontSize: compact ? '1rem' : '1.2rem' }}>{data.nomeTime}</Typography>
-          <Typography variant="caption" sx={{ color: colors.text.secondary, fontWeight: 500, fontSize: compact ? '0.85rem' : '0.95rem' }}>Posição: <b>{data.posicao}º</b></Typography>
-          <Typography variant={compact ? 'h5' : 'h3'} sx={{ color: colors.primary.light, fontWeight: 800, mb: compact ? 0.5 : 1 }}>{data.pontos} pts</Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: compact ? 'flex-start' : 'center', gap: 0.5, mb: 1 }}>
-            <Box sx={{ bgcolor: colors.semantic.success, color: '#fff', borderRadius: 1, px: 1, py: 0.2, fontWeight: 600, fontSize: '0.75rem' }}>V: {data.vitorias}</Box>
-            <Box sx={{ bgcolor: colors.semantic.warning, color: '#fff', borderRadius: 1, px: 1, py: 0.2, fontWeight: 600, fontSize: '0.75rem' }}>E: {data.empates}</Box>
-            <Box sx={{ bgcolor: colors.semantic.error, color: '#fff', borderRadius: 1, px: 1, py: 0.2, fontWeight: 600, fontSize: '0.75rem' }}>D: {data.derrotas}</Box>
-            <Box sx={{ bgcolor: colors.bg.elevated, color: colors.text.primary, border: `1px solid ${colors.border.default}`, borderRadius: 1, px: 1, py: 0.2, fontWeight: 600, fontSize: '0.75rem' }}>GP: {data.golsPro}</Box>
-            <Box sx={{ bgcolor: colors.bg.elevated, color: colors.text.primary, border: `1px solid ${colors.border.default}`, borderRadius: 1, px: 1, py: 0.2, fontWeight: 600, fontSize: '0.75rem' }}>GC: {data.golsContra}</Box>
-            <Box sx={{ bgcolor: data.saldoGols >= 0 ? colors.semantic.success : colors.semantic.error, color: '#fff', borderRadius: 1, px: 1, py: 0.2, fontWeight: 600, fontSize: '0.75rem' }}>SG: {data.saldoGols}</Box>
-          </Box>
-        </Box>
-      </Box>
-      <Box sx={{ width: '100%', mt: 1, p: 1.5, borderRadius: 1.5, background: colors.primary.subtle, border: `1px solid ${colors.border.default}`, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        {loadingRodada ? (
-          <Typography variant="caption" sx={{ color: colors.text.secondary }}>Carregando confronto...</Typography>
-        ) : errorRodada ? (
-          <Typography variant="caption" color="error">{errorRodada}</Typography>
-        ) : rodada ? (
-          <>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <img src={rodada.imagemTimeCasa} alt={rodada.timeCasa} style={{ width: 24, height: 24, objectFit: 'contain', borderRadius: 12, border: `1px solid ${colors.border.default}`, background: 'transparent' }} />
-              <Typography variant="caption" sx={{ color: colors.text.primary, fontWeight: 600 }}>{rodada.timeCasa}</Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: colors.primary.light, fontWeight: 700, fontSize: '1rem', mx: 1 }}>{rodada.golsTimeCasa} <span style={{ color: colors.text.muted, fontWeight: 400 }}>x</span> {rodada.golsTimeVisitante}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <img src={rodada.imagemTimeVisitante} alt={rodada.timeVisitante} style={{ width: 24, height: 24, objectFit: 'contain', borderRadius: 12, border: `1px solid ${colors.border.default}`, background: 'transparent' }} />
-              <Typography variant="caption" sx={{ color: colors.text.primary, fontWeight: 600 }}>{rodada.timeVisitante}</Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: colors.text.secondary, fontWeight: 500, ml: 2 }}>
-              {rodada.dataJogo ? new Date(rodada.dataJogo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''}
-            </Typography>
-          </>
-        ) : null}
-      </Box>
-    </Card>
   );
 }
 
