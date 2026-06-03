@@ -87,18 +87,6 @@ const PessoaView: React.FC = () => {
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box' }}>
       <Box sx={{ mb: 3 }} className="fade-in">
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 700,
-            mb: 0.5,
-            color: colors.text.primary,
-            letterSpacing: '-0.02em',
-            fontSize: { xs: '1.5rem', md: '2rem' },
-          }}
-        >
-          Pessoas
-        </Typography>
         <Typography variant="body1" sx={{ color: colors.text.secondary }}>
           Gerencie os usuários do sistema
         </Typography>

@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
 import { Filter } from '../../../components/ui/Filter';
 

@@ -63,24 +63,11 @@ export function GestaoCartao() {
         <GestaoCartaoProvider>
             <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box' }}>
                 <Box sx={{ mb: 3 }}>
-                    <Typography
-                        variant="h4"
-                        sx={{
-                            fontWeight: 700,
-                            mb: 0.5,
-                            color: colors.text.primary,
-                            letterSpacing: '-0.02em',
-                            fontSize: { xs: '1.5rem', md: '2rem' },
-                        }}
-                    >
-                        Gestão de Cartão
-                    </Typography>
                     <Typography variant="body1" sx={{ color: colors.text.secondary }}>
                         Controle de despesas e parcelamentos
                     </Typography>
                 </Box>
 
-                {/* Filtros em card, logo abaixo do título */}
                 <Card
                     sx={{ mb: 3, background: (theme: Theme) => theme.palette.background.paper, minHeight: 80, width: '100%', maxWidth: '100%', px: { xs: 1, sm: 3 } }}
                 >
@@ -91,14 +78,12 @@ export function GestaoCartao() {
                     </Box>
                 </Card>
 
-                {/* Grid de seções lado a lado em telas médias/grandes */}
                 <Box sx={{
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' },
                     gap: 3,
                     width: '100%',
                 }}>
-                    {/* Coluna esquerda: Summary + Tabela */}
                     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Card
                             gradient={colors.primary.light}
@@ -132,7 +117,6 @@ export function GestaoCartao() {
                             />
                         </Card>
                     </Box>
-                    {/* Coluna direita: Gráficos */}
                     <Box sx={{ flex: 1, minWidth: 350, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Card
                             gradient={colors.chart.amber}
@@ -161,7 +145,6 @@ export function GestaoCartao() {
                     </Box>
                 </Box>
 
-                {/* Gráfico de Categorias - Linha separada ocupando toda a largura */}
                 <Card
                     gradient={colors.semantic.success}
                     sx={{
@@ -178,7 +161,6 @@ export function GestaoCartao() {
                     />
                 </Card>
 
-                {/* Modal de Cadastro */}
                 <CadastroModal 
                     open={openCadastroModal}
                     onClose={handleCloseCadastroModal}
@@ -187,7 +169,6 @@ export function GestaoCartao() {
                     compra={compraParaEditar}
                 />
 
-                {/* FAB Moderno */}
                 <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1000 }}>
                     <Fab
                         color="primary"
@@ -198,7 +179,6 @@ export function GestaoCartao() {
                     </Fab>
                 </Box>
 
-                {/* Alerta fixo de feedback, sem animação */}
                 {showSuccess && (
                     <Box sx={{ position: 'fixed', top: 16, left: 0, right: 0, zIndex: 2000, display: 'flex', justifyContent: 'center' }}>
                         <CustomAlert onClose={() => setShowSuccess(false)} severity="success">

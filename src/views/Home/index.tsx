@@ -290,18 +290,6 @@ export function Home() {
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box' }}>
       <Box sx={{ mb: 3 }}>
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 700,
-            mb: 0.5,
-            color: colors.text.primary,
-            letterSpacing: '-0.02em',
-            fontSize: { xs: '1.5rem', md: '2rem' },
-          }}
-        >
-          Dashboard
-        </Typography>
         <Typography variant="body1" sx={{ color: colors.text.secondary }}>
           Visão geral das informações da casa
         </Typography>
