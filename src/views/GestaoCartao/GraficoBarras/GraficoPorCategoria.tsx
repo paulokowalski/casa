@@ -3,11 +3,12 @@ import { Box, Typography } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
 import { formatCurrency } from '../../../functions/global';
+import { colors } from '../../../styles/colors';
 
 const renderCustomLabel = (props: any) => {
     const { x, y, width, value } = props;
     return (
-        <text x={x + width / 2} y={y - 10} fill="#f5f6fa" textAnchor="middle" dominantBaseline="middle" fontSize={14}>
+        <text x={x + width / 2} y={y - 10} fill={colors.text.secondary} textAnchor="middle" dominantBaseline="middle" fontSize={14}>
             {formatCurrency(value)}
         </text>
     );
@@ -42,7 +43,7 @@ export function GraficoPorCategoria({ categoriaSelecionada, onToggleCategoria }:
 
     if (!ultimosFiltros.ano || !ultimosFiltros.mes) {
         return (
-            <Typography sx={{ color: '#a0aec0' }}>
+            <Typography sx={{ color: colors.text.secondary }}>
                 Selecione ano e mês para visualizar o gráfico por categoria.
             </Typography>
         );
@@ -51,10 +52,10 @@ export function GraficoPorCategoria({ categoriaSelecionada, onToggleCategoria }:
     if (dadosPorCategoria.length === 0) {
         return (
             <>
-                <Typography variant="h6" gutterBottom sx={{ color: '#f5f6fa' }}>
+                <Typography variant="h6" gutterBottom sx={{ color: colors.text.primary, fontWeight: 600, px: 2, pt: 2 }}>
                     Gastos por Categoria - {ultimosFiltros.mes}/{ultimosFiltros.ano}
                 </Typography>
-                <Typography sx={{ color: '#a0aec0' }}>
+                <Typography sx={{ color: colors.text.secondary }}>
                     Nenhum dado disponível para o período selecionado.
                 </Typography>
             </>
@@ -63,10 +64,10 @@ export function GraficoPorCategoria({ categoriaSelecionada, onToggleCategoria }:
 
     return (
         <>
-            <Typography variant="h6" gutterBottom sx={{ color: '#f5f6fa' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: colors.text.primary, fontWeight: 600, px: 2, pt: 2 }}>
                 Gastos por Categoria - {ultimosFiltros.mes}/{ultimosFiltros.ano}
             </Typography>
-            <Box sx={{ width: '100%', height: 430, display: 'block', background: '#23263a', borderRadius: 2, p: 2 }}>
+            <Box sx={{ width: '100%', height: 430, display: 'block', background: colors.bg.paper, border: `1px solid ${colors.border.default}`, borderRadius: 2, p: 2 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={dadosPorCategoria}
@@ -77,28 +78,28 @@ export function GraficoPorCategoria({ categoriaSelecionada, onToggleCategoria }:
                             bottom: 90,
                         }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
+                        <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
                         <XAxis 
                             dataKey="categoria"
-                            tick={{ fill: '#f5f6fa' }}
+                            tick={{ fill: colors.text.secondary, fontSize: 11 }}
                             angle={-45}
                             textAnchor="end"
                             height={80}
                         />
                         <YAxis 
                             tickFormatter={(value: number) => formatCurrency(value)}
-                            tick={{ fill: '#f5f6fa' }}
+                            tick={{ fill: colors.text.secondary, fontSize: 12 }}
                         />
                         <Tooltip 
                             formatter={(value: number) => [formatCurrency(value), "Valor Parcela"]}
                             labelFormatter={(label: string) => `Categoria: ${label}`}
-                            contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }}
+                            contentStyle={{ background: colors.chart.tooltipBg, color: colors.text.primary, border: `1px solid ${colors.chart.tooltipBorder}`, borderRadius: 8 }}
                         />
-                        <Legend wrapperStyle={{ color: '#f5f6fa' }} />
+                        <Legend wrapperStyle={{ color: colors.text.secondary }} />
                         <Bar 
                             dataKey="valorParcela" 
                             name="Valor Parcela" 
-                            fill="#8b5cf6"
+                            fill={colors.chart.blue}
                             radius={[4, 4, 0, 0]}
                             onClick={(data) => onToggleCategoria && onToggleCategoria(data?.categoria)}
                         >
@@ -112,12 +113,12 @@ export function GraficoPorCategoria({ categoriaSelecionada, onToggleCategoria }:
                 </ResponsiveContainer>
             </Box>
             {categoriaSelecionada && (
-                <Typography align="center" sx={{ mt: 1, color: '#a0aec0', cursor: 'pointer' }} onClick={() => onToggleCategoria && onToggleCategoria(null)}>
+                <Typography align="center" sx={{ mt: 1, color: colors.text.secondary, cursor: 'pointer' }} onClick={() => onToggleCategoria && onToggleCategoria(null)}>
                     Filtrando por categoria: <strong>{categoriaSelecionada}</strong> (clique para limpar)
                 </Typography>
             )}
             {loading && (
-                <Typography align="center" sx={{ mt: 2, color: '#f5f6fa' }}>
+                <Typography align="center" sx={{ mt: 2, color: colors.text.secondary }}>
                     Carregando dados do gráfico...
                 </Typography>
             )}

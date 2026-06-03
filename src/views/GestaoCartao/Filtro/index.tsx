@@ -73,9 +73,6 @@ export function Filtro() {
 
     return (
         <Box>
-            <Typography variant="h6" sx={{ color: '#f5f6fa', mb: 2 }}>
-                Filtros de Gestão de Cartão
-            </Typography>
             <Filter fields={fields} onFilter={buscar} filterLabel="Pesquisar" />
         </Box>
     );

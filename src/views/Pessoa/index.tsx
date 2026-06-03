@@ -9,6 +9,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { usePessoa } from '../../contexts/PessoaContext';
 import { LoadingOverlay } from '../../components/ui/LoadingOverlay';
 import { Card } from '../../components/Card';
+import { colors } from '../../styles/colors';
 
 interface Pessoa {
   id: number;
@@ -84,27 +85,21 @@ const PessoaView: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 }, mt: 10 }}>
-      <Box sx={{ mb: 2, textAlign: 'center' }} className="fade-in">
-        <Typography 
-          variant="h3" 
-          sx={{ 
-            fontWeight: 800,
-            mb: 1,
-            color: '#f5f6fa',
-            textShadow: '0 4px 16px rgba(139, 92, 246, 0.3)',
+    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box' }}>
+      <Box sx={{ mb: 3 }} className="fade-in">
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            mb: 0.5,
+            color: colors.text.primary,
+            letterSpacing: '-0.02em',
+            fontSize: { xs: '1.5rem', md: '2rem' },
           }}
         >
           Pessoas
         </Typography>
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            color: '#a0aec0',
-            fontWeight: 400,
-            textShadow: '0 2px 8px rgba(139, 92, 246, 0.2)',
-          }}
-        >
+        <Typography variant="body1" sx={{ color: colors.text.secondary }}>
           Gerencie os usuários do sistema
         </Typography>
       </Box>
@@ -174,7 +169,7 @@ const PessoaView: React.FC = () => {
           <Typography variant="body1" sx={{ color: 'error.main', fontWeight: 500, textAlign: 'center' }}>
             Tem certeza que deseja excluir a pessoa <b>"{deletePessoa?.nome}"</b>?
           </Typography>
-          <Typography variant="body2" sx={{ color: '#a0aec0', textAlign: 'center' }}>
+          <Typography variant="body2" sx={{ color: colors.text.secondary, textAlign: 'center' }}>
             Esta ação não poderá ser desfeita.
           </Typography>
         </Box>
@@ -195,14 +190,6 @@ const PessoaView: React.FC = () => {
             height: 56,
             borderRadius: '50%',
             p: 0,
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
-            boxShadow: '0 8px 25px rgba(139, 92, 246, 0.4)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-              transform: 'scale(1.05)',
-              boxShadow: '0 12px 35px rgba(139, 92, 246, 0.5)',
-            },
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

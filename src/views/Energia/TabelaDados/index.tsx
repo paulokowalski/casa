@@ -1,21 +1,20 @@
-import { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Paper,
   IconButton,
-  Chip
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useEnergia, DadosEnergia } from '../../../contexts/EnergiaContext';
 import { LoadingCard } from '../../../components/ui/LoadingCard';
+import { colors } from '../../../styles/colors';
 
 interface TabelaDadosProps {
   dados: DadosEnergia[];
@@ -35,45 +34,45 @@ export function TabelaDados({ dados, onEditar, onExcluir, loading }: TabelaDados
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ color: '#f5f6fa', mb: 2 }}>Dados de Energia Solar</Typography>
-      <TableContainer component={Paper} sx={{ background: '#23263a', borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ color: colors.text.primary, mb: 2, fontWeight: 600 }}>Dados de Energia Solar</Typography>
+      <TableContainer component={Paper} elevation={0} sx={{ background: colors.bg.paper, border: `1px solid ${colors.border.default}`, borderRadius: 2, overflow: 'hidden' }}>
         <Table>
           <TableHead>
-            <TableRow sx={{ background: '#181a20' }}>
-              <TableCell sx={{ color: '#f5f6fa', fontWeight: 700 }}>Horário</TableCell>
-              <TableCell sx={{ color: '#f5f6fa', fontWeight: 700 }} align="right">Potência (W)</TableCell>
-              <TableCell sx={{ color: '#f5f6fa', fontWeight: 700 }} align="center">Ações</TableCell>
+            <TableRow sx={{ background: colors.bg.elevated }}>
+              <TableCell sx={{ color: colors.text.secondary, fontWeight: 600, fontSize: 13, textTransform: 'uppercase' }}>Horário</TableCell>
+              <TableCell sx={{ color: colors.text.secondary, fontWeight: 600, fontSize: 13, textTransform: 'uppercase' }} align="right">Potência (W)</TableCell>
+              <TableCell sx={{ color: colors.text.secondary, fontWeight: 600, fontSize: 13, textTransform: 'uppercase' }} align="center">Ações</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {dados.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} sx={{ color: '#f5f6fa', textAlign: 'center', py: 4 }}>
+                <TableCell colSpan={3} sx={{ color: colors.text.muted, textAlign: 'center', py: 4 }}>
                   Nenhum dado de energia encontrado
                 </TableCell>
               </TableRow>
             ) : (
-              dados.map((dado) => (
-                <TableRow key={dado.id} sx={{ '&:hover': { background: '#2d3748' } }}>
-                  <TableCell sx={{ color: '#f5f6fa' }}>
+              dados.map((dado, idx) => (
+                <TableRow key={dado.id} sx={{ background: idx % 2 === 0 ? colors.bg.paper : colors.bg.elevated, '&:hover': { background: colors.primary.subtle } }}>
+                  <TableCell sx={{ color: colors.text.primary }}>
                     {dado.horario}
                   </TableCell>
-                  <TableCell sx={{ color: '#fbbf24', fontWeight: 600 }} align="right">
+                  <TableCell sx={{ color: colors.chart.amber, fontWeight: 600 }} align="right">
                     {dado.geracao.toFixed(1)}
                   </TableCell>
                   <TableCell align="center">
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                       <IconButton
                         size="small"
                         onClick={() => onEditar(dado)}
-                        sx={{ color: '#60a5fa', '&:hover': { background: 'rgba(96, 165, 250, 0.1)' } }}
+                        sx={{ color: colors.primary.light }}
                       >
                         <EditIcon />
                       </IconButton>
                       <IconButton
                         size="small"
                         onClick={() => onExcluir(dado)}
-                        sx={{ color: '#f87171', '&:hover': { background: 'rgba(248, 113, 113, 0.1)' } }}
+                        sx={{ color: colors.semantic.error }}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -87,4 +86,4 @@ export function TabelaDados({ dados, onEditar, onExcluir, loading }: TabelaDados
       </TableContainer>
     </Box>
   );
-} 
+}

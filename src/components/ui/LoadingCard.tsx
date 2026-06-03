@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Skeleton, Box, Typography } from '@mui/material';
+import { colors, getCardSurfaceSx } from '../../styles/colors';
 
 interface LoadingCardProps {
   title?: string;
@@ -19,34 +20,34 @@ export const LoadingCard: React.FC<LoadingCardProps> = ({
       case 'compact':
         return (
           <>
-            <Skeleton variant="circular" width={36} height={36} sx={{ mb: 1 }} />
-            <Skeleton variant="text" width="60%" height={24} />
-            <Skeleton variant="text" width="40%" height={20} />
+            <Skeleton variant="circular" width={36} height={36} sx={{ mb: 1, bgcolor: colors.cardAccents.blue.iconBg }} />
+            <Skeleton variant="text" width="60%" height={24} sx={{ bgcolor: colors.bg.elevated }} />
+            <Skeleton variant="text" width="40%" height={20} sx={{ bgcolor: colors.bg.elevated }} />
           </>
         );
-      
+
       case 'detailed':
         return (
           <>
-            <Skeleton variant="circular" width={48} height={48} sx={{ mb: 1 }} />
-            <Skeleton variant="text" width="80%" height={28} />
-            <Skeleton variant="text" width="60%" height={20} />
-            <Skeleton variant="rounded" width="100%" height={32} sx={{ mt: 1 }} />
+            <Skeleton variant="circular" width={48} height={48} sx={{ mb: 1, bgcolor: colors.cardAccents.blue.iconBg }} />
+            <Skeleton variant="text" width="80%" height={28} sx={{ bgcolor: colors.bg.elevated }} />
+            <Skeleton variant="text" width="60%" height={20} sx={{ bgcolor: colors.bg.elevated }} />
+            <Skeleton variant="rounded" width="100%" height={32} sx={{ mt: 1, bgcolor: colors.bg.elevated }} />
             <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-              <Skeleton variant="rounded" width={60} height={24} />
-              <Skeleton variant="rounded" width={60} height={24} />
-              <Skeleton variant="rounded" width={60} height={24} />
+              <Skeleton variant="rounded" width={60} height={24} sx={{ bgcolor: colors.bg.elevated }} />
+              <Skeleton variant="rounded" width={60} height={24} sx={{ bgcolor: colors.bg.elevated }} />
+              <Skeleton variant="rounded" width={60} height={24} sx={{ bgcolor: colors.bg.elevated }} />
             </Box>
           </>
         );
-      
+
       default:
         return (
           <>
-            <Skeleton variant="circular" width={48} height={48} sx={{ mb: 1 }} />
-            <Skeleton variant="text" width="80%" height={28} />
-            <Skeleton variant="text" width="60%" height={20} />
-            <Skeleton variant="rounded" width="100%" height={32} sx={{ mt: 1 }} />
+            <Skeleton variant="circular" width={48} height={48} sx={{ mb: 1, bgcolor: colors.cardAccents.blue.iconBg }} />
+            <Skeleton variant="text" width="80%" height={28} sx={{ bgcolor: colors.bg.elevated }} />
+            <Skeleton variant="text" width="60%" height={20} sx={{ bgcolor: colors.bg.elevated }} />
+            <Skeleton variant="rounded" width="100%" height={32} sx={{ mt: 1, bgcolor: colors.bg.elevated }} />
           </>
         );
     }
@@ -60,52 +61,24 @@ export const LoadingCard: React.FC<LoadingCardProps> = ({
         width,
         height,
         borderRadius: 2,
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+        ...getCardSurfaceSx(colors.primary.main),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '3px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        },
       }}
     >
-      {/* Efeito de shimmer */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: '-100%',
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent)',
-          animation: 'shimmer 1.5s infinite',
-          '@keyframes shimmer': {
-            '0%': { left: '-100%' },
-            '100%': { left: '100%' },
-          },
-        }}
-      />
-      
       <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
         {title && (
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              mb: 2, 
-              color: '#4a5568',
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 2,
+              color: colors.text.secondary,
               textAlign: 'center',
               fontWeight: 500,
+              fontSize: '1rem',
             }}
           >
             {title}
@@ -115,4 +88,4 @@ export const LoadingCard: React.FC<LoadingCardProps> = ({
       </CardContent>
     </Card>
   );
-}; 
+};

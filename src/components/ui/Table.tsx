@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Table as MuiTable, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Box, TablePagination } from '@mui/material';
+import { Table as MuiTable, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination } from '@mui/material';
+import { colors } from '../../styles/colors';
 
 export interface Column<T> {
   id: string;
@@ -46,19 +47,28 @@ export function Table<T extends { [key: string]: any }>({
   const paginatedData = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <TableContainer component={Paper} sx={{
-      borderRadius: 1,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-      background: '#23263a',
+    <TableContainer component={Paper} elevation={0} sx={{
+      borderRadius: 2,
+      border: `1px solid ${colors.border.default}`,
+      background: colors.bg.paper,
+      overflow: 'hidden',
     }}>
       <MuiTable stickyHeader>
         <TableHead>
-          <TableRow sx={{ background: '#181a20', backdropFilter: 'blur(4px)' }}>
-            {columns.map((col, idx) => (
+          <TableRow>
+            {columns.map((col) => (
               <TableCell
                 key={col.id}
                 align={'center'}
-                sx={{ fontWeight: 700, fontSize: 15, background: '#181a20', color: '#f5f6fa', borderBottom: '2px solid #23263a', letterSpacing: 0.5 }}
+                sx={{
+                  fontWeight: 600,
+                  fontSize: 13,
+                  background: colors.bg.elevated,
+                  color: colors.text.secondary,
+                  borderBottom: `1px solid ${colors.border.default}`,
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase',
+                }}
               >
                 {col.label}
               </TableCell>
@@ -68,7 +78,7 @@ export function Table<T extends { [key: string]: any }>({
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={columns.length} align="center" sx={{ py: 6, color: '#a0aec0', fontWeight: 500, background: '#23263a' }}>
+              <TableCell colSpan={columns.length} align="center" sx={{ py: 6, color: colors.text.muted, fontWeight: 500, background: colors.bg.paper }}>
                 {emptyMessage || 'Nenhum dado encontrado.'}
               </TableCell>
             </TableRow>
@@ -77,24 +87,24 @@ export function Table<T extends { [key: string]: any }>({
               <TableRow
                 key={row.id || idx}
                 sx={{
-                  background: idx % 2 === 0 ? 'rgba(35,38,58,0.95)' : 'rgba(35,38,58,0.85)',
-                  transition: 'background 0.2s',
+                  background: idx % 2 === 0 ? colors.bg.paper : colors.bg.elevated,
+                  transition: 'background 0.15s',
                   '&:hover': {
-                    background: 'rgba(139, 92, 246, 0.13)',
+                    background: colors.primary.subtle,
                   },
                 }}
               >
-                {columns.map((col, idx) => (
+                {columns.map((col, colIdx) => (
                   <TableCell
                     key={col.id}
-                    align={idx === 0 ? 'left' : (col.align || 'center')}
+                    align={colIdx === 0 ? 'left' : (col.align || 'center')}
                     sx={{
-                      borderBottom: '1px solid #23263a',
-                      fontSize: 15,
+                      borderBottom: `1px solid ${colors.border.default}`,
+                      fontSize: 14,
                       minWidth: col.minWidth,
-                      paddingX: 1,
-                      paddingY: 0.5,
-                      color: '#f5f6fa',
+                      px: 1.5,
+                      py: 1,
+                      color: colors.text.primary,
                     }}
                   >
                     {col.render ? col.render(row[col.id], row) : row[col.id]}
@@ -114,8 +124,15 @@ export function Table<T extends { [key: string]: any }>({
         onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={rowsPerPageOptions}
         labelRowsPerPage="Linhas por página"
-        sx={{ background: '#181a20', color: '#f5f6fa', borderTop: '1px solid #23263a' }}
+        sx={{
+          background: colors.bg.elevated,
+          color: colors.text.primary,
+          borderTop: `1px solid ${colors.border.default}`,
+          '& .MuiTablePagination-selectIcon, & .MuiTablePagination-displayedRows, & .MuiTablePagination-select': {
+            color: colors.text.secondary,
+          },
+        }}
       />
     </TableContainer>
   );
-} 
+}

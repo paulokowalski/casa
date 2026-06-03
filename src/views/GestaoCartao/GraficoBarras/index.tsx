@@ -3,11 +3,28 @@ import { Box, Typography } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
 import { formatCurrency } from '../../../functions/global';
+import { colors } from '../../../styles/colors';
+
+const chartBoxSx = {
+  width: '100%',
+  display: 'block' as const,
+  background: colors.bg.paper,
+  border: `1px solid ${colors.border.default}`,
+  borderRadius: 2,
+  p: 2,
+};
+
+const tooltipStyle = {
+  background: colors.chart.tooltipBg,
+  color: colors.text.primary,
+  border: `1px solid ${colors.chart.tooltipBorder}`,
+  borderRadius: 8,
+};
 
 const renderCustomLabel = (props: any) => {
     const { x, y, width, value } = props;
     return (
-        <text x={x + width / 2} y={y - 10} fill="#f5f6fa" textAnchor="middle" dominantBaseline="middle" fontSize={12}>
+        <text x={x + width / 2} y={y - 10} fill={colors.text.secondary} textAnchor="middle" dominantBaseline="middle" fontSize={12}>
             {formatCurrency(value)}
         </text>
     );
@@ -18,7 +35,7 @@ export function GraficoBarras() {
 
     if (!ultimosFiltros.ano || !ultimosFiltros.pessoa || ultimosFiltros.pessoa === 'TODOS') {
         return (
-            <Typography sx={{ color: '#a0aec0' }}>
+            <Typography sx={{ color: colors.text.secondary }}>
                 Selecione ano e pessoa para visualizar o gráfico.
             </Typography>
         );
@@ -27,10 +44,10 @@ export function GraficoBarras() {
     if (dadosGrafico.length === 0) {
         return (
             <>
-                <Typography variant="h6" gutterBottom sx={{ color: '#f5f6fa' }}>
+                <Typography variant="h6" gutterBottom sx={{ color: colors.text.primary, fontWeight: 600, px: 2, pt: 2 }}>
                     Despesas Mensais - {ultimosFiltros.pessoa}
                 </Typography>
-                <Typography sx={{ color: '#a0aec0' }}>
+                <Typography sx={{ color: colors.text.secondary }}>
                     Nenhum dado disponível para o período selecionado.
                 </Typography>
             </>
@@ -39,10 +56,10 @@ export function GraficoBarras() {
 
     return (
         <>
-            <Typography variant="h6" gutterBottom sx={{ color: '#f5f6fa' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: colors.text.primary, fontWeight: 600, px: 2, pt: 2 }}>
                 Despesas Mensais - {ultimosFiltros.pessoa}
             </Typography>
-            <Box sx={{ width: '100%', height: 360, display: 'block', background: '#23263a', borderRadius: 2, p: 2 }}>
+            <Box sx={{ ...chartBoxSx, height: 360 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={dadosGrafico}
@@ -53,22 +70,22 @@ export function GraficoBarras() {
                             bottom: 5,
                         }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
-                        <XAxis dataKey="mes" tick={{ fill: '#f5f6fa' }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
+                        <XAxis dataKey="mes" tick={{ fill: colors.text.secondary, fontSize: 12 }} />
                         <YAxis 
                             tickFormatter={(value: number) => formatCurrency(value)}
-                            tick={{ fill: '#f5f6fa' }}
+                            tick={{ fill: colors.text.secondary, fontSize: 12 }}
                         />
                         <Tooltip 
                             formatter={(value: number) => [formatCurrency(value), "Valor"]}
                             labelFormatter={(label: string) => `Mês: ${label}`}
-                            contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }}
+                            contentStyle={tooltipStyle}
                         />
-                        <Legend wrapperStyle={{ color: '#f5f6fa' }} />
+                        <Legend wrapperStyle={{ color: colors.text.secondary }} />
                         <Bar 
                             dataKey="valorMes" 
                             name="Valor Mensal" 
-                            fill="#8b5cf6"
+                            fill={colors.chart.blue}
                             radius={[4, 4, 0, 0]}
                         >
                             <LabelList 
@@ -81,7 +98,7 @@ export function GraficoBarras() {
                 </ResponsiveContainer>
             </Box>
             {loadingGrafico && (
-                <Typography align="center" sx={{ mt: 2, color: '#f5f6fa' }}>
+                <Typography align="center" sx={{ mt: 2, color: colors.text.secondary }}>
                     Carregando dados do gráfico...
                 </Typography>
             )}

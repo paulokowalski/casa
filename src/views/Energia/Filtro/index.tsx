@@ -1,10 +1,29 @@
 import { useState, useEffect } from 'react';
-import { Box, FormControl, InputLabel, Select, MenuItem, Typography } from '@mui/material';
+import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useEnergia } from '../../../contexts/EnergiaContext';
+import { colors } from '../../../styles/colors';
+
+const selectSx = {
+  color: colors.text.primary,
+  backgroundColor: colors.bg.elevated,
+  borderRadius: 1,
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: colors.border.default,
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: colors.border.light,
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: colors.primary.light,
+  },
+  '& .MuiSvgIcon-root': {
+    color: colors.text.secondary,
+  },
+};
 
 export function Filtro() {
   const { ano, setAno, mes, setMes } = useEnergia();
-  
+
   const anos = Array.from({ length: 11 }, (_, i) => 2025 + i);
   const meses = [
     { value: '01', label: 'Janeiro' },
@@ -36,25 +55,11 @@ export function Filtro() {
     <Box>
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel sx={{ color: '#f5f6fa' }}>Ano</InputLabel>
+          <InputLabel sx={{ color: colors.text.secondary }}>Ano</InputLabel>
           <Select
             value={ano}
             onChange={(e) => setAno(e.target.value)}
-            sx={{
-              color: '#f5f6fa',
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#444857',
-              },
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#6366f1',
-              },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#6366f1',
-              },
-              '& .MuiSvgIcon-root': {
-                color: '#f5f6fa',
-              },
-            }}
+            sx={selectSx}
           >
             {anos.map((anoOption) => (
               <MenuItem key={anoOption} value={String(anoOption)}>
@@ -65,25 +70,11 @@ export function Filtro() {
         </FormControl>
 
         <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel sx={{ color: '#f5f6fa' }}>Mês</InputLabel>
+          <InputLabel sx={{ color: colors.text.secondary }}>Mês</InputLabel>
           <Select
             value={mes}
             onChange={(e) => setMes(e.target.value)}
-            sx={{
-              color: '#f5f6fa',
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#444857',
-              },
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#6366f1',
-              },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#6366f1',
-              },
-              '& .MuiSvgIcon-root': {
-                color: '#f5f6fa',
-              },
-            }}
+            sx={selectSx}
           >
             {meses.map((mesOption) => (
               <MenuItem key={mesOption.value} value={mesOption.value}>
@@ -95,4 +86,4 @@ export function Filtro() {
       </Box>
     </Box>
   );
-} 
+}

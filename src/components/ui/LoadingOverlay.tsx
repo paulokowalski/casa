@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import { colors } from '../../styles/colors';
 
 interface LoadingOverlayProps {
   loading: boolean;
@@ -10,7 +11,7 @@ interface LoadingOverlayProps {
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ loading, children, text }) => {
   return (
     <Box position="relative" width="100%" height="100%">
-      <Box sx={{ pointerEvents: loading ? 'none' : 'auto', filter: loading ? 'blur(6px)' : 'none', opacity: loading ? 0.7 : 1, transition: 'filter 0.3s, opacity 0.3s' }}>
+      <Box sx={{ pointerEvents: loading ? 'none' : 'auto', filter: loading ? 'blur(4px)' : 'none', opacity: loading ? 0.6 : 1, transition: 'filter 0.2s, opacity 0.2s' }}>
         {children}
       </Box>
       {loading && (
@@ -21,17 +22,16 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ loading, childre
             left: 0,
             width: '100%',
             height: '100%',
-            bgcolor: 'rgba(35,38,58,0.85)',
+            bgcolor: colors.bg.overlay,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 10,
             pointerEvents: 'auto',
-            transition: 'background 0.3s',
           }}
         >
           {text && (
-            <Typography variant="h6" color="#f5f6fa" sx={{ fontWeight: 600, textShadow: '0 2px 8px #23263a' }}>
+            <Typography variant="h6" sx={{ color: colors.text.primary, fontWeight: 500 }}>
               {text}
             </Typography>
           )}
@@ -39,4 +39,4 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ loading, childre
       )}
     </Box>
   );
-}; 
+};

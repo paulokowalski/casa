@@ -7,6 +7,7 @@ import { Theme } from '@mui/material/styles';
 import { GraficoBarrasMensal } from './GraficoBarrasMensal';
 import { GraficoBarrasDiario } from './GraficoBarrasDiario';
 import { GraficoLinhasPotenciaDia } from './GraficoLinhasPotenciaDia';
+import { colors } from '../../styles/colors';
 
 export function Energia() {
   const [diaSelecionado, setDiaSelecionado] = useState<number | null>(null);
@@ -17,25 +18,28 @@ export function Energia() {
   }, [mes]);
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 }, mt: 10 }}>
-      {/* Header da página */}
-      <Box sx={{ mb: 2, textAlign: 'center', width: '100%' }}>
-        <Typography 
-          variant="h3" 
-          sx={{ 
-            fontWeight: 800,
-            mb: 1,
-            color: '#f5f6fa',
-            textShadow: '0 4px 16px rgba(34, 211, 153, 0.3)',
+    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box' }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            mb: 0.5,
+            color: colors.text.primary,
+            letterSpacing: '-0.02em',
+            fontSize: { xs: '1.5rem', md: '2rem' },
           }}
         >
           Energia Solar
         </Typography>
+        <Typography variant="body1" sx={{ color: colors.text.secondary }}>
+          Monitoramento de geração e consumo
+        </Typography>
       </Box>
 
       {/* Filtros */}
-      <Card 
-        sx={{ mb: 3, borderRadius: 0.5, background: (theme: Theme) => theme.palette.background.paper, boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)', minHeight: 80, width: '100%', maxWidth: '100%' }}
+      <Card
+        sx={{ mb: 3, background: (theme: Theme) => theme.palette.background.paper, minHeight: 80, width: '100%', maxWidth: '100%' }}
       >
         <Box sx={{
           display: 'flex',

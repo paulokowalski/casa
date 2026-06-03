@@ -7,6 +7,7 @@ import { ExclusaoModal } from '../ExclusaoModal';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingOverlay } from '../../../components/ui/LoadingOverlay';
 import EditIcon from '@mui/icons-material/Edit';
+import { colors } from '../../../styles/colors';
 
 interface CompraRow {
     id: string;
@@ -50,7 +51,7 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
             label: 'Nome',
             minWidth: 320,
             render: (value: CompraRow['nomeCompra']) => (
-                <Box sx={{ fontWeight: 500, color: '#f5f6fa' }}>{value}</Box>
+                <Box sx={{ fontWeight: 500, color: colors.text.primary }}>{value}</Box>
             ),
         },
         {
@@ -63,13 +64,12 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
                     label={toBRDate(value)}
                     size="small"
                     sx={{
-                        background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                        backgroundColor: colors.primary.main,
                         color: '#ffffff',
                         fontWeight: 600,
                         fontSize: '0.65rem',
                         borderRadius: '6px',
-                        height: '18px',
-                        boxShadow: '0 2px 4px rgba(139, 92, 246, 0.3)',
+                        height: '20px',
                         '& .MuiChip-label': {
                             padding: '0 6px',
                         },
@@ -87,20 +87,13 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
                     label={value === 'SIM' ? 'Finalizado' : 'Em andamento'}
                     size="small"
                     sx={{
-                        background:
-                            value === 'SIM'
-                                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                                : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        backgroundColor: value === 'SIM' ? colors.semantic.success : colors.semantic.warning,
                         color: '#ffffff',
                         fontWeight: 600,
                         fontSize: '0.65rem',
                         minWidth: 60,
                         borderRadius: '6px',
-                        height: '18px',
-                        boxShadow:
-                            value === 'SIM'
-                                ? '0 2px 4px rgba(16, 185, 129, 0.3)'
-                                : '0 2px 4px rgba(245, 158, 11, 0.3)',
+                        height: '20px',
                         '& .MuiChip-label': {
                             padding: '0 6px',
                         },
@@ -114,7 +107,7 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
             align: 'center' as const,
             minWidth: 60,
             render: (_: CompraRow['numeroParcela'], row: CompraRow) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', fontWeight: 600, color: '#f5f6fa', fontSize: '0.75rem' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', fontWeight: 600, color: colors.text.primary, fontSize: '0.75rem' }}>
                     {`${row.numeroParcela} de ${row.numeroTotalParcela}`}
                 </Box>
             ),
@@ -131,18 +124,15 @@ export function TabelaTransacao({ onEditCompra, itemParaExcluir, setItemParaExcl
                         size="small"
                         onClick={() => onToggleCategoria && onToggleCategoria(value || 'Sem categoria')}
                         sx={{
-                            background: categoriaSelecionada && categoriaSelecionada === (value || 'Sem categoria')
-                                ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-                                : 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                            backgroundColor: categoriaSelecionada && categoriaSelecionada === (value || 'Sem categoria')
+                                ? colors.semantic.success
+                                : colors.primary.main,
                             cursor: 'pointer',
                             color: '#ffffff',
                             fontWeight: 600,
                             fontSize: '0.65rem',
                             borderRadius: '6px',
-                            height: '18px',
-                            boxShadow: categoriaSelecionada && categoriaSelecionada === (value || 'Sem categoria')
-                                ? '0 2px 6px rgba(34, 197, 94, 0.35)'
-                                : '0 2px 4px rgba(139, 92, 246, 0.3)',
+                            height: '20px',
                             '& .MuiChip-label': {
                                 padding: '0 6px',
                             },

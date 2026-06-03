@@ -90,10 +90,10 @@ export function CadastroModal({ open, onClose, editando, onSuccess }: CadastroMo
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ color: '#f5f6fa', background: '#23263a' }}>
+      <DialogTitle>
         {editando ? 'Editar Dados de Energia' : 'Cadastrar Dados de Energia'}
       </DialogTitle>
-      <DialogContent sx={{ background: '#23263a', pt: 2 }}>
+      <DialogContent sx={{ pt: 2 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Data"
@@ -103,15 +103,7 @@ export function CadastroModal({ open, onClose, editando, onSuccess }: CadastroMo
             error={!!errors.data}
             helperText={errors.data}
             fullWidth
-            sx={{
-              '& .MuiInputLabel-root': { color: '#f5f6fa' },
-              '& .MuiInputBase-input': { color: '#f5f6fa' },
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': { borderColor: '#444857' },
-                '&:hover fieldset': { borderColor: '#6366f1' },
-                '&.Mui-focused fieldset': { borderColor: '#6366f1' },
-              },
-            }}
+            InputLabelProps={{ shrink: true }}
           />
           <TextField
             label="Horário (HH:MM)"
@@ -120,15 +112,6 @@ export function CadastroModal({ open, onClose, editando, onSuccess }: CadastroMo
             error={!!errors.horario}
             helperText={errors.horario}
             fullWidth
-            sx={{
-              '& .MuiInputLabel-root': { color: '#f5f6fa' },
-              '& .MuiInputBase-input': { color: '#f5f6fa' },
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': { borderColor: '#444857' },
-                '&:hover fieldset': { borderColor: '#6366f1' },
-                '&.Mui-focused fieldset': { borderColor: '#6366f1' },
-              },
-            }}
           />
           <TextField
             label="Potência (W)"
@@ -138,32 +121,17 @@ export function CadastroModal({ open, onClose, editando, onSuccess }: CadastroMo
             error={!!errors.geracao}
             helperText={errors.geracao}
             fullWidth
-            sx={{
-              '& .MuiInputLabel-root': { color: '#f5f6fa' },
-              '& .MuiInputBase-input': { color: '#f5f6fa' },
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': { borderColor: '#444857' },
-                '&:hover fieldset': { borderColor: '#6366f1' },
-                '&.Mui-focused fieldset': { borderColor: '#6366f1' },
-              },
-            }}
           />
         </Box>
       </DialogContent>
-      <DialogActions sx={{ background: '#23263a', p: 2 }}>
-        <Button onClick={onClose} sx={{ color: '#f5f6fa' }}>
+      <DialogActions>
+        <Button onClick={onClose} color="inherit">
           Cancelar
         </Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
-          sx={{
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            color: 'white',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%)',
-            },
-          }}
+          color="primary"
         >
           {editando ? 'Salvar' : 'Cadastrar'}
         </Button>

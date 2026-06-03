@@ -2,12 +2,12 @@ import { useContext } from "react";
 import { formatCurrency } from '../../../functions/global';
 import { GestaoCartaoContext } from "../../../contexts/GestaoCartaoContext";
 import { Box, Typography } from '@mui/material';
-import HistoryIcon from '@mui/icons-material/History';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { Card } from '../../../components/Card';
 import { LoadingCard } from '../../../components/ui/LoadingCard';
+import { colors, resolveCardAccent } from '../../../styles/colors';
 
 export function Summary() {
     const { despesa, loading } = useContext(GestaoCartaoContext);
@@ -15,91 +15,85 @@ export function Summary() {
         {
             title: "Gastos no Cartão",
             value: formatCurrency(despesa?.gastosNoCartao as number),
-            color: "#ef4444",
-            gradient: "linear-gradient(135deg, #fca5a5 0%, #ef4444 100%)",
+            color: colors.semantic.error,
+            accent: colors.semantic.error,
             icon: <CreditCardIcon />,
-            trend: "down",
-            description: "Gastos no Cartão"
         },
         {
             title: "Compras Parceladas",
             value: formatCurrency(despesa?.comprasParceladas as number),
-            color: "#f59e0b",
-            gradient: "linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%)",
+            color: colors.semantic.warning,
+            accent: colors.semantic.warning,
             icon: <ReceiptLongIcon />,
-            trend: "down",
-            description: "Compras Parceladas"
         },
         {
             title: "Total",
             value: formatCurrency(despesa?.valorMes as number),
-            color: "#10b981",
-            gradient: "linear-gradient(135deg, #6ee7b7 0%, #10b981 100%)",
+            color: colors.semantic.success,
+            accent: colors.semantic.success,
             icon: <AccountBalanceWalletIcon />,
-            trend: "up",
-            description: "Valor total do mês"
         }
     ];
 
     if (loading) {
         return (
-            <Box sx={{ 
-                display: 'grid', 
+            <Box sx={{
+                display: 'grid',
                 gridTemplateColumns: {
                     xs: '1fr',
                     sm: 'repeat(2, 1fr)',
                     md: 'repeat(3, 1fr)',
-                    lg: 'repeat(3, 1fr)'
                 },
-                gap: { xs: 2, md: 3 },
+                gap: { xs: 2, md: 2.5 },
                 width: '100%',
             }}>
                 <LoadingCard title="Total" variant="compact" />
                 <LoadingCard title="Próximo Mês" variant="compact" />
                 <LoadingCard title="Valor Saindo" variant="compact" />
-                <LoadingCard title="Parcelas Saindo" variant="compact" />
-                <LoadingCard title="Parcelas Entrando" variant="compact" />
-                <LoadingCard title="Total Saindo" variant="compact" />
             </Box>
         );
     }
 
     return (
-        <Box sx={{ 
-            display: 'grid', 
+        <Box sx={{
+            display: 'grid',
             gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, 1fr)',
                 md: 'repeat(3, 1fr)',
-                lg: 'repeat(3, 1fr)'
             },
-            gap: { xs: 2, md: 3 },
+            gap: { xs: 2, md: 2.5 },
             width: '100%',
         }}>
             {summaryItems.map((item, index) => (
                 <Card
                     key={index}
-                    gradient={item.gradient}
-                    className="fade-in-up"
+                    gradient={item.accent}
                 >
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                            <span style={{ display: 'flex', alignItems: 'center', color: item.color, fontSize: 18 }}>{item.icon}</span>
-                            <Typography variant="subtitle2" sx={{ color: item.color, fontWeight: 500, fontSize: '0.95rem', opacity: 0.85 }}>
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', py: 0.5, px: 0.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 40,
+                                height: 40,
+                                borderRadius: 1.5,
+                                bgcolor: resolveCardAccent(item.accent).iconBg,
+                                color: item.color,
+                                '& svg': { fontSize: 20 },
+                            }}>{item.icon}</Box>
+                            <Typography variant="subtitle2" sx={{ color: colors.text.secondary, fontWeight: 500, fontSize: '0.875rem' }}>
                                 {item.title}
                             </Typography>
                         </Box>
-                        <Typography 
-                            variant="h4" 
-                            component="p" 
-                            sx={{ 
+                        <Typography
+                            variant="h5"
+                            component="p"
+                            sx={{
                                 color: item.color,
                                 fontWeight: 700,
-                                fontSize: { xs: '1.35rem', md: '1.7rem' },
-                                background: item.gradient,
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                backgroundClip: 'text',
+                                fontSize: { xs: '1.25rem', md: '1.5rem' },
                                 mb: 0,
                             }}
                         >

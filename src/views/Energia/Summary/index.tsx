@@ -2,6 +2,9 @@ import { useMemo } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { useEnergia } from '../../../contexts/EnergiaContext';
 import { LoadingCard } from '../../../components/ui/LoadingCard';
+import { colors, CardAccentKey, getCardSurfaceSx } from '../../../styles/colors';
+
+const statAccents: CardAccentKey[] = ['green', 'red', 'blue', 'amber'];
 
 export function Summary() {
   const { dadosEnergia, geracaoTotal, loading } = useEnergia();
@@ -36,87 +39,34 @@ export function Summary() {
     );
   }
 
+  const stats = [
+    { label: 'Geração', value: `${resumo.totalGeracao.toFixed(2)} kWh` },
+    { label: 'Potência Máxima', value: `${resumo.maxPotencia.toFixed(1)} W` },
+    { label: 'Potência Média', value: `${resumo.mediaPotencia.toFixed(1)} W` },
+    { label: 'Registros do Dia', value: String(resumo.registros) },
+  ];
+
   return (
     <Box>
-      <Typography variant="h6" sx={{ color: '#f5f6fa', mb: 3 }}>Resumo de Energia Solar</Typography>
+      <Typography variant="h6" sx={{ color: colors.text.primary, mb: 3, fontWeight: 600 }}>Resumo de Energia Solar</Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-        <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
-          <Paper
-            sx={{
-              p: 2,
-              textAlign: 'center',
-              background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
-              color: 'white',
-              borderRadius: 2,
-              boxShadow: '0 4px 16px rgba(52, 211, 153, 0.3)',
-            }}
-          >
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              {resumo.totalGeracao.toFixed(2)} kWh
-            </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Geração
-            </Typography>
-          </Paper>
-        </Box>
-        <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
-          <Paper
-            sx={{
-              p: 2,
-              textAlign: 'center',
-              background: 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)',
-              color: 'white',
-              borderRadius: 2,
-              boxShadow: '0 4px 16px rgba(248, 113, 113, 0.3)',
-            }}
-          >
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              {resumo.maxPotencia.toFixed(1)} W
-            </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Potência Máxima
-            </Typography>
-          </Paper>
-        </Box>
-        <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
-          <Paper
-            sx={{
-              p: 2,
-              textAlign: 'center',
-              background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
-              color: 'white',
-              borderRadius: 2,
-              boxShadow: '0 4px 16px rgba(96, 165, 250, 0.3)',
-            }}
-          >
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              {resumo.mediaPotencia.toFixed(1)} W
-            </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Potência Média
-            </Typography>
-          </Paper>
-        </Box>
-        <Box sx={{ flex: '1 1 400px', minWidth: 0 }}>
-          <Paper
-            sx={{
-              p: 2,
-              textAlign: 'center',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: 'white',
-              borderRadius: 2,
-              boxShadow: '0 4px 16px rgba(245, 158, 11, 0.3)',
-            }}
-          >
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              {resumo.registros}
-            </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Registros do Dia
-            </Typography>
-          </Paper>
-        </Box>
+        {stats.map((stat, index) => {
+          const accentKey = statAccents[index];
+          const accent = colors.cardAccents[accentKey];
+          return (
+            <Box key={stat.label} sx={{ flex: '1 1 200px', minWidth: 0 }}>
+              <Paper elevation={0} sx={{ ...getCardSurfaceSx(accent.color), p: 2.5, textAlign: 'center', borderRadius: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5, color: accent.color }}>
+                  {stat.value}
+                </Typography>
+                <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+                  {stat.label}
+                </Typography>
+              </Paper>
+            </Box>
+          );
+        })}
       </Box>
     </Box>
   );
-} 
+}

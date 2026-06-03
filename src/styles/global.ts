@@ -1,14 +1,17 @@
 import { css } from '@emotion/react';
+import { colors } from './colors';
 
 export const globalStyles = css`
   html, body, #root {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: 'Manrope', 'Inter', 'Roboto', Arial, sans-serif;
-    background: linear-gradient(120deg, #820AD1 0%, #271A45 60%, #FF5F6D 100%);
-    color: #1a202c;
-    transition: background 0.3s, color 0.3s;
+    font-family: 'Inter', 'Manrope', 'Roboto', Arial, sans-serif;
+    background: ${colors.bg.default};
+    color: ${colors.text.primary};
+    transition: background 0.2s, color 0.2s;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   *, *::before, *::after {
     box-sizing: border-box;
@@ -22,10 +25,11 @@ export const globalStyles = css`
     font-family: inherit;
   }
   ::selection {
-    background: #667eea22;
+    background: ${colors.primary.subtle};
+    color: ${colors.text.primary};
   }
-  html[data-theme='dark'], body[data-theme='dark'], #root[data-theme='dark'] {
-    background: linear-gradient(120deg, #181a20 0%, #23263a 100%);
-    color: #f5f6fa;
+  html[data-theme='light'], body[data-theme='light'], #root[data-theme='light'] {
+    background: ${colors.bg.default};
+    color: ${colors.text.primary};
   }
 `;

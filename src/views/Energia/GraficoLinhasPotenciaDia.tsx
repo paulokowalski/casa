@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useEnergia } from '../../contexts/EnergiaContext';
 import { Card } from '../../components/Card';
+import { colors } from '../../styles/colors';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -50,48 +51,48 @@ function MiniCardsInsights({ dados, geracaoDia }: { dados: { horario: string, po
     {
       title: 'Geração (kWh)',
       value: geracaoDia !== undefined ? geracaoDia.toFixed(2) : '--',
-      color: '#10b981',
-      gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      color: colors.semantic.success,
+      accent: colors.semantic.success,
       icon: <WbSunnyIcon />,
       description: 'Total do dia',
     },
     {
       title: 'Pico (W)',
       value: max.toFixed(1),
-      color: '#fbbf24',
-      gradient: 'linear-gradient(135deg, #fbbf24 0%, #f59e42 100%)',
+      color: colors.semantic.warning,
+      accent: colors.semantic.warning,
       icon: <TrendingUpIcon />,
       description: maxObj?.horario || '--',
     },
     {
       title: 'Média (W)',
       value: media.toFixed(1),
-      color: '#60a5fa',
-      gradient: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
+      color: colors.primary.light,
+      accent: colors.primary.light,
       icon: <TrendingDownIcon />,
       description: 'Potência média',
     },
     {
       title: 'Início',
       value: inicioObj?.horario || '--',
-      color: '#34d399',
-      gradient: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+      color: colors.semantic.success,
+      accent: colors.semantic.success,
       icon: <PlayArrowIcon />,
       description: 'Início da geração',
     },
     {
       title: 'Fim',
       value: fimObj?.horario || '--',
-      color: '#ef4444',
-      gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
+      color: colors.semantic.error,
+      accent: colors.semantic.error,
       icon: <StopIcon />,
       description: 'Fim da geração',
     },
     {
       title: 'Tempo gerando',
       value: minutosGerando > 0 ? formatarMinutosEmHMS(minutosGerando) : '--',
-      color: '#f59e0b',
-      gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      color: colors.semantic.warning,
+      accent: colors.semantic.warning,
       icon: <AccessTimeIcon />,
       description: 'Duração total',
     },
@@ -113,34 +114,30 @@ function MiniCardsInsights({ dados, geracaoDia }: { dados: { horario: string, po
       {summaryItems.map((item, index) => (
         <Card
           key={index}
-          gradient={item.gradient}
+          gradient={item.accent}
           className="fade-in-up"
         >
-          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 1 }}>
+          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', py: 0.5, px: 0.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              <span style={{ display: 'flex', alignItems: 'center', color: item.color, fontSize: 18 }}>{item.icon}</span>
-              <Typography variant="subtitle2" sx={{ color: item.color, fontWeight: 500, fontSize: '0.95rem', opacity: 0.85 }}>
+              <Box sx={{ color: item.color, display: 'flex', '& svg': { fontSize: 18 } }}>{item.icon}</Box>
+              <Typography variant="subtitle2" sx={{ color: colors.text.secondary, fontWeight: 500, fontSize: '0.875rem' }}>
                 {item.title}
               </Typography>
             </Box>
-            <Typography 
-              variant="h4" 
-              component="p" 
-              sx={{ 
+            <Typography
+              variant="h5"
+              component="p"
+              sx={{
                 color: item.color,
                 fontWeight: 700,
-                mb: 1,
-                fontSize: { xs: '1.25rem', md: '1.5rem' },
-                background: item.gradient,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                mb: 0.5,
+                fontSize: { xs: '1.1rem', md: '1.35rem' },
               }}
             >
               {item.value}
             </Typography>
             {item.description && (
-              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#a0aec0' }}>
+              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: colors.text.muted }}>
                 {item.description}
               </Typography>
             )}
@@ -172,21 +169,21 @@ export function GraficoLinhasPotenciaDia({ diaSelecionado }: Props) {
   return (
     <Box sx={{ mt: 6 }}>
       <MiniCardsInsights dados={dadosPotenciaDia} geracaoDia={geracaoDia} />
-      <Typography variant="h6" sx={{ color: '#f5f6fa', mb: 2 }}>
+      <Typography variant="h6" sx={{ color: colors.text.primary, mb: 2, fontWeight: 600 }}>
         Potência ao longo do dia {diaSelecionado}/{mes}/{ano} ({nomeMes})
       </Typography>
-      <Box sx={{ height: 340, background: '#23263a', borderRadius: 2, p: 2 }}>
+      <Box sx={{ height: 340, background: colors.bg.paper, border: `1px solid ${colors.border.default}`, borderRadius: 2, p: 2 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={dadosPotenciaDia} margin={{ top: 16, right: 24, left: 0, bottom: 32 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444857" />
-            <XAxis dataKey="horario" tick={{ fill: '#f5f6fa' }} />
-            <YAxis tick={{ fill: '#f5f6fa' }} axisLine={{ stroke: '#444857' }} />
-            <Tooltip contentStyle={{ background: '#181a20', color: '#f5f6fa', border: '1px solid #6366f1' }} formatter={(v: any) => `${v} W`} />
-            <Line type="monotone" dataKey="potencia" stroke="#fbbf24" strokeWidth={3} dot={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
+            <XAxis dataKey="horario" tick={{ fill: colors.text.secondary, fontSize: 12 }} />
+            <YAxis tick={{ fill: colors.text.secondary, fontSize: 12 }} axisLine={{ stroke: colors.chart.grid }} />
+            <Tooltip contentStyle={{ background: colors.chart.tooltipBg, color: colors.text.primary, border: `1px solid ${colors.chart.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => `${v} W`} />
+            <Line type="monotone" dataKey="potencia" stroke={colors.chart.amber} strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
         {loadingPotencia && (
-          <Typography align="center" sx={{ mt: 2, color: '#f5f6fa' }}>
+          <Typography align="center" sx={{ mt: 2, color: colors.text.secondary }}>
             Carregando potência do dia...
           </Typography>
         )}

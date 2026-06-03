@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { Card } from '../../components/Card';
 import { Alert as CustomAlert } from '../../components/ui/Alert';
 import { Theme } from '@mui/material/styles';
+import { colors } from '../../styles/colors';
 
 export function GestaoCartao() {
     const [openCadastroModal, setOpenCadastroModal] = useState(false);
@@ -60,25 +61,28 @@ export function GestaoCartao() {
 
     return (
         <GestaoCartaoProvider>
-            <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box', px: { xs: 1, sm: 3, md: 6 }, mt: 10 }}>
-                {/* Header da página */}
-                <Box sx={{ mb: 2, textAlign: 'center', width: '100%' }}>
-                    <Typography 
-                        variant="h3" 
-                        sx={{ 
-                            fontWeight: 800,
-                            mb: 1,
-                            color: '#f5f6fa',
-                            textShadow: '0 4px 16px rgba(139, 92, 246, 0.3)',
+            <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box' }}>
+                <Box sx={{ mb: 3 }}>
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            fontWeight: 700,
+                            mb: 0.5,
+                            color: colors.text.primary,
+                            letterSpacing: '-0.02em',
+                            fontSize: { xs: '1.5rem', md: '2rem' },
                         }}
                     >
                         Gestão de Cartão
                     </Typography>
+                    <Typography variant="body1" sx={{ color: colors.text.secondary }}>
+                        Controle de despesas e parcelamentos
+                    </Typography>
                 </Box>
 
                 {/* Filtros em card, logo abaixo do título */}
-                <Card 
-                    sx={{ mb: 3, borderRadius: 0.5, background: (theme: Theme) => theme.palette.background.paper, boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)', minHeight: 80, width: '100%', maxWidth: '100%', px: { xs: 1, sm: 4 } }}
+                <Card
+                    sx={{ mb: 3, background: (theme: Theme) => theme.palette.background.paper, minHeight: 80, width: '100%', maxWidth: '100%', px: { xs: 1, sm: 3 } }}
                 >
                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3, flexWrap: { xs: 'nowrap', sm: 'wrap' }, justifyContent: 'stretch', alignItems: 'center', width: '100%', py: 1 }}>
                         <Box sx={{ flex: 1 }}>
@@ -97,29 +101,25 @@ export function GestaoCartao() {
                     {/* Coluna esquerda: Summary + Tabela */}
                     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Card
-                            gradient={'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'}
+                            gradient={colors.primary.light}
                             sx={{
                                 mb: 3,
-                                borderRadius: 0.5,
                                 background: (theme: Theme) => theme.palette.background.paper,
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                 width: '100%',
                                 maxWidth: '100%',
-                                px: { xs: 1, sm: 4 },
+                                px: { xs: 1, sm: 3 },
                             }}
                         >
                             <Summary />
                         </Card>
                         <Card
-                            gradient={'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'}
+                            gradient={colors.chart.cyan}
                             sx={{
                                 mb: 3,
-                                borderRadius: 0.5,
                                 background: (theme: Theme) => theme.palette.background.paper,
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                 width: '100%',
                                 maxWidth: '100%',
-                                px: { xs: 1, sm: 4 },
+                                px: { xs: 1, sm: 3 },
                             }}
                         >
                             <TabelaTransacao
@@ -135,12 +135,10 @@ export function GestaoCartao() {
                     {/* Coluna direita: Gráficos */}
                     <Box sx={{ flex: 1, minWidth: 350, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Card
-                            gradient={'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}
+                            gradient={colors.chart.amber}
                             sx={{
                                 mb: 3,
-                                borderRadius: 0.5,
                                 background: (theme: Theme) => theme.palette.background.paper,
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                 width: '100%',
                                 maxWidth: '100%',
                                 px: 0,
@@ -149,12 +147,10 @@ export function GestaoCartao() {
                             <GraficoBarras />
                         </Card>
                         <Card
-                            gradient={'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}
+                            gradient={colors.chart.amber}
                             sx={{
                                 mb: 3,
-                                borderRadius: 0.5,
                                 background: (theme: Theme) => theme.palette.background.paper,
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                 width: '100%',
                                 maxWidth: '100%',
                                 px: 0,
@@ -167,12 +163,10 @@ export function GestaoCartao() {
 
                 {/* Gráfico de Categorias - Linha separada ocupando toda a largura */}
                 <Card
-                    gradient={'linear-gradient(135deg, #10b981 0%, #059669 100%)'}
+                    gradient={colors.semantic.success}
                     sx={{
                         mb: 3,
-                        borderRadius: 0.5,
                         background: (theme: Theme) => theme.palette.background.paper,
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                         width: '100%',
                         maxWidth: '100%',
                         px: 0,
@@ -199,14 +193,6 @@ export function GestaoCartao() {
                         color="primary"
                         aria-label="adicionar transação"
                         onClick={handleOpenCadastroModal}
-                        sx={{
-                            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
-                            boxShadow: '0 8px 25px rgba(139, 92, 246, 0.4)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-                                boxShadow: '0 12px 35px rgba(139, 92, 246, 0.5)',
-                            },
-                        }}
                     >
                         <AddIcon />
                     </Fab>
