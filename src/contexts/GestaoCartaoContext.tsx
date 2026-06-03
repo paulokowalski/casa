@@ -24,7 +24,9 @@ interface Compra {
     valorTotal: number,
     comprasCartao: CompraCartao[],
     categoriaId?: string,
-    categoria?: string
+    categoria?: string,
+    tipoLancamentoId?: string,
+    tipoLancamento?: string
 }
 
 interface DadosGrafico {
@@ -74,6 +76,7 @@ interface GestaoCartaoContextData {
     itemsPessoas: Item[];
     itemsCartoes: Item[];
     itemsCategorias: Item[];
+    itemsTiposLancamentos: Item[];
     loadingFiltros: boolean;
     
     anoSelecionado: string;
@@ -128,6 +131,7 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
     const [itemsPessoas, setItemsPessoas] = useState<Item[]>([]);
     const [itemsCartoes, setItemsCartoes] = useState<Item[]>([]);
     const [itemsCategorias, setItemsCategorias] = useState<Item[]>([]);
+    const [itemsTiposLancamentos, setItemsTiposLancamentos] = useState<Item[]>([]);
     const [loadingFiltros, setLoadingFiltros] = useState(false);
     
     const [anoSelecionado, setAnoSelecionado] = useState('');
@@ -169,8 +173,11 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
         try {
             const response = await api.get(API_URLS.FILTRO_CATEGORIAS);
             setItemsCategorias(response.data);
+            const responseTiposLancamentos = await api.get(API_URLS.FILTRO_TIPOS_LANCAMENTOS);
+            setItemsTiposLancamentos(responseTiposLancamentos.data);
         } catch (error) {
             setItemsCategorias([]);
+            setItemsTiposLancamentos([]);
         } finally {
             setLoadingFiltros(false);
         }
@@ -310,16 +317,15 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             .catch(() => setLoading(false));
     }
 
-    async function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string, categoriaId?: string) {
+    async function cadastrarCompra(nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, tipoLancamentoId?: string, categoriaId?: string) {
         try {
-            console.log('Cadastrando compra com categoriaId:', categoriaId);
             const response = await api.post(API_URLS.COMPRA_ID(), {
                 nomeProduto,
                 valorProduto: Number(valorProduto),
                 dataCompra,
                 numeroParcelas: Number(numeroParcelas),
                 nomePessoaCompra,
-                nomeCartao,
+                tipoLancamentoId: tipoLancamentoId || null,
                 categoriaId: categoriaId || null
             });
             if (response.status === 201) {
@@ -361,16 +367,15 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
         }
     }
 
-    async function editarCompra(id: string, nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, nomeCartao: string, categoriaId?: string) {
+    async function editarCompra(id: string, nomeProduto: string, valorProduto: string, dataCompra: string, numeroParcelas: string, nomePessoaCompra: string, tipoLancamentoId?: string, categoriaId?: string) {
         try {
-            console.log('Editando compra com categoriaId:', categoriaId);
             const response = await api.put(API_URLS.COMPRA_ID(id), {
                 nomeProduto,
                 valorProduto: Number(valorProduto),
                 dataCompra,
                 numeroParcelas: Number(numeroParcelas),
                 nomePessoaCompra,
-                nomeCartao,
+                tipoLancamentoId: tipoLancamentoId || null,
                 categoriaId: categoriaId || null
             });
             if (response.status === 200) {
@@ -400,6 +405,7 @@ export function GestaoCartaoProvider({ children }: Readonly<GestaoCartaoProvider
             itemsPessoas,
             itemsCartoes,
             itemsCategorias,
+            itemsTiposLancamentos,
             loadingFiltros,
             
             anoSelecionado,

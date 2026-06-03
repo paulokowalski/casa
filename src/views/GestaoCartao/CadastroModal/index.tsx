@@ -8,7 +8,44 @@ import {
 } from '@mui/material';
 import { formatCurrency, parseCurrency, toISODate } from '../../../functions/global';
 import { Modal } from '../../../components/ui/Modal';
+import Item from '../../../interface/Item';
 
+function resolveTipoLancamentoId(compra: Record<string, unknown>, tipos: Item[]): string {
+    const id = compra.tipoLancamentoId;
+    if (id != null && id !== '') {
+        return String(id);
+    }
+
+    const candidatos = [compra.tipoLancamento, compra.nomeCartao].filter(Boolean);
+    for (const valor of candidatos) {
+        const texto = String(valor);
+        const porCodigo = tipos.find((t) => String(t.codigo) === texto);
+        if (porCodigo) return String(porCodigo.codigo);
+
+        const porDescricao = tipos.find(
+            (t) => t.descricao?.toUpperCase() === texto.toUpperCase()
+        );
+        if (porDescricao) return String(porDescricao.codigo);
+    }
+
+    return '';
+}
+
+function resolveCategoriaId(compra: Record<string, unknown>, categorias: Item[]): string {
+    const id = compra.categoriaId;
+    if (id != null && id !== '') {
+        return String(id);
+    }
+
+    if (compra.categoria) {
+        const porDescricao = categorias.find(
+            (c) => c.descricao?.toUpperCase() === String(compra.categoria).toUpperCase()
+        );
+        if (porDescricao) return String(porDescricao.codigo);
+    }
+
+    return '';
+}
 
 interface CadastroModalProps {
     open: boolean;
@@ -19,30 +56,24 @@ interface CadastroModalProps {
 }
 
 export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: CadastroModalProps) {
-    const { cadastrarCompra, editarCompra, itemsCategorias } = useContext(GestaoCartaoContext);
+    const { cadastrarCompra, editarCompra, itemsCategorias, itemsTiposLancamentos } = useContext(GestaoCartaoContext);
     const [produto, setProduto] = useState('');
     const [valorProduto, setValorProduto] = useState('');
     const [dataCompra, setDataCompra] = useState(getTodayISO());
     const [parcela, setParcela] = useState('1');
     const [pessoasSelecionadas, setPessoasSelecionadas] = useState<string[]>([]);
-    const [cartao, setCartao] = useState('');
     const [categoriaId, setCategoriaId] = useState('');
+    const [tipoLancamentoId, setTipoLancamentoId] = useState('');
     const [success, setSuccess] = useState(false);
     const { pessoas } = usePessoa();
 
-    const cartoes = [
-        'VIRTUAL C6',
-        'PAULO C6',
-        'SABRINE C6',
-        'INTER',
-        'NUBANK',
-        'AMAZON',
-    ];
-
+    const tiposLancamentos = itemsTiposLancamentos;
     const categorias = itemsCategorias;
 
     // Preencher o formulário ao abrir para edição
     useEffect(() => {
+        if (!open) return;
+
         if (compra) {
             setProduto(compra.nomeCompra || '');
             setValorProduto(
@@ -55,19 +86,19 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                     ? compra.nomePessoa.split(',').map((p: string) => p.trim()).filter(Boolean)
                     : []
             );
-            setCartao(compra.nomeCartao || '');
-            setCategoriaId(compra.categoriaId || '');
+            setTipoLancamentoId(resolveTipoLancamentoId(compra, itemsTiposLancamentos));
+            setCategoriaId(resolveCategoriaId(compra, itemsCategorias));
         } else {
             setProduto('');
             setValorProduto('');
             setDataCompra(getTodayISO());
             setParcela('1');
             setPessoasSelecionadas([]);
-            setCartao('');
+            setTipoLancamentoId('');
             setCategoriaId('');
         }
         setSuccess(false);
-    }, [compra, open]);
+    }, [compra, open, itemsTiposLancamentos, itemsCategorias]);
 
     function limparFormulario() {
         setProduto('');
@@ -75,7 +106,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
         setDataCompra(getTodayISO());
         setParcela('1');
         setPessoasSelecionadas([]);
-        setCartao('');
+        setTipoLancamentoId('');
         setCategoriaId('');
     }
 
@@ -100,7 +131,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                     dataFormatada,
                     parcela,
                     nomePessoas,
-                    cartao.trim(),
+                    tipoLancamentoId,
                     categoriaId
                 );
                 setSuccess(true);
@@ -113,7 +144,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                     dataFormatada,
                     parcela,
                     nomePessoas,
-                    cartao.trim(),
+                    tipoLancamentoId,
                     categoriaId
                 );
                 setSuccess(true);
@@ -126,7 +157,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
 
     const handleValorChange = (e: ChangeEvent<HTMLInputElement>) => {
         let valor = e.target.value;
-        // Permite apenas números e o sinal de menos no início
+
         valor = valor.replace(/(?!^-)[^\d]/g, '');
         let negativo = false;
         if (valor.startsWith('-')) {
@@ -236,13 +267,13 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
                             </TextField>
                             <TextField
                                 select
-                                label="Cartão"
-                                value={cartao}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => setCartao(e.target.value)}
+                                label="Tipo de Lançamento"
+                                value={tipoLancamentoId}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setTipoLancamentoId(e.target.value)}
                                 fullWidth
                             >
-                                {cartoes.map((c) => (
-                                    <MenuItem key={c} value={c}>{c.toUpperCase()}</MenuItem>
+                                {tiposLancamentos.map((tl) => (
+                                    <MenuItem key={tl.codigo} value={tl.codigo}>{tl.descricao.toUpperCase()}</MenuItem>
                                 ))}
                             </TextField>
                             <TextField

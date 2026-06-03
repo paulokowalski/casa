@@ -26,7 +26,7 @@ export const API_URLS = {
   FILTRO_PESSOAS: (ano: string|number, mes: string|number) => `/v1/filtro/pessoas/${ano}/${mes}`,
   FILTRO_CARTAO: (ano: string|number, mes: string|number, pessoa: string|number) => `/v1/filtro/cartao/${ano}/${mes}/${pessoa}`,
   FILTRO_CATEGORIAS: '/v1/filtro/categorias',
-  
+  FILTRO_TIPOS_LANCAMENTOS: '/v1/filtro/tipos-lancamentos',
   //ENERGIA SOLAR
   GERACAO_SOLAR: (data: string) => `/v1/geracao-solar?data=${data}`,
   GERACAO_SOLAR_ANO: (ano: string|number) => `/v1/geracao-solar/ano/${ano}`,
