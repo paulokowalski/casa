@@ -179,7 +179,7 @@ export function CadastroModal({ open, onClose, onSuccess, compra, onEdit }: Cada
         setDataCompra(e.target.value);
     };
 
-    const parcelasOptions = Array.from({ length: 24 }, (_, i) => i + 1);
+    const parcelasOptions = Array.from({ length: 48 }, (_, i) => i + 1);
 
     const handleCloseModal = () => {
         setSuccess(false);
