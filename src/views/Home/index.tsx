@@ -143,7 +143,7 @@ export function Home() {
 
   React.useEffect(() => {
     setFipeHistoricoLoading(true);
-    getCarroFipe('004525-0')
+    getCarroFipe('015203-0')
       .then(res => {
         const payload = res.data;
         const historicoBruto = Array.isArray(payload)
