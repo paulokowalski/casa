@@ -1,193 +1,169 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Button, Container, Typography, IconButton, TextField } from '@mui/material';
-import { Table } from '../../components/ui/Table';
-import { Modal } from '../../components/ui/Modal';
-import CadastroModal from './CadastroModal';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { usePessoa } from '../../contexts/PessoaContext';
-import { LoadingOverlay } from '../../components/ui/LoadingOverlay';
-import { Card } from '../../components/Card';
-import { colors } from '../../styles/colors';
+import { useState } from 'react';
+import { Avatar, Box, Button, IconButton, Tooltip, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { SectionCard } from '../../components/ui/SectionCard';
+import { DataTable, type DataColumn } from '../../components/ui/DataTable';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { FloatingAction } from '../../components/ui/FloatingAction';
+import { usePessoa, type Pessoa } from '../../contexts/PessoaContext';
+import { useToast } from '../../contexts/ToastContext';
+import { palette } from '../../styles/tokens';
+import { CadastroModal } from './CadastroModal';
 
-interface Pessoa {
-  id: number;
-  nome: string;
-  email: string;
-  acoes?: never;
+const iniciais = (nome: string) =>
+  nome
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join('');
+
+function PessoaAvatar({ nome }: Readonly<{ nome: string }>) {
+  return (
+    <Avatar
+      sx={{
+        width: 36,
+        height: 36,
+        fontSize: '0.8125rem',
+        fontWeight: 600,
+        bgcolor: palette.brand[100],
+        color: palette.brand[700],
+      }}
+    >
+      {iniciais(nome)}
+    </Avatar>
+  );
 }
 
-const PessoaView: React.FC = () => {
-  const { pessoas, carregarPessoas, loading, editarPessoa, excluirPessoa } = usePessoa();
-  const [openModal, setOpenModal] = useState(false);
-  const [editPessoa, setEditPessoa] = useState<Pessoa | null>(null);
-  const [deletePessoa, setDeletePessoa] = useState<Pessoa | null>(null);
-  const [editNome, setEditNome] = useState('');
-  const [editEmail, setEditEmail] = useState('');
-  const [editLoading, setEditLoading] = useState(false);
+export function PessoaView() {
+  const { pessoas, loading, excluirPessoa } = usePessoa();
+  const { notify } = useToast();
+  const [modalAberto, setModalAberto] = useState(false);
+  const [emEdicao, setEmEdicao] = useState<Pessoa | null>(null);
+  const [paraExcluir, setParaExcluir] = useState<Pessoa | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroExclusao, setErroExclusao] = useState<string | null>(null);
 
-  useEffect(() => {
-    carregarPessoas();
-  }, []);
-
-  const handleEdit = (pessoa: Pessoa) => {
-    setEditPessoa(pessoa);
-    setEditNome(pessoa.nome);
-    setEditEmail(pessoa.email);
+  const abrirCadastro = (pessoa: Pessoa | null) => {
+    setEmEdicao(pessoa);
+    setModalAberto(true);
   };
 
-  const handleEditSave = async () => {
-    if (!editPessoa) return;
-    setEditLoading(true);
+  async function confirmarExclusao() {
+    if (!paraExcluir) return;
+    setExcluindo(true);
+    setErroExclusao(null);
     try {
-      await editarPessoa(editPessoa.id, editNome, editEmail);
-      setEditPessoa(null);
+      await excluirPessoa(paraExcluir.id);
+      notify('Pessoa excluída.');
+      setParaExcluir(null);
+    } catch (error) {
+      setErroExclusao(error instanceof Error ? error.message : 'Erro ao excluir.');
     } finally {
-      setEditLoading(false);
+      setExcluindo(false);
     }
-  };
+  }
 
-  const handleDelete = (pessoa: Pessoa) => {
-    setDeletePessoa(pessoa);
-  };
+  const acoes = (p: Pessoa) => (
+    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <Tooltip title="Editar">
+        <IconButton aria-label={`Editar ${p.nome}`} onClick={() => abrirCadastro(p)}>
+          <EditOutlinedIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Excluir">
+        <IconButton aria-label={`Excluir ${p.nome}`} onClick={() => setParaExcluir(p)} sx={{ color: 'error.main' }}>
+          <DeleteOutlineIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </Box>
+  );
 
-  const handleDeleteConfirm = async () => {
-    if (!deletePessoa) return;
-    setEditLoading(true);
-    try {
-      await excluirPessoa(deletePessoa.id);
-      setDeletePessoa(null);
-    } finally {
-      setEditLoading(false);
-    }
-  };
-
-  const columns = [
-    { id: 'id', label: 'ID' },
-    { id: 'nome', label: 'Nome' },
-    { id: 'email', label: 'Email' },
+  const columns: DataColumn<Pessoa>[] = [
     {
-      id: 'acoes',
-      label: 'Ações',
-      align: 'right' as const,
-      render: (_: Pessoa['acoes'], row: Pessoa) => (
-        <>
-          <IconButton color="primary" onClick={() => handleEdit(row)}>
-            <EditIcon />
-          </IconButton>
-          <IconButton color="error" onClick={() => handleDelete(row)}>
-            <DeleteIcon />
-          </IconButton>
-        </>
+      id: 'nome',
+      header: 'Nome',
+      render: (p) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <PessoaAvatar nome={p.nome} />
+          <Typography fontWeight={500}>{p.nome}</Typography>
+        </Box>
       ),
     },
+    { id: 'email', header: 'E-mail', render: (p) => <Typography color="text.secondary">{p.email}</Typography> },
+    { id: 'acoes', header: '', align: 'right', width: 112, render: acoes },
   ];
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', pb: 6, boxSizing: 'border-box' }}>
-      <Box sx={{ mb: 3 }} className="fade-in">
-        <Typography variant="body1" sx={{ color: colors.text.secondary }}>
-          Gerencie os usuários do sistema
-        </Typography>
-      </Box>
-      <Card>
-        <LoadingOverlay loading={loading} text="Carregando...">
-          <Table<Pessoa>
-            columns={columns}
-            data={pessoas}
-            emptyMessage="Nenhuma pessoa cadastrada."
-            rowsPerPageOptions={[5, 10, 25]}
-            defaultRowsPerPage={10}
-          />
-        </LoadingOverlay>
-      </Card>
-      <CadastroModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        onSuccess={carregarPessoas}
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <PageHeader
+        section="Cadastros"
+        title="Pessoas"
+        subtitle="Quem pode ter compras e lançamentos no sistema"
+        actions={
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => abrirCadastro(null)}
+            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+          >
+            Nova pessoa
+          </Button>
+        }
       />
-      <Modal
-        open={!!editPessoa}
-        onClose={() => setEditPessoa(null)}
-        title="Editar Pessoa"
-        maxWidth="xs"
-        actions={
+
+      <SectionCard
+        title="Pessoas cadastradas"
+        subtitle={`${pessoas.length} ${pessoas.length === 1 ? 'pessoa' : 'pessoas'}`}
+        padding="flush"
+      >
+        <DataTable
+          columns={columns}
+          rows={pessoas}
+          getRowKey={(p) => p.id}
+          loading={loading}
+          minWidth={560}
+          emptyMessage="Nenhuma pessoa cadastrada."
+          renderMobileRow={(p) => (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <PessoaAvatar nome={p.nome} />
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography fontWeight={600}>{p.nome}</Typography>
+                <Typography variant="body2" color="text.secondary" noWrap>
+                  {p.email}
+                </Typography>
+              </Box>
+              {acoes(p)}
+            </Box>
+          )}
+        />
+      </SectionCard>
+
+      <CadastroModal open={modalAberto} pessoa={emEdicao} onClose={() => setModalAberto(false)} onSuccess={notify} />
+
+      <ConfirmDialog
+        open={Boolean(paraExcluir)}
+        title="Excluir pessoa"
+        description={
           <>
-            <Button onClick={() => setEditPessoa(null)} color="secondary">Cancelar</Button>
-            <Button onClick={handleEditSave} color="primary" variant="contained" disabled={loading}>
-              Salvar
-            </Button>
+            Excluir <b>{paraExcluir?.nome}</b>? Esta ação não pode ser desfeita.
           </>
         }
-      >
-        <TextField
-          label="Nome"
-          value={editNome}
-          onChange={e => setEditNome(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Email"
-          value={editEmail}
-          onChange={e => setEditEmail(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-      </Modal>
-      <Modal
-        open={!!deletePessoa}
-        onClose={() => setDeletePessoa(null)}
-        title="Confirmar Exclusão"
-        maxWidth="xs"
-        actions={
-          <>
-            <Button onClick={() => setDeletePessoa(null)} color="secondary" variant="outlined">
-              Cancelar
-            </Button>
-            <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={loading}>
-              Excluir
-            </Button>
-          </>
-        }
-      >
-        <Box display="flex" flexDirection="column" alignItems="center" gap={2} mt={2} mb={2}>
-          <WarningAmberIcon sx={{ color: 'error.main', fontSize: 48 }} />
-          <Typography variant="body1" sx={{ color: 'error.main', fontWeight: 500, textAlign: 'center' }}>
-            Tem certeza que deseja excluir a pessoa <b>"{deletePessoa?.nome}"</b>?
-          </Typography>
-          <Typography variant="body2" sx={{ color: colors.text.secondary, textAlign: 'center' }}>
-            Esta ação não poderá ser desfeita.
-          </Typography>
-        </Box>
-      </Modal>
-      <Box sx={{ 
-        position: 'fixed', 
-        bottom: 24, 
-        right: 24,
-        zIndex: 1000,
-      }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpenModal(true)}
-          sx={{
-            minWidth: 0,
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            p: 0,
-          }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 5V19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M5 12H19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </Button>
-      </Box>
+        confirmLabel="Excluir"
+        destructive
+        loading={excluindo}
+        error={erroExclusao}
+        onConfirm={confirmarExclusao}
+        onClose={() => {
+          setParaExcluir(null);
+          setErroExclusao(null);
+        }}
+      />
+
+      <FloatingAction label="Nova pessoa" icon={<AddIcon />} onClick={() => abrirCadastro(null)} />
     </Box>
   );
-};
-
-export default PessoaView; 
+}

@@ -1,34 +1,40 @@
-import { Box, Typography } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Box, Skeleton } from '@mui/material';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { SectionCard } from '../../components/ui/SectionCard';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { axisProps, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
 import { useEnergia } from '../../contexts/EnergiaContext';
 import { colors } from '../../styles/colors';
+import { formatNumber } from '../../utils/format';
 
 export function GraficoBarrasMensal() {
-  const { ano, dadosGeracaoMensal, loadingMensal } = useEnergia();
-
-  console.log(ano, dadosGeracaoMensal, loadingMensal);
+  const { ano, mes, geracaoMensal, loadingMensal } = useEnergia();
+  const mesIdx = Number(mes) - 1;
+  const temDados = geracaoMensal.some((m) => m.geracao > 0);
 
   return (
-    <Box sx={{ mt: 4 }}>
-      <Typography variant="h6" sx={{ color: colors.text.primary, mb: 2, fontWeight: 600 }}>
-        Geração Mensal de Energia Solar ({ano})
-      </Typography>
-      <Box sx={{ height: 340, background: colors.bg.paper, border: `1px solid ${colors.border.default}`, borderRadius: 2, p: 2 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dadosGeracaoMensal} margin={{ top: 16, right: 24, left: 0, bottom: 32 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
-            <XAxis dataKey="mes" tick={{ fill: colors.text.secondary, fontSize: 12 }} />
-            <YAxis tick={{ fill: colors.text.secondary, fontSize: 12 }} axisLine={{ stroke: colors.chart.grid }} />
-            <Tooltip contentStyle={{ background: colors.chart.tooltipBg, color: colors.text.primary, border: `1px solid ${colors.chart.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => `${v} kWh`} />
-            <Bar dataKey="geracao" fill={colors.semantic.success} radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-        {loadingMensal && (
-          <Typography align="center" sx={{ mt: 2, color: colors.text.secondary }}>
-            Carregando dados mensais...
-          </Typography>
-        )}
-      </Box>
-    </Box>
+    <SectionCard title="Geração por mês" subtitle={`kWh em ${ano}`}>
+      {loadingMensal ? (
+        <Skeleton variant="rounded" height={260} />
+      ) : !temDados ? (
+        <EmptyState message="Sem geração registrada neste ano." />
+      ) : (
+        <Box sx={{ height: 260 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={geracaoMensal} margin={{ top: 8, right: 4, left: -8, bottom: 0 }}>
+              <CartesianGrid {...gridProps} />
+              <XAxis dataKey="mes" {...axisProps} interval={0} fontSize={11} />
+              <YAxis {...yAxisProps} width={44} />
+              <Tooltip {...tooltipProps} formatter={(v: number) => [`${formatNumber(v, 0)} kWh`, 'Geração']} />
+              <Bar dataKey="geracao" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                {geracaoMensal.map((m, i) => (
+                  <Cell key={m.mes} fill={i === mesIdx ? colors.chart.primary : colors.chart.primarySoft} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+      )}
+    </SectionCard>
   );
-} 
+}

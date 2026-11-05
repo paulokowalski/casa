@@ -1,193 +1,139 @@
-import { useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useEnergia } from '../../contexts/EnergiaContext';
-import { Card } from '../../components/Card';
+import { useEffect, useMemo } from 'react';
+import { Box, Skeleton } from '@mui/material';
+import { Area, AreaChart, CartesianGrid, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
+import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
+import { SectionCard } from '../../components/ui/SectionCard';
+import { KpiCard } from '../../components/ui/KpiCard';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { axisProps, compactNumber, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
+import { useEnergia, type PotenciaPonto } from '../../contexts/EnergiaContext';
 import { colors } from '../../styles/colors';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StopIcon from '@mui/icons-material/Stop';
-import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import { MONTHS_PT, formatNumber } from '../../utils/format';
 
-interface Props {
-  diaSelecionado: number | null;
+const minutos = (h: string) => {
+  const [hh, mm] = h.split(':').map(Number);
+  return hh * 60 + mm;
+};
+
+function resumoDoDia(pontos: PotenciaPonto[]) {
+  const validos = pontos.filter((p) => p.horario);
+  if (validos.length === 0) return null;
+  const pico = validos.reduce((a, b) => (b.potencia > a.potencia ? b : a));
+  const gerando = validos.filter((p) => p.potencia > 0);
+  const media = validos.reduce((a, p) => a + p.potencia, 0) / validos.length;
+  const inicio = gerando[0]?.horario;
+  const fim = gerando[gerando.length - 1]?.horario;
+  const duracaoMin = inicio && fim ? minutos(fim) - minutos(inicio) : 0;
+  return { pico, media, inicio, fim, duracaoMin };
 }
 
-function MiniCardsInsights({ dados, geracaoDia }: { dados: { horario: string, potencia: number }[], geracaoDia?: number }) {
-  if (!dados || dados.length === 0) return null;
+const kw = (w: number) => (w >= 1000 ? `${formatNumber(w / 1000)} kW` : `${Math.round(w)} W`);
+const duracao = (min: number) => `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}`;
 
-  const max = Math.max(...dados.map(d => d.potencia));
-  const maxObj = dados.find(d => d.potencia === max);
-  const inicioObj = dados.find(d => d.potencia > 0);
-  const fimObj = [...dados].reverse().find(d => d.potencia > 0);
-  const soma = dados.reduce((acc, d) => acc + d.potencia, 0);
-  const media = soma / dados.length;
-
-  function minutosEntre(hora1: string, hora2: string) {
-    if (!hora1 || !hora2) return 0;
-    const [h1, m1] = hora1.split(':').map(Number);
-    const [h2, m2] = hora2.split(':').map(Number);
-    return (h2 * 60 + m2) - (h1 * 60 + m1);
-  }
-
-  function formatarMinutosEmHMS(minutos: number): string {
-    const totalSegundos = Math.floor(minutos * 60);
-    const horas = Math.floor(totalSegundos / 3600);
-    const minutosRestantes = Math.floor((totalSegundos % 3600) / 60);
-    const segundos = totalSegundos % 60;
-
-    // Formata para sempre ter dois dígitos
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(horas)}:${pad(minutosRestantes)}:${pad(segundos)}`;
-  }
-
-  const minutosGerando = (inicioObj && fimObj)
-    ? minutosEntre(inicioObj.horario, fimObj.horario)
-    : 0;
-
-  const summaryItems = [
-    {
-      title: 'Geração (kWh)',
-      value: geracaoDia !== undefined ? geracaoDia.toFixed(2) : '--',
-      color: colors.semantic.success,
-      accent: colors.semantic.success,
-      icon: <WbSunnyIcon />,
-      description: 'Total do dia',
-    },
-    {
-      title: 'Pico (W)',
-      value: max.toFixed(1),
-      color: colors.semantic.warning,
-      accent: colors.semantic.warning,
-      icon: <TrendingUpIcon />,
-      description: maxObj?.horario || '--',
-    },
-    {
-      title: 'Média (W)',
-      value: media.toFixed(1),
-      color: colors.primary.light,
-      accent: colors.primary.light,
-      icon: <TrendingDownIcon />,
-      description: 'Potência média',
-    },
-    {
-      title: 'Início',
-      value: inicioObj?.horario || '--',
-      color: colors.semantic.success,
-      accent: colors.semantic.success,
-      icon: <PlayArrowIcon />,
-      description: 'Início da geração',
-    },
-    {
-      title: 'Fim',
-      value: fimObj?.horario || '--',
-      color: colors.semantic.error,
-      accent: colors.semantic.error,
-      icon: <StopIcon />,
-      description: 'Fim da geração',
-    },
-    {
-      title: 'Tempo gerando',
-      value: minutosGerando > 0 ? formatarMinutosEmHMS(minutosGerando) : '--',
-      color: colors.semantic.warning,
-      accent: colors.semantic.warning,
-      icon: <AccessTimeIcon />,
-      description: 'Duração total',
-    },
-  ];
-
-  return (
-    <Box sx={{ 
-      display: 'grid', 
-      gridTemplateColumns: {
-        xs: '1fr',
-        sm: 'repeat(2, 1fr)',
-        md: 'repeat(3, 1fr)',
-        lg: 'repeat(6, 1fr)'
-      },
-      gap: { xs: 2, md: 3 },
-      width: '100%',
-      mb: 3,
-    }}>
-      {summaryItems.map((item, index) => (
-        <Card
-          key={index}
-          gradient={item.accent}
-          className="fade-in-up"
-        >
-          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', py: 0.5, px: 0.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              <Box sx={{ color: item.color, display: 'flex', '& svg': { fontSize: 18 } }}>{item.icon}</Box>
-              <Typography variant="subtitle2" sx={{ color: colors.text.secondary, fontWeight: 500, fontSize: '0.875rem' }}>
-                {item.title}
-              </Typography>
-            </Box>
-            <Typography
-              variant="h5"
-              component="p"
-              sx={{
-                color: item.color,
-                fontWeight: 700,
-                mb: 0.5,
-                fontSize: { xs: '1.1rem', md: '1.35rem' },
-              }}
-            >
-              {item.value}
-            </Typography>
-            {item.description && (
-              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: colors.text.muted }}>
-                {item.description}
-              </Typography>
-            )}
-          </Box>
-        </Card>
-      ))}
-    </Box>
-  );
-}
-
-export function GraficoLinhasPotenciaDia({ diaSelecionado }: Props) {
-  const { ano, mes, dadosPotenciaDia, geracaoDia, loadingPotencia, carregarDadosPotenciaDia } = useEnergia();
+export function GraficoLinhasPotenciaDia({ diaSelecionado }: Readonly<{ diaSelecionado: number | null }>) {
+  const { ano, mes, potenciaDia, geracaoDoDia, loadingPotencia, carregarPotenciaDia } = useEnergia();
 
   useEffect(() => {
-    if (diaSelecionado) {
-      carregarDadosPotenciaDia(diaSelecionado);
-    }
-  }, [diaSelecionado, carregarDadosPotenciaDia]);
+    if (diaSelecionado) void carregarPotenciaDia(diaSelecionado);
+  }, [diaSelecionado, carregarPotenciaDia]);
 
-  if (!diaSelecionado) return null;
+  const resumo = useMemo(() => resumoDoDia(potenciaDia), [potenciaDia]);
 
-  // Obter nome do mês para exibição
-  const meses = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
-  const nomeMes = meses[parseInt(mes) - 1] || '';
+  if (!diaSelecionado) {
+    return (
+      <SectionCard title="Curva de potência">
+        <EmptyState message="Selecione um dia no gráfico acima para ver a potência ao longo do dia." compact />
+      </SectionCard>
+    );
+  }
+
+  const titulo = `Dia ${diaSelecionado} de ${MONTHS_PT[Number(mes) - 1]} de ${ano}`;
 
   return (
-    <Box sx={{ mt: 6 }}>
-      <MiniCardsInsights dados={dadosPotenciaDia} geracaoDia={geracaoDia} />
-      <Typography variant="h6" sx={{ color: colors.text.primary, mb: 2, fontWeight: 600 }}>
-        Potência ao longo do dia {diaSelecionado}/{mes}/{ano} ({nomeMes})
-      </Typography>
-      <Box sx={{ height: 340, background: colors.bg.paper, border: `1px solid ${colors.border.default}`, borderRadius: 2, p: 2 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={dadosPotenciaDia} margin={{ top: 16, right: 24, left: 0, bottom: 32 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
-            <XAxis dataKey="horario" tick={{ fill: colors.text.secondary, fontSize: 12 }} />
-            <YAxis tick={{ fill: colors.text.secondary, fontSize: 12 }} axisLine={{ stroke: colors.chart.grid }} />
-            <Tooltip contentStyle={{ background: colors.chart.tooltipBg, color: colors.text.primary, border: `1px solid ${colors.chart.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => `${v} W`} />
-            <Line type="monotone" dataKey="potencia" stroke={colors.chart.amber} strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
-        {loadingPotencia && (
-          <Typography align="center" sx={{ mt: 2, color: colors.text.secondary }}>
-            Carregando potência do dia...
-          </Typography>
-        )}
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 } }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+          gap: { xs: 1.5, md: 2.5 },
+        }}
+      >
+        <KpiCard
+          label="Geração do dia"
+          tone="warning"
+          icon={<WbSunnyOutlinedIcon />}
+          loading={loadingPotencia}
+          value={geracaoDoDia !== null ? `${formatNumber(geracaoDoDia)} kWh` : '—'}
+        />
+        <KpiCard
+          label="Pico de potência"
+          tone="brand"
+          icon={<BoltOutlinedIcon />}
+          loading={loadingPotencia}
+          value={resumo ? kw(resumo.pico.potencia) : '—'}
+          footer={resumo ? `às ${resumo.pico.horario}` : undefined}
+        />
+        <KpiCard
+          label="Potência média"
+          tone="info"
+          icon={<SpeedOutlinedIcon />}
+          loading={loadingPotencia}
+          value={resumo ? kw(resumo.media) : '—'}
+        />
+        <KpiCard
+          label="Tempo gerando"
+          tone="success"
+          icon={<ScheduleOutlinedIcon />}
+          loading={loadingPotencia}
+          value={resumo && resumo.duracaoMin > 0 ? duracao(resumo.duracaoMin) : '—'}
+          footer={resumo?.inicio ? `${resumo.inicio} – ${resumo.fim}` : undefined}
+        />
       </Box>
+
+      <SectionCard title="Curva de potência" subtitle={titulo}>
+        {loadingPotencia ? (
+          <Skeleton variant="rounded" height={280} />
+        ) : potenciaDia.length === 0 ? (
+          <EmptyState message="Nenhuma leitura de potência neste dia." />
+        ) : (
+          <Box sx={{ height: { xs: 220, md: 280 } }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={potenciaDia} margin={{ top: 12, right: 8, left: -8, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="energiaArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={colors.chart.primary} stopOpacity={0.18} />
+                    <stop offset="100%" stopColor={colors.chart.primary} stopOpacity={0.01} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid {...gridProps} />
+                <XAxis dataKey="horario" {...axisProps} minTickGap={28} />
+                <YAxis {...yAxisProps} width={44} tickFormatter={(v: number) => `${compactNumber(v)}`} unit="W" />
+                <Tooltip {...tooltipProps} formatter={(v: number) => [kw(v), 'Potência']} />
+                <Area
+                  type="monotone"
+                  dataKey="potencia"
+                  stroke={colors.chart.primary}
+                  strokeWidth={2.5}
+                  fill="url(#energiaArea)"
+                />
+                {resumo && (
+                  <ReferenceDot
+                    x={resumo.pico.horario}
+                    y={resumo.pico.potencia}
+                    r={5}
+                    fill="#fff"
+                    stroke={colors.chart.primary}
+                    strokeWidth={2.5}
+                  />
+                )}
+              </AreaChart>
+            </ResponsiveContainer>
+          </Box>
+        )}
+      </SectionCard>
     </Box>
   );
-} 
+}

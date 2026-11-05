@@ -1,79 +1,59 @@
-import { useContext } from 'react';
-import { Box } from '@mui/material';
-import { GestaoCartaoContext } from '../../../contexts/GestaoCartaoContext';
-import { Filter } from '../../../components/ui/Filter';
+import { FilterBar } from '../../../components/ui/FilterBar';
+import { useGestaoCartao } from '../../../contexts/GestaoCartaoContext';
+import { TODOS } from '../../../services/financas';
+import type { Item } from '../../../types/financas';
+
+const opcoes = (itens: Item[]) => itens.map((i) => ({ value: i.codigo, label: i.descricao }));
+
+const ULTIMA_PARCELA = [
+  { value: TODOS, label: 'Todas' },
+  { value: 'SIM', label: 'Sim' },
+  { value: 'NAO', label: 'Não' },
+];
 
 export function Filtro() {
-    const {
-        itemsAnos,
-        itemsMeses,
-        itemsPessoas,
-        itemsCartoes,
-        anoSelecionado,
-        mesSelecionado,
-        pessoaSelecionado,
-        cartaoSelecionado,
-        ultimaParcelaSelecionado,
-        selecionarAno,
-        selecionarMes,
-        selecionarPessoa,
-        selecionarCartao,
-        selecionarUltimaParcela,
-        buscar
-    } = useContext(GestaoCartaoContext);
-
-    const itemsUltimaParcela = [
-        { codigo: 'SIM', descricao: 'SIM' },
-        { codigo: 'NAO', descricao: 'NÃO' },
-        { codigo: '', descricao: 'Selecione...' }
-    ];
-
-    const fields = [
+  const f = useGestaoCartao();
+  return (
+    <FilterBar
+      onSubmit={f.buscar}
+      loading={f.loading || f.carregando}
+      fields={[
         {
-            id: 'ano',
-            label: 'Ano',
-            type: 'select' as const,
-            value: anoSelecionado,
-            onChange: selecionarAno,
-            options: itemsAnos.map(item => ({ value: item.codigo, label: item.descricao })),
+          id: 'cartao-ano',
+          label: 'Ano',
+          value: f.selecionados.ano,
+          options: opcoes(f.anos),
+          onChange: f.selecionarAno,
         },
         {
-            id: 'mes',
-            label: 'Mês',
-            type: 'select' as const,
-            value: mesSelecionado,
-            onChange: selecionarMes,
-            options: itemsMeses.map(item => ({ value: item.codigo, label: item.descricao })),
+          id: 'cartao-mes',
+          label: 'Mês',
+          value: f.selecionados.mes,
+          options: opcoes(f.meses),
+          onChange: f.selecionarMes,
         },
         {
-            id: 'pessoa',
-            label: 'Pessoa',
-            type: 'select' as const,
-            value: pessoaSelecionado,
-            onChange: selecionarPessoa,
-            options: itemsPessoas.map(item => ({ value: item.codigo, label: item.descricao })),
+          id: 'cartao-pessoa',
+          label: 'Pessoa',
+          value: f.selecionados.pessoa,
+          options: opcoes(f.pessoas),
+          onChange: f.selecionarPessoa,
         },
         {
-            id: 'cartao',
-            label: 'Cartão',
-            type: 'select' as const,
-            value: cartaoSelecionado,
-            onChange: selecionarCartao,
-            options: itemsCartoes.map(item => ({ value: item.codigo, label: item.descricao })),
+          id: 'cartao-cartao',
+          label: 'Cartão',
+          value: f.selecionados.cartao,
+          options: opcoes(f.cartoes),
+          onChange: f.selecionarCartao,
         },
         {
-            id: 'ultimaParcela',
-            label: 'Última Parcela',
-            type: 'select' as const,
-            value: ultimaParcelaSelecionado,
-            onChange: selecionarUltimaParcela,
-            options: itemsUltimaParcela.map(item => ({ value: item.codigo, label: item.descricao })),
+          id: 'cartao-ultima',
+          label: 'Última parcela',
+          value: f.ultimaParcela,
+          options: ULTIMA_PARCELA,
+          onChange: f.setUltimaParcela,
         },
-    ];
-
-    return (
-        <Box>
-            <Filter fields={fields} onFilter={buscar} filterLabel="Pesquisar" />
-        </Box>
-    );
+      ]}
+    />
+  );
 }

@@ -5,10 +5,22 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    host: true
+    host: true,
   },
   preview: {
     port: 3000,
-    host: true
-  }
-}); 
+    host: true,
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // separa bibliotecas grandes em arquivos próprios (melhor cache no navegador)
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          mui: ['@mui/material', '@emotion/react', '@emotion/styled'],
+          charts: ['recharts'],
+        },
+      },
+    },
+  },
+});
