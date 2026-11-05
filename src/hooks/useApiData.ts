@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FipeData, CurrencyData } from '../types/api';
+import type { CurrencyData, FipeData } from '../types/api';
 
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -14,7 +14,7 @@ export function useApiData<T>(
   options?: {
     enabled?: boolean;
     refetchInterval?: number;
-  }
+  },
 ) {
   const [state, setState] = useState<ApiState<T>>({
     data: null,
@@ -25,7 +25,7 @@ export function useApiData<T>(
   const fetchData = useCallback(async () => {
     if (!url || options?.enabled === false) return;
 
-    setState(prev => ({ ...prev, loading: 'loading', error: null }));
+    setState((prev) => ({ ...prev, loading: 'loading', error: null }));
 
     try {
       const response = await fetch(url);
@@ -67,9 +67,9 @@ export function useFipeData(url: string) {
 
 export function useCurrencyData(url: string) {
   const { data, loading, error, refetch } = useApiData<Record<string, CurrencyData>>(url);
-  
+
   const currencyData = data ? Object.values(data)[0] : null;
-  
+
   return {
     data: currencyData,
     loading,

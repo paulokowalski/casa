@@ -1,50 +1,34 @@
-import React from 'react';
-import { Routes, Route } from "react-router-dom";
-import { Global } from '@emotion/react';
-import { globalStyles } from "./styles/global";
-import { Layout } from "./components/Layout";
-import { Home } from "./views/Home";
-import { GestaoCartao } from './views/GestaoCartao';
-import PessoaView from './views/Pessoa';
-import { EnergiaWithProvider } from './views/Energia';
+import { lazy, Suspense } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { LinearProgress } from '@mui/material';
+import { Layout } from './components/Layout';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { PessoaProvider } from './contexts/PessoaContext';
 
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+// Cada tela é carregada sob demanda (o app abre mais rápido)
+const Home = lazy(() => import('./views/Home').then((m) => ({ default: m.Home })));
+const GestaoCartao = lazy(() => import('./views/GestaoCartao').then((m) => ({ default: m.GestaoCartao })));
+const GestaoFinanceira = lazy(() => import('./views/GestaoFinanceira').then((m) => ({ default: m.GestaoFinanceira })));
+const Energia = lazy(() => import('./views/Energia').then((m) => ({ default: m.EnergiaWithProvider })));
+const Pessoas = lazy(() => import('./views/Pessoa').then((m) => ({ default: m.PessoaView })));
 
-  constructor(props: {children: React.ReactNode}) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: any) {
-    return { hasError: true };
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <div style={{padding: 32, textAlign: 'center'}}><h2>Ocorreu um erro inesperado.</h2><p>Tente recarregar a página.</p></div>;
-    }
-    return this.props.children;
-  }
-  
-}
-
-function App() {
+export default function App() {
   return (
     <ErrorBoundary>
       <PessoaProvider>
-        <Global styles={globalStyles} />
         <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/gestao-cartao" element={<GestaoCartao />} />
-            <Route path="/pessoa" element={<PessoaView />} />
-            <Route path="/energia" element={<EnergiaWithProvider />} />
-          </Routes>
+          <Suspense fallback={<LinearProgress aria-label="Carregando página" />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/gestao-cartao" element={<GestaoCartao />} />
+              <Route path="/gestao-financeira" element={<GestaoFinanceira />} />
+              <Route path="/energia" element={<Energia />} />
+              <Route path="/pessoa" element={<Pessoas />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </Layout>
       </PessoaProvider>
     </ErrorBoundary>
-  )
+  );
 }
-
-export default App;

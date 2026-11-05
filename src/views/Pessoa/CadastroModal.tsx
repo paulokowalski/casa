@@ -1,83 +1,94 @@
-import React, { useState } from 'react';
-import { api } from '../../services/api';
-import { API_URLS } from '../../config/urls';
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
 import { Modal } from '../../components/ui/Modal';
+import { usePessoa, type Pessoa } from '../../contexts/PessoaContext';
 
 interface CadastroModalProps {
   open: boolean;
+  /** Pessoa em edição; `null` para cadastrar uma nova */
+  pessoa: Pessoa | null;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess: (mensagem: string) => void;
 }
 
-const style = {
-  position: 'absolute' as 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-};
+const FORM_ID = 'form-pessoa';
 
-const CadastroModal: React.FC<CadastroModalProps> = ({ open, onClose, onSuccess }) => {
+/** Cadastro e edição de pessoa no mesmo formulário. */
+export function CadastroModal({ open, pessoa, onClose, onSuccess }: Readonly<CadastroModalProps>) {
+  const { criarPessoa, editarPessoa } = usePessoa();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!open) return;
+    setNome(pessoa?.nome ?? '');
+    setEmail(pessoa?.email ?? '');
+    setErro(null);
+  }, [open, pessoa]);
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+    setSalvando(true);
+    setErro(null);
     try {
-      await api.post(API_URLS.PESSOAS, { nome, email });
-      setNome('');
-      setEmail('');
-      if (onSuccess) onSuccess();
+      const dados = { nome: nome.trim(), email: email.trim() };
+      if (pessoa) await editarPessoa(pessoa.id, dados);
+      else await criarPessoa(dados);
+      onSuccess(pessoa ? 'Pessoa atualizada.' : 'Pessoa cadastrada.');
       onClose();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erro ao cadastrar pessoa.');
+    } catch (error) {
+      setErro(error instanceof Error ? error.message : 'Erro ao salvar.');
     } finally {
-      setLoading(false);
+      setSalvando(false);
     }
-  };
+  }
 
   return (
-    <Modal open={open} onClose={onClose} title="Cadastrar Pessoa" maxWidth="xs" actions={
-      <>
-        <Button onClick={onClose} color="secondary" disabled={loading} sx={{ mr: 1 }}>
-          Cancelar
-        </Button>
-        <Button type="submit" variant="contained" color="primary" disabled={loading} form="form-cadastro-pessoa">
-          {loading ? 'Salvando...' : 'Salvar'}
-        </Button>
-      </>
-    }>
-      <Box component="form" id="form-cadastro-pessoa" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+    <Modal
+      open={open}
+      onClose={salvando ? () => undefined : onClose}
+      title={pessoa ? 'Editar pessoa' : 'Nova pessoa'}
+      maxWidth="xs"
+      actions={
+        <>
+          <Button variant="outlined" onClick={onClose} disabled={salvando}>
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form={FORM_ID}
+            variant="contained"
+            disabled={salvando}
+            startIcon={salvando ? <CircularProgress size={16} color="inherit" /> : undefined}
+          >
+            Salvar
+          </Button>
+        </>
+      }
+    >
+      <Box
+        component="form"
+        id={FORM_ID}
+        onSubmit={handleSubmit}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}
+      >
+        <TextField label="Nome" value={nome} onChange={(e) => setNome(e.target.value)} required fullWidth autoFocus />
         <TextField
-          label="Nome"
-          value={nome}
-          onChange={e => setNome(e.target.value)}
-          fullWidth
-          margin="normal"
-          required
-        />
-        <TextField
-          label="Email"
+          label="E-mail"
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
-          fullWidth
-          margin="normal"
+          onChange={(e) => setEmail(e.target.value)}
           required
+          fullWidth
         />
-        {error && <Typography color="error">{error}</Typography>}
+        {erro && (
+          <Typography color="error" variant="body2" role="alert">
+            {erro}
+          </Typography>
+        )}
       </Box>
     </Modal>
   );
-};
-
-export default CadastroModal; 
+}

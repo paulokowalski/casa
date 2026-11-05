@@ -1,475 +1,199 @@
-import { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api } from '../services/api';
 import { API_URLS } from '../config/urls';
+import { MONTHS_SHORT_PT } from '../utils/format';
 
-export interface DadosEnergia {
-  id: string;
-  data: string;
-  horario: string;
-  geracao: number;
-  consumo: number;
-  injecao: number;
-  pessoa: string;
+export interface GeracaoMes {
+  mes: string; // "jan"
+  geracao: number; // kWh
+}
+
+export interface GeracaoDia {
+  dia: number;
+  geracao: number; // kWh
+}
+
+export interface PotenciaPonto {
+  horario: string; // "12:40"
+  potencia: number; // W
+}
+
+interface EnergiaContextValue {
   ano: string;
-  mes: string;
-}
-
-export interface DadosGeracaoMensal {
-  mes: string;
-  geracao: number;
-}
-
-export interface DadosGeracaoDiaria {
-  dia: string;
-  geracao: number;
-}
-
-export interface DadosPotenciaDia {
-  horario: string;
-  potencia: number;
-}
-
-interface EnergiaContextData {
-  // Estados existentes
-  dadosEnergia: DadosEnergia[];
-  geracaoTotal: number;
-  ano: string;
-  setAno: (a: string) => void;
-  mes: string;
-  setMes: (m: string) => void;
-  loading: boolean;
-  setLoading: (v: boolean) => void;
-  
-  // Novos estados para os gráficos
-  dadosGeracaoMensal: DadosGeracaoMensal[];
-  dadosGeracaoDiaria: DadosGeracaoDiaria[];
-  dadosPotenciaDia: DadosPotenciaDia[];
-  geracaoDia: number | undefined;
+  mes: string; // "01".."12"
+  setAno: (ano: string) => void;
+  setMes: (mes: string) => void;
+  geracaoMensal: GeracaoMes[];
+  geracaoDiaria: GeracaoDia[];
+  potenciaDia: PotenciaPonto[];
+  geracaoDoDia: number | null;
   loadingMensal: boolean;
   loadingDiaria: boolean;
   loadingPotencia: boolean;
-  
-  // Funções existentes
-  adicionar: (d: Omit<DadosEnergia, 'id'>) => void;
-  editar: (id: string, d: Omit<DadosEnergia, 'id'>) => void;
-  excluir: (id: string) => void;
-  recarregarDados: () => void;
-  
-  // Novas funções para os gráficos
-  carregarDadosGeracaoMensal: () => void;
-  carregarDadosGeracaoDiaria: () => void;
-  carregarDadosPotenciaDia: (diaSelecionado: number) => void;
+  carregarPotenciaDia: (dia: number) => Promise<void>;
 }
 
-const EnergiaContext = createContext<EnergiaContextData>({} as any);
-export const useEnergia = () => useContext(EnergiaContext);
+const EnergiaContext = createContext<EnergiaContextValue | null>(null);
 
-// Funções auxiliares
-function getDiasNoMes(ano: number, mes: number): number {
-  return new Date(ano, mes, 0).getDate();
+const MESES_EN = [
+  'JANUARY',
+  'FEBRUARY',
+  'MARCH',
+  'APRIL',
+  'MAY',
+  'JUNE',
+  'JULY',
+  'AUGUST',
+  'SEPTEMBER',
+  'OCTOBER',
+  'NOVEMBER',
+  'DECEMBER',
+];
+
+type ApiData = string | number[];
+
+/** Lê "2026-11-05T12:40:00" ou [2026, 11, 5, 12, 40] */
+function horarioDe(data: ApiData): string {
+  if (Array.isArray(data) && data.length >= 5)
+    return `${String(data[3]).padStart(2, '0')}:${String(data[4]).padStart(2, '0')}`;
+  if (typeof data === 'string') {
+    const [h, m] = data.split('T')[1]?.split(':') ?? [];
+    if (h && m) return `${h}:${m}`;
+  }
+  return '';
 }
 
-const mesesPt = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-];
+function diaDe(data: ApiData): number | null {
+  if (Array.isArray(data) && data.length >= 3) return Number(data[2]);
+  if (typeof data === 'string') {
+    const partes = data.split('T')[0].split('-');
+    if (partes.length === 3) return Number(partes[2]);
+  }
+  return null;
+}
 
-const mesesEn = [
-  'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-  'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
-];
+export function EnergiaProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const hoje = new Date();
+  const [ano, setAno] = useState(String(hoje.getFullYear()));
+  const [mes, setMes] = useState(String(hoje.getMonth() + 1).padStart(2, '0'));
 
-export function EnergiaProvider({ children }: { children: React.ReactNode }) {
-  // Estados existentes
-  const [dadosEnergia, setDadosEnergia] = useState<DadosEnergia[]>([]);
-  const [geracaoTotal, setGeracaoTotal] = useState<number>(0);
-  const [ano, setAno] = useState('');
-  const [mes, setMes] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // Novos estados para os gráficos
-  const [dadosGeracaoMensal, setDadosGeracaoMensal] = useState<DadosGeracaoMensal[]>([]);
-  const [dadosGeracaoDiaria, setDadosGeracaoDiaria] = useState<DadosGeracaoDiaria[]>([]);
-  const [dadosPotenciaDia, setDadosPotenciaDia] = useState<DadosPotenciaDia[]>([]);
-  const [geracaoDia, setGeracaoDia] = useState<number | undefined>(undefined);
+  const [geracaoMensal, setGeracaoMensal] = useState<GeracaoMes[]>([]);
+  const [geracaoDiaria, setGeracaoDiaria] = useState<GeracaoDia[]>([]);
+  const [potenciaDia, setPotenciaDia] = useState<PotenciaPonto[]>([]);
+  const [geracaoDoDia, setGeracaoDoDia] = useState<number | null>(null);
   const [loadingMensal, setLoadingMensal] = useState(false);
   const [loadingDiaria, setLoadingDiaria] = useState(false);
   const [loadingPotencia, setLoadingPotencia] = useState(false);
 
-  // Carregar dados de geração mensal
-  const carregarDadosGeracaoMensal = useCallback(async () => {
-    if (!ano) return;
-    
+  // Geração por mês do ano
+  useEffect(() => {
+    let ativo = true;
     setLoadingMensal(true);
-    try {
-      const res = await api.get(API_URLS.GERACAO_SOLAR_ANO(ano));
-      const lista = Array.isArray(res.data) ? res.data : [];
-      const map: Record<string, number> = {};
-      
-      lista.forEach((item: any) => {
-        let idx = -1;
-        if (typeof item.month === 'string') {
-          idx = mesesEn.indexOf(item.month.toUpperCase());
-        } else if (typeof item.month === 'number') {
-          idx = item.month - 1;
-        }
-        if (idx >= 0) {
-          map[idx] = item.value ?? 0;
-        }
-      });
-      
-      const dadosGrafico = mesesPt.map((mes, idx) => ({
-        mes,
-        geracao: map[idx] ?? 0,
-      }));
-      
-      setDadosGeracaoMensal(dadosGrafico);
-    } catch (error) {
-      console.error('Erro ao carregar dados mensais:', error);
-      setDadosGeracaoMensal([]);
-    } finally {
-      setLoadingMensal(false);
-    }
+    api
+      .get<{ month: string | number; value?: number }[]>(API_URLS.GERACAO_SOLAR_ANO(ano))
+      .then((res) => {
+        const porMes: number[] = Array.from({ length: 12 }, () => 0);
+        (Array.isArray(res.data) ? res.data : []).forEach((item) => {
+          const idx =
+            typeof item.month === 'string' ? MESES_EN.indexOf(item.month.toUpperCase()) : Number(item.month) - 1;
+          if (idx >= 0) porMes[idx] = Number(item.value) || 0;
+        });
+        if (ativo) setGeracaoMensal(MONTHS_SHORT_PT.map((m, i) => ({ mes: m, geracao: porMes[i] })));
+      })
+      .catch((error) => {
+        console.error('Erro ao carregar geração mensal:', error);
+        if (ativo) setGeracaoMensal([]);
+      })
+      .finally(() => ativo && setLoadingMensal(false));
+    return () => {
+      ativo = false;
+    };
   }, [ano]);
 
-  // Carregar dados de geração diária
-  const carregarDadosGeracaoDiaria = useCallback(async () => {
-    if (!ano || !mes) return;
-    
+  // Geração por dia do mês
+  useEffect(() => {
+    let ativo = true;
     setLoadingDiaria(true);
-    try {
-      const mesNumero = parseInt(mes);
-      const diasNoMes = getDiasNoMes(parseInt(ano), mesNumero);
-      const diasArray = Array.from({ length: diasNoMes }, (_, i) => i + 1);
-      
-      const res = await api.get(API_URLS.GERACAO_SOLAR_ANO_MES(ano, mes));
-      const obj = res.data || {};
-      const lista = Array.isArray(obj.valores) ? obj.valores : [];
-      const map: Record<number, number> = {};
-      
-      lista.forEach((item: any) => {
-        let dia = undefined;
-        if (item.data) {
-          if (typeof item.data === 'string') {
-            const partes = item.data.split('T')[0].split('-');
-            if (partes.length === 3) dia = Number(partes[2]);
-          } else if (Array.isArray(item.data) && item.data.length >= 3) {
-            dia = item.data[2];
-          }
-        }
-        if (typeof dia === 'string') dia = Number(dia);
-        if (typeof dia === 'number' && !isNaN(dia)) {
-          map[dia] = (map[dia] ?? 0) + (item.valor ?? 0);
-        }
-      });
-      
-      const dadosGrafico = diasArray.map((dia) => ({
-        dia: String(dia),
-        geracao: map[dia] ?? 0,
-      }));
-      
-      setDadosGeracaoDiaria(dadosGrafico);
-    } catch (error) {
-      console.error('Erro ao carregar dados diários:', error);
-      setDadosGeracaoDiaria([]);
-    } finally {
-      setLoadingDiaria(false);
-    }
+    api
+      .get<{ valores?: { valor?: number; data: ApiData }[] }>(API_URLS.GERACAO_SOLAR_ANO_MES(ano, mes))
+      .then((res) => {
+        const dias = new Date(Number(ano), Number(mes), 0).getDate();
+        const porDia: Record<number, number> = {};
+        (res.data?.valores ?? []).forEach((item) => {
+          const d = diaDe(item.data);
+          if (d) porDia[d] = (porDia[d] ?? 0) + (Number(item.valor) || 0);
+        });
+        if (ativo)
+          setGeracaoDiaria(Array.from({ length: dias }, (_, i) => ({ dia: i + 1, geracao: porDia[i + 1] ?? 0 })));
+      })
+      .catch((error) => {
+        console.error('Erro ao carregar geração diária:', error);
+        if (ativo) setGeracaoDiaria([]);
+      })
+      .finally(() => ativo && setLoadingDiaria(false));
+    return () => {
+      ativo = false;
+    };
   }, [ano, mes]);
 
-  // Carregar dados de potência do dia
-  const carregarDadosPotenciaDia = useCallback(async (diaSelecionado: number) => {
-    if (!ano || !mes || !diaSelecionado) {
-      setDadosPotenciaDia([]);
-      setGeracaoDia(undefined);
-      return;
-    }
-    
-    setLoadingPotencia(true);
-    try {
-      const dataStr = `${ano}-${mes}-${String(diaSelecionado).padStart(2, '0')}`;
-      const res = await api.get(API_URLS.GERACAO_SOLAR(dataStr));
-      
-      const payload = res.data || {};
-      const lista = Array.isArray(payload.valores) ? payload.valores : [];
-      const dadosGrafico = lista.map((item: any) => {
-        let horario = '';
-        if (item.data) {
-          if (Array.isArray(item.data) && item.data.length >= 6) {
-            horario = `${String(item.data[3]).padStart(2, '0')}:${String(item.data[4]).padStart(2, '0')}`;
-          } else if (typeof item.data === 'string') {
-            const partes = item.data.split('T')[1]?.split(':');
-            if (partes && partes.length >= 2) {
-              horario = `${partes[0]}:${partes[1]}`;
-            }
-          }
-        }
-        return {
-          horario,
-          potencia: item.valor ?? 0,
-        };
-      });
-      
-      setDadosPotenciaDia(dadosGrafico);
-      
-      // Capturar valor de geração do dia
-      const possiveisCampos = ['gerado', 'geracao', 'geracaoTotal', 'totalGeracao', 'energia', 'energiaTotal', 'totalEnergia', 'kwh', 'totalKwh'];
-      let valorGeracao = undefined;
-      
-      for (const campo of possiveisCampos) {
-        if (payload[campo] !== undefined) {
-          valorGeracao = payload[campo];
-          break;
-        }
-      }
-      
-      setGeracaoDia(valorGeracao);
-    } catch (error) {
-      console.error('Erro ao carregar dados de potência:', error);
-      setDadosPotenciaDia([]);
-      setGeracaoDia(undefined);
-    } finally {
-      setLoadingPotencia(false);
-    }
-  }, [ano, mes]);
-
-  // Carregar dados quando ano ou mês mudar
-  useEffect(() => {
-    carregarDadosGeracaoMensal();
-  }, [carregarDadosGeracaoMensal]);
-
-  useEffect(() => {
-    carregarDadosGeracaoDiaria();
-  }, [carregarDadosGeracaoDiaria]);
-
-  // Carregar dados existentes (mantido para compatibilidade)
-  useEffect(() => {
-    const carregarDados = async () => {
-      if (!ano || !mes) return;
-      
-      setLoading(true);
+  const carregarPotenciaDia = useCallback(
+    async (dia: number) => {
+      setLoadingPotencia(true);
       try {
-        const dataStr = `${ano}-${mes.padStart(2, '0')}-01`;
-        
-        const res = await api.get(API_URLS.GERACAO_SOLAR(dataStr));
-        const payload = res.data;
-        
-        if (payload && payload.potencias) {
-          const dadosEnergia = payload.potencias.map((item: any, index: number) => {
-            const [ano, mes, dia, hora, minuto, segundo] = item.data;
-            const dataFormatada = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-            const horario = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
-            
-            return {
-              id: `hoje-${index}`,
-              data: dataFormatada,
-              horario: horario,
-              geracao: item.potencia,
-              consumo: 0,
-              injecao: 0,
-              pessoa: '',
-              ano: String(ano),
-              mes: String(mes).padStart(2, '0'),
-            };
-          });
-          
-          setDadosEnergia(dadosEnergia);
-          
-          const possiveisCampos = ['gerado', 'geracao', 'geracaoTotal', 'totalGeracao', 'energia', 'energiaTotal', 'totalEnergia', 'kwh', 'totalKwh'];
-          let valorGeracao = null;
-          
-          for (const campo of possiveisCampos) {
-            if (payload[campo] !== undefined) {
-              valorGeracao = payload[campo];
-              break;
-            }
-          }
-          
-          if (valorGeracao === null) {
-            if (payload.data && typeof payload.data === 'object') {
-              for (const campo of possiveisCampos) {
-                if (payload.data[campo] !== undefined) {
-                  valorGeracao = payload.data[campo];
-                  break;
-                }
-              }
-            }
-            
-            if (valorGeracao === null && payload.potencias && Array.isArray(payload.potencias)) {
-              for (const potencia of payload.potencias) {
-                if (typeof potencia === 'object' && potencia !== null) {
-                  for (const campo of possiveisCampos) {
-                    if (potencia[campo] !== undefined) {
-                      valorGeracao = potencia[campo];
-                      break;
-                    }
-                  }
-                  if (valorGeracao !== null) break;
-                }
-              }
-            }
-          }
-          
-          if (valorGeracao !== null) {
-            setGeracaoTotal(valorGeracao);
-          } else {
-            const totalWatts = dadosEnergia.reduce((acc: number, dado: DadosEnergia) => acc + dado.geracao, 0);
-            const totalKwh = (totalWatts * 1) / (1000 * 60);
-            setGeracaoTotal(totalKwh);
-          }
-        } else {
-          setDadosEnergia([]);
-          setGeracaoTotal(0);
-        }
+        const data = `${ano}-${mes}-${String(dia).padStart(2, '0')}`;
+        const res = await api.get<{ valores?: { valor?: number; data: ApiData }[]; geracao?: number; gerado?: number }>(
+          API_URLS.GERACAO_SOLAR(data),
+        );
+        setPotenciaDia(
+          (res.data?.valores ?? []).map((i) => ({ horario: horarioDe(i.data), potencia: Number(i.valor) || 0 })),
+        );
+        const total = res.data?.geracao ?? res.data?.gerado;
+        setGeracaoDoDia(total !== undefined && total !== null ? Number(total) : null);
       } catch (error) {
-        console.error('Erro ao carregar dados de energia:', error);
-        setDadosEnergia([]);
+        console.error('Erro ao carregar potência do dia:', error);
+        setPotenciaDia([]);
+        setGeracaoDoDia(null);
       } finally {
-        setLoading(false);
+        setLoadingPotencia(false);
       }
-    };
+    },
+    [ano, mes],
+  );
 
-    carregarDados();
-  }, [ano, mes]);
-
-  function adicionar(d: Omit<DadosEnergia, 'id'>) {
-    const novoDado = {
-      ...d,
-      id: Date.now().toString(),
-    };
-    setDadosEnergia(prev => [...prev, novoDado]);
-  }
-
-  function editar(id: string, d: Omit<DadosEnergia, 'id'>) {
-    setDadosEnergia(prev => prev.map(item => item.id === id ? { ...d, id } : item));
-  }
-
-  function excluir(id: string) {
-    setDadosEnergia(prev => prev.filter(item => item.id !== id));
-  }
-
-  function recarregarDados() {
-    if (!ano || !mes) return;
-    
-    setLoading(true);
-    const carregarDados = async () => {
-      try {
-        const dataStr = `${ano}-${mes.padStart(2, '0')}-01`;
-        
-        const res = await api.get(API_URLS.GERACAO_SOLAR(dataStr));
-        const payload = res.data;
-        
-        if (payload && payload.potencias) {
-          const dadosEnergia = payload.potencias.map((item: any, index: number) => {
-            const [ano, mes, dia, hora, minuto, segundo] = item.data;
-            const dataFormatada = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-            const horario = `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`;
-            
-            return {
-              id: `hoje-${index}`,
-              data: dataFormatada,
-              horario: horario,
-              geracao: item.potencia,
-              consumo: 0,
-              injecao: 0,
-              pessoa: '',
-              ano: String(ano),
-              mes: String(mes).padStart(2, '0'),
-            };
-          });
-          
-          setDadosEnergia(dadosEnergia);
-          
-          const possiveisCampos = ['gerado', 'geracao', 'geracaoTotal', 'totalGeracao', 'energia', 'energiaTotal', 'totalEnergia', 'kwh', 'totalKwh'];
-          let valorGeracao = null;
-          
-          for (const campo of possiveisCampos) {
-            if (payload[campo] !== undefined) {
-              valorGeracao = payload[campo];
-              break;
-            }
-          }
-          
-          if (valorGeracao === null) {
-            if (payload.data && typeof payload.data === 'object') {
-              for (const campo of possiveisCampos) {
-                if (payload.data[campo] !== undefined) {
-                  valorGeracao = payload.data[campo];
-                  break;
-                }
-              }
-            }
-            
-            if (valorGeracao === null && payload.potencias && Array.isArray(payload.potencias)) {
-              for (const potencia of payload.potencias) {
-                if (typeof potencia === 'object' && potencia !== null) {
-                  for (const campo of possiveisCampos) {
-                    if (potencia[campo] !== undefined) {
-                      valorGeracao = potencia[campo];
-                      break;
-                    }
-                  }
-                  if (valorGeracao !== null) break;
-                }
-              }
-            }
-          }
-          
-          if (valorGeracao !== null) {
-            setGeracaoTotal(valorGeracao);
-          } else {
-            const totalWatts = dadosEnergia.reduce((acc: number, dado: DadosEnergia) => acc + dado.geracao, 0);
-            const totalKwh = (totalWatts * 1) / (1000 * 60);
-            setGeracaoTotal(totalKwh);
-          }
-        } else {
-          setDadosEnergia([]);
-          setGeracaoTotal(0);
-        }
-      } catch (error) {
-        console.error('Erro ao recarregar dados de energia:', error);
-        setDadosEnergia([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    carregarDados();
-  }
-
-  return (
-    <EnergiaContext.Provider value={{
-      // Estados existentes
-      dadosEnergia,
-      geracaoTotal,
+  const value = useMemo(
+    () => ({
       ano,
-      setAno,
       mes,
+      setAno,
       setMes,
-      loading,
-      setLoading,
-      
-      // Novos estados para os gráficos
-      dadosGeracaoMensal,
-      dadosGeracaoDiaria,
-      dadosPotenciaDia,
-      geracaoDia,
+      geracaoMensal,
+      geracaoDiaria,
+      potenciaDia,
+      geracaoDoDia,
       loadingMensal,
       loadingDiaria,
       loadingPotencia,
-      
-      // Funções existentes
-      adicionar,
-      editar,
-      excluir,
-      recarregarDados,
-      
-      // Novas funções para os gráficos
-      carregarDadosGeracaoMensal,
-      carregarDadosGeracaoDiaria,
-      carregarDadosPotenciaDia,
-    }}>
-      {children}
-    </EnergiaContext.Provider>
+      carregarPotenciaDia,
+    }),
+    [
+      ano,
+      mes,
+      geracaoMensal,
+      geracaoDiaria,
+      potenciaDia,
+      geracaoDoDia,
+      loadingMensal,
+      loadingDiaria,
+      loadingPotencia,
+      carregarPotenciaDia,
+    ],
   );
-} 
+
+  return <EnergiaContext.Provider value={value}>{children}</EnergiaContext.Provider>;
+}
+
+export function useEnergia(): EnergiaContextValue {
+  const ctx = useContext(EnergiaContext);
+  if (!ctx) throw new Error('useEnergia deve ser usado dentro de <EnergiaProvider>');
+  return ctx;
+}

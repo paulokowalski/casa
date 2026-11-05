@@ -1,65 +1,85 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { api } from '../services/api';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { api, apiErrorMessage } from '../services/api';
 import { API_URLS } from '../config/urls';
 
-interface Pessoa {
+export interface Pessoa {
   id: number;
   nome: string;
   email: string;
 }
 
-interface PessoaContextData {
+export interface PessoaInput {
+  nome: string;
+  email: string;
+}
+
+interface PessoaContextValue {
   pessoas: Pessoa[];
   loading: boolean;
-  carregarPessoas: () => void;
-  editarPessoa: (id: number, nome: string, email: string) => Promise<void>;
+  carregarPessoas: () => Promise<void>;
+  criarPessoa: (dados: PessoaInput) => Promise<void>;
+  editarPessoa: (id: number, dados: PessoaInput) => Promise<void>;
   excluirPessoa: (id: number) => Promise<void>;
 }
 
-const PessoaContext = createContext<PessoaContextData>({} as PessoaContextData);
+const PessoaContext = createContext<PessoaContextValue | null>(null);
 
-export function PessoaProvider({ children }: { children: React.ReactNode }) {
+export function PessoaProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [pessoas, setPessoas] = useState<Pessoa[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const carregarPessoas = () => {
-    setLoading(true);
-    api.get(API_URLS.PESSOAS)
-      .then(res => setPessoas(res.data))
-      .finally(() => setLoading(false));
-  };
-
-  const editarPessoa = async (id: number, nome: string, email: string) => {
+  const carregarPessoas = useCallback(async () => {
     setLoading(true);
     try {
-      await api.put(API_URLS.PESSOA_ID(id), { nome, email });
-      carregarPessoas();
+      const res = await api.get<Pessoa[]>(API_URLS.PESSOAS);
+      setPessoas(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error('Erro ao carregar pessoas:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const excluirPessoa = async (id: number) => {
-    setLoading(true);
-    try {
-      await api.delete(API_URLS.PESSOA_ID(id));
-      carregarPessoas();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    carregarPessoas();
   }, []);
 
-  return (
-    <PessoaContext.Provider value={{ pessoas, loading, carregarPessoas, editarPessoa, excluirPessoa }}>
-      {children}
-    </PessoaContext.Provider>
+  const executar = useCallback(
+    async (acao: () => Promise<unknown>, mensagemErro: string) => {
+      try {
+        await acao();
+      } catch (error) {
+        throw new Error(apiErrorMessage(error, mensagemErro), { cause: error });
+      }
+      await carregarPessoas();
+    },
+    [carregarPessoas],
   );
+
+  const criarPessoa = useCallback(
+    (dados: PessoaInput) => executar(() => api.post(API_URLS.PESSOAS, dados), 'Erro ao cadastrar pessoa.'),
+    [executar],
+  );
+  const editarPessoa = useCallback(
+    (id: number, dados: PessoaInput) =>
+      executar(() => api.put(API_URLS.PESSOA_ID(id), dados), 'Erro ao salvar pessoa.'),
+    [executar],
+  );
+  const excluirPessoa = useCallback(
+    (id: number) => executar(() => api.delete(API_URLS.PESSOA_ID(id)), 'Erro ao excluir pessoa.'),
+    [executar],
+  );
+
+  useEffect(() => {
+    void carregarPessoas();
+  }, [carregarPessoas]);
+
+  const value = useMemo(
+    () => ({ pessoas, loading, carregarPessoas, criarPessoa, editarPessoa, excluirPessoa }),
+    [pessoas, loading, carregarPessoas, criarPessoa, editarPessoa, excluirPessoa],
+  );
+
+  return <PessoaContext.Provider value={value}>{children}</PessoaContext.Provider>;
 }
 
-export function usePessoa() {
-  return useContext(PessoaContext);
-} 
+export function usePessoa(): PessoaContextValue {
+  const ctx = useContext(PessoaContext);
+  if (!ctx) throw new Error('usePessoa deve ser usado dentro de <PessoaProvider>');
+  return ctx;
+}

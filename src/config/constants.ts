@@ -1,6 +1,0 @@
-export const DESIGN_CONFIG = {
-  CARD_HEIGHT: 260,
-  COMPACT_CARD_HEIGHT: 150,
-  BORDER_RADIUS: 4,
-  SHADOW: 4,
-} as const;

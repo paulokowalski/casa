@@ -1,26 +1,23 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import App from './App';
-import { ThemeModeProvider, useThemeMode } from './contexts/ThemeContext';
+import { theme } from './styles/theme';
+import { ToastProvider } from './contexts/ToastContext';
 
-function Main() {
-  const { theme } = useThemeMode();
-  return (
+const container = document.getElementById('root');
+if (!container) throw new Error('Elemento #root não encontrado');
+
+createRoot(container).render(
+  <StrictMode>
     <ThemeProvider theme={theme}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <CssBaseline />
+      <ToastProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ToastProvider>
     </ThemeProvider>
-  );
-}
-
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-root.render(
-  <React.StrictMode>
-    <ThemeModeProvider>
-      <Main />
-    </ThemeModeProvider>
-  </React.StrictMode>
+  </StrictMode>,
 );

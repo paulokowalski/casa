@@ -1,56 +1,56 @@
-import { Box, Typography } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { Box, Skeleton } from '@mui/material';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { SectionCard } from '../../components/ui/SectionCard';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { axisProps, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
 import { useEnergia } from '../../contexts/EnergiaContext';
 import { colors } from '../../styles/colors';
+import { MONTHS_PT, formatNumber } from '../../utils/format';
 
 interface GraficoBarrasDiarioProps {
-  onDiaClick?: (dia: number) => void;
-  diaSelecionado?: number | null;
+  diaSelecionado: number | null;
+  onDiaClick: (dia: number) => void;
 }
 
-function getNomeMes(mes: number): string {
-  const meses = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
-  return meses[mes - 1] || '';
-}
-
-export function GraficoBarrasDiario({ onDiaClick, diaSelecionado }: GraficoBarrasDiarioProps) {
-  const { ano, mes, dadosGeracaoDiaria, loadingDiaria } = useEnergia();
-
-  if (!ano || !mes) return null;
-
-  const mesNumero = parseInt(mes);
-  const nomeMes = getNomeMes(mesNumero);
+export function GraficoBarrasDiario({ diaSelecionado, onDiaClick }: Readonly<GraficoBarrasDiarioProps>) {
+  const { ano, mes, geracaoDiaria, loadingDiaria } = useEnergia();
+  const temDados = geracaoDiaria.some((d) => d.geracao > 0);
 
   return (
-    <Box sx={{ mt: 4 }}>
-      <Typography variant="h6" sx={{ color: colors.text.primary, mb: 2, fontWeight: 600 }}>
-        Geração Diária de {nomeMes} ({ano})
-      </Typography>
-      <Box sx={{ height: 340, background: colors.bg.paper, border: `1px solid ${colors.border.default}`, borderRadius: 2, p: 2 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dadosGeracaoDiaria} margin={{ top: 16, right: 24, left: 0, bottom: 32 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
-            <XAxis dataKey="dia" tick={{ fill: colors.text.secondary, fontSize: 12 }} />
-            <YAxis tick={{ fill: colors.text.secondary, fontSize: 12 }} axisLine={{ stroke: colors.chart.grid }} />
-            <Tooltip contentStyle={{ background: colors.chart.tooltipBg, color: colors.text.primary, border: `1px solid ${colors.chart.tooltipBorder}`, borderRadius: 8 }} formatter={(v: any) => `${v} kWh`} />
-            <Bar dataKey="geracao" fill={colors.primary.light} radius={[4, 4, 0, 0]} onClick={(_, idx) => {
-              if (onDiaClick) onDiaClick(idx + 1);
-            }}>
-              {dadosGeracaoDiaria.map((entry, idx) => (
-                <Cell key={idx} fill={diaSelecionado === idx + 1 ? colors.primary.main : colors.primary.light} cursor="pointer" />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-        {loadingDiaria && (
-          <Typography align="center" sx={{ mt: 2, color: colors.text.secondary }}>
-            Carregando dados de {nomeMes.toLowerCase()}...
-          </Typography>
-        )}
-      </Box>
-    </Box>
+    <SectionCard
+      title="Geração por dia"
+      subtitle={`kWh em ${MONTHS_PT[Number(mes) - 1]} de ${ano} · toque em um dia para ver a curva`}
+    >
+      {loadingDiaria ? (
+        <Skeleton variant="rounded" height={260} />
+      ) : !temDados ? (
+        <EmptyState message="Sem geração registrada neste mês." />
+      ) : (
+        <Box sx={{ height: 260 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={geracaoDiaria} margin={{ top: 8, right: 4, left: -8, bottom: 0 }}>
+              <CartesianGrid {...gridProps} />
+              <XAxis dataKey="dia" {...axisProps} minTickGap={8} />
+              <YAxis {...yAxisProps} width={36} />
+              <Tooltip
+                {...tooltipProps}
+                labelFormatter={(d) => `Dia ${d}`}
+                formatter={(v: number) => [`${formatNumber(v)} kWh`, 'Geração']}
+              />
+              <Bar
+                dataKey="geracao"
+                radius={[3, 3, 0, 0]}
+                onClick={(d: { dia?: number }) => d?.dia && onDiaClick(d.dia)}
+                style={{ cursor: 'pointer' }}
+              >
+                {geracaoDiaria.map((d) => (
+                  <Cell key={d.dia} fill={d.dia === diaSelecionado ? colors.chart.primary : colors.chart.primarySoft} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+      )}
+    </SectionCard>
   );
-} 
+}

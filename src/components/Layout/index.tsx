@@ -1,221 +1,282 @@
-import React, { useState } from 'react';
+import type { ReactNode } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
-  Box,
   AppBar,
+  BottomNavigation,
+  BottomNavigationAction,
+  Box,
+  Paper,
   Toolbar,
-  IconButton,
+  Tooltip,
   Typography,
-  List,
-  ListItemIcon,
-  ListItemText,
-  CssBaseline,
-  useTheme,
-  ListItemButton,
-  Drawer,
   useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import PeopleIcon from '@mui/icons-material/People';
-import SolarPowerIcon from '@mui/icons-material/SolarPower';
-import HomeIcon from '@mui/icons-material/Home';
-import { Link, useLocation } from 'react-router-dom';
-import { colors } from '../../styles/colors';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import { layout, palette } from '../../styles/tokens';
+import { NAV_ITEMS, NAV_SECTIONS, findNavItem } from './navigation';
 
-const DRAWER_WIDTH = 260;
+const isActive = (pathname: string, to: string) => (to === '/' ? pathname === '/' : pathname.startsWith(to));
 
-const navItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, to: '/' },
-  { text: 'Gestão de Cartão', icon: <AccountBalanceWalletIcon />, to: '/gestao-cartao' },
-  { text: 'Energia Solar', icon: <SolarPowerIcon />, to: '/energia' },
-  { text: 'Pessoas', icon: <PeopleIcon />, to: '/pessoa' },
-];
-
-const navButtonSx = (selected: boolean) => ({
-  borderRadius: 1.5,
-  mx: 1,
-  mb: 0.5,
-  color: selected ? colors.primary.main : colors.text.secondary,
-  fontWeight: selected ? 600 : 500,
-  background: selected ? colors.primary.subtle : 'transparent',
-  borderLeft: selected ? `3px solid ${colors.primary.main}` : '3px solid transparent',
-  '&:hover': {
-    background: colors.primary.subtle,
-    color: colors.text.primary,
-  },
-  py: 1.25,
-  px: 2,
-});
-
-export const Layout = ({ children }: { children: React.ReactNode }) => {
-  const theme = useTheme();
-  const location = useLocation();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const handleDrawerToggle = () => setDrawerOpen((open) => !open);
-
-  const currentPage = navItems.find((item) => item.to === location.pathname);
-
-  const sidebarContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '100%' }}>
+function Logo({ compact }: Readonly<{ compact?: boolean }>) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
       <Box
+        aria-hidden="true"
         sx={{
+          width: 32,
+          height: 32,
+          borderRadius: 2,
+          bgcolor: palette.brand[600],
+          color: '#fff',
           display: 'flex',
           alignItems: 'center',
-          gap: 1.5,
-          px: 2.5,
-          py: 2.5,
+          justifyContent: 'center',
           flexShrink: 0,
-          borderBottom: `1px solid ${colors.border.default}`,
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 36,
-            height: 36,
-            borderRadius: 1.5,
-            background: colors.primary.subtle,
-            color: colors.primary.main,
-          }}
-        >
-          <HomeIcon sx={{ fontSize: 20 }} />
-        </Box>
-        <Box>
-          <Typography
-            variant="subtitle1"
-            sx={{ fontWeight: 700, color: colors.text.primary, lineHeight: 1.2, letterSpacing: '-0.01em' }}
-          >
+        <HomeRoundedIcon sx={{ fontSize: 19 }} />
+      </Box>
+      {!compact && (
+        <Box sx={{ minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem', color: '#fff', lineHeight: 1.2 }}>
             Kowalski House
           </Typography>
-          <Typography variant="caption" sx={{ color: colors.text.muted }}>
-            Gestão residencial
-          </Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: palette.sidebar.textMuted }}>Gestão residencial</Typography>
         </Box>
-      </Box>
-      <List sx={{ px: 0.5, py: 2, flex: 1 }}>
-        {navItems.map((item) => {
-          const selected = location.pathname === item.to;
-          return (
-            <ListItemButton
-              key={item.text}
-              component={Link}
-              to={item.to}
-              selected={selected}
-              onClick={() => isMobile && setDrawerOpen(false)}
-              sx={navButtonSx(selected)}
-            >
-              <ListItemIcon sx={{ color: 'inherit', minWidth: 0, mr: 1.5, '& svg': { fontSize: 20 } }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                sx={{ color: 'inherit', '& .MuiTypography-root': { fontSize: '0.875rem', fontWeight: 'inherit' } }}
-              />
-            </ListItemButton>
-          );
-        })}
-      </List>
+      )}
     </Box>
   );
+}
 
-  const mobileDrawerPaperSx = {
-    boxSizing: 'border-box',
-    width: DRAWER_WIDTH,
-    height: '100vh',
-    top: 0,
-    background: colors.bg.paper,
-    color: colors.text.primary,
-    borderRight: `1px solid ${colors.border.default}`,
-  };
-
-  const sidebarSx = {
-    display: { xs: 'none', md: 'flex' },
-    flexDirection: 'column',
-    width: DRAWER_WIDTH,
-    flexShrink: 0,
-    alignSelf: 'stretch',
-    minHeight: '100vh',
-    background: colors.bg.paper,
-    color: colors.text.primary,
-    borderRight: `1px solid ${colors.border.default}`,
-  };
-
+/** Menu lateral completo (desktop ≥ 1200px) */
+function Sidebar({ pathname }: Readonly<{ pathname: string }>) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'stretch', minHeight: '100vh', background: theme.palette.background.default }}>
-      <CssBaseline />
-      <AppBar
-        position="fixed"
-        color="default"
-        elevation={0}
-        sx={{
-          zIndex: (t) => t.zIndex.drawer + 1,
-          background: colors.bg.paper,
-          borderBottom: `1px solid ${colors.border.default}`,
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-          width: { xs: '100%', md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          ml: { md: `${DRAWER_WIDTH}px` },
-        }}
-      >
-        <Toolbar sx={{ minHeight: 60, px: { xs: 2, md: 3 } }}>
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 1.5, color: colors.text.primary }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
+    <Box
+      component="nav"
+      aria-label="Menu principal"
+      sx={{
+        position: 'fixed',
+        inset: '0 auto 0 0',
+        width: layout.sidebarWidth,
+        bgcolor: palette.sidebar.bg,
+        px: 1.5,
+        py: 2.5,
+        overflowY: 'auto',
+        zIndex: (t) => t.zIndex.drawer,
+      }}
+    >
+      <Box sx={{ px: 1.5, pb: 1.5 }}>
+        <Logo />
+      </Box>
+      {NAV_SECTIONS.map((section) => (
+        <Box key={section.label} component="section" aria-label={section.label}>
           <Typography
-            variant="h6"
+            component="h2"
             sx={{
-              fontWeight: isMobile ? 700 : 600,
-              color: colors.text.primary,
-              letterSpacing: '-0.01em',
-              fontSize: isMobile ? '1.1rem' : '1rem',
+              px: 1.5,
+              pt: 2,
+              pb: 0.75,
+              fontSize: '0.6875rem',
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: palette.sidebar.textMuted,
             }}
           >
-            {isMobile ? 'Kowalski House' : (currentPage?.text ?? 'Kowalski House')}
+            {section.label}
+          </Typography>
+          {section.items.map((item) => {
+            const active = isActive(pathname, item.to);
+            return (
+              <Box
+                key={item.to}
+                component={NavLink}
+                to={item.to}
+                aria-current={active ? 'page' : undefined}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  height: 40,
+                  px: 1.5,
+                  mb: 0.25,
+                  borderRadius: 2,
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  color: active ? '#fff' : palette.sidebar.text,
+                  bgcolor: active ? palette.sidebar.active : 'transparent',
+                  '& svg': { fontSize: 20, color: active ? palette.sidebar.accent : 'inherit' },
+                  '&:hover': { bgcolor: active ? palette.sidebar.active : palette.sidebar.hover, color: '#fff' },
+                  '&:focus-visible': { outline: `2px solid ${palette.sidebar.accent}`, outlineOffset: 2 },
+                }}
+              >
+                {item.icon}
+                {item.label}
+              </Box>
+            );
+          })}
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+/** Barra só de ícones (iPad: 600–1199px) */
+function Rail({ pathname }: Readonly<{ pathname: string }>) {
+  return (
+    <Box
+      component="nav"
+      aria-label="Menu principal"
+      sx={{
+        position: 'fixed',
+        inset: '0 auto 0 0',
+        width: layout.railWidth,
+        bgcolor: palette.sidebar.bg,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 0.75,
+        py: 2,
+        zIndex: (t) => t.zIndex.drawer,
+      }}
+    >
+      <Box sx={{ mb: 2 }}>
+        <Logo compact />
+      </Box>
+      {NAV_ITEMS.map((item) => {
+        const active = isActive(pathname, item.to);
+        return (
+          <Tooltip key={item.to} title={item.label} placement="right">
+            <Box
+              component={NavLink}
+              to={item.to}
+              aria-label={item.label}
+              aria-current={active ? 'page' : undefined}
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: active ? palette.sidebar.accent : palette.sidebar.text,
+                bgcolor: active ? palette.sidebar.active : 'transparent',
+                '& svg': { fontSize: 22 },
+                '&:hover': { bgcolor: palette.sidebar.hover, color: '#fff' },
+                '&:focus-visible': { outline: `2px solid ${palette.sidebar.accent}`, outlineOffset: 2 },
+              }}
+            >
+              {item.icon}
+            </Box>
+          </Tooltip>
+        );
+      })}
+    </Box>
+  );
+}
+
+/** Barra superior + barra de navegação inferior (celular: < 600px) */
+function MobileChrome({ pathname }: Readonly<{ pathname: string }>) {
+  const current = findNavItem(pathname);
+  const value = NAV_ITEMS.findIndex((i) => i === current);
+  return (
+    <>
+      <AppBar
+        position="fixed"
+        color="inherit"
+        elevation={0}
+        sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}
+      >
+        <Toolbar sx={{ minHeight: `${layout.mobileTopBarHeight}px !important`, gap: 1.25, px: 2 }}>
+          <Box
+            aria-hidden="true"
+            sx={{
+              width: 30,
+              height: 30,
+              borderRadius: 2,
+              bgcolor: palette.brand[600],
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <HomeRoundedIcon sx={{ fontSize: 18 }} />
+          </Box>
+          <Typography component="p" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+            Kowalski House
           </Typography>
         </Toolbar>
       </AppBar>
-
-      <Box component="nav" sx={sidebarSx}>
-        {sidebarContent}
-      </Box>
-
-      <Drawer
-        variant="temporary"
-        open={drawerOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }}
+      <Paper
+        component="nav"
+        aria-label="Navegação"
+        square
         sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': mobileDrawerPaperSx,
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          borderTop: 1,
+          borderColor: 'divider',
+          pb: 'env(safe-area-inset-bottom)',
+          zIndex: (t) => t.zIndex.appBar,
         }}
       >
-        {sidebarContent}
-      </Drawer>
+        <BottomNavigation showLabels value={value} sx={{ height: layout.bottomNavHeight }}>
+          {NAV_ITEMS.map((item) => (
+            <BottomNavigationAction
+              key={item.to}
+              component={NavLink}
+              to={item.to}
+              label={item.shortLabel}
+              icon={item.icon}
+              sx={{
+                minWidth: 0,
+                px: 0.5,
+                '& .MuiBottomNavigationAction-label': { fontSize: '0.6875rem', fontWeight: 500, mt: 0.25 },
+                '& .Mui-selected': { fontWeight: 600 },
+              }}
+            />
+          ))}
+        </BottomNavigation>
+      </Paper>
+    </>
+  );
+}
 
+/** Estrutura do app: navegação adequada ao tamanho de tela + área de conteúdo. */
+export function Layout({ children }: Readonly<{ children: ReactNode }>) {
+  const theme = useTheme();
+  const { pathname } = useLocation();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const offset = isDesktop ? layout.sidebarWidth : isMobile ? 0 : layout.railWidth;
+
+  return (
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      {isDesktop ? (
+        <Sidebar pathname={pathname} />
+      ) : isMobile ? (
+        <MobileChrome pathname={pathname} />
+      ) : (
+        <Rail pathname={pathname} />
+      )}
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
+          ml: `${offset}px`,
+          px: { xs: 2, sm: 3, lg: 4 },
+          pt: isMobile ? `${layout.mobileTopBarHeight + 16}px` : { sm: 3, lg: 4 },
+          pb: isMobile ? `calc(${layout.bottomNavHeight + 24}px + env(safe-area-inset-bottom))` : 5,
           minWidth: 0,
-          p: { xs: 2, sm: 2, md: 3 },
-          pt: { xs: 'calc(60px + 16px)', md: 'calc(60px + 24px)' },
-          minHeight: '100vh',
-          boxSizing: 'border-box',
         }}
       >
-        {children}
+        <Box sx={{ maxWidth: layout.contentMaxWidth, mx: 'auto' }}>{children}</Box>
       </Box>
     </Box>
   );
-};
+}
