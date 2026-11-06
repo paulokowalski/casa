@@ -16,8 +16,8 @@ api.interceptors.request.use((config) => {
 /** Extrai a mensagem de erro devolvida pelo backend, com um texto padrão de reserva. */
 export function apiErrorMessage(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
-    const data = error.response?.data as { message?: string; error?: string } | undefined;
-    return data?.message || data?.error || fallback;
+    const data = error.response?.data as { mensagem?: string; message?: string; error?: string } | undefined;
+    return data?.mensagem || data?.message || data?.error || fallback;
   }
   return error instanceof Error && error.message ? error.message : fallback;
 }

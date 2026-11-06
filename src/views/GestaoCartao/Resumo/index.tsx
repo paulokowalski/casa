@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { Box, LinearProgress } from '@mui/material';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
@@ -6,14 +8,32 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
 import { KpiCard } from '../../../components/ui/KpiCard';
 import { StatusPill, TrendPill } from '../../../components/ui/StatusPill';
-import { useGestaoFinanceira } from '../../../contexts/GestaoFinanceiraContext';
+import { useGestaoCartao } from '../../../contexts/GestaoCartaoContext';
 import { idxParaRef, nomeMes, rotuloMesLongo } from '../../../lib/financas/parcelas';
 import type { Tone } from '../../../styles/tokens';
 import { formatCurrency, formatPercent } from '../../../utils/format';
 
 export function Resumo() {
-  const { analise: a, loading } = useGestaoFinanceira();
+  const { analise: a, loading, parcelasMes } = useGestaoCartao();
   const carregando = loading || !a;
+
+  const composicao = useMemo(() => {
+    let aVista = 0;
+    let qtdAVista = 0;
+    let parcelado = 0;
+    let qtdParcelas = 0;
+    parcelasMes.forEach((p) => {
+      const v = Number(p.valorParcela) || 0;
+      if (p.numeroTotalParcela === 1) {
+        aVista += v;
+        qtdAVista += 1;
+      } else {
+        parcelado += v;
+        qtdParcelas += 1;
+      }
+    });
+    return { aVista, qtdAVista, parcelado, qtdParcelas };
+  }, [parcelasMes]);
 
   const diffMedia = a && a.media6 !== null ? a.totalMes - a.media6 : null;
   const orc = a?.orcamento ?? null;
@@ -28,7 +48,7 @@ export function Resumo() {
         gridTemplateColumns: {
           xs: 'repeat(2, minmax(0, 1fr))',
           md: 'repeat(3, minmax(0, 1fr))',
-          lg: 'repeat(5, minmax(0, 1fr))',
+          xl: 'repeat(6, minmax(0, 1fr))',
         },
         gap: { xs: 1.5, md: 2.5 },
       }}
@@ -47,6 +67,17 @@ export function Resumo() {
             </>
           )
         }
+      />
+      <KpiCard
+        label="Parcelado no mês"
+        icon={<ReceiptLongOutlinedIcon />}
+        tone="info"
+        loading={carregando}
+        value={formatCurrency(composicao.parcelado)}
+        footer={`${composicao.qtdParcelas} parcela${composicao.qtdParcelas === 1 ? '' : 's'} · à vista ${formatCurrency(
+          composicao.aVista,
+          true,
+        )} (${composicao.qtdAVista})`}
       />
       <KpiCard
         label="Média 6 meses"
@@ -82,34 +113,32 @@ export function Resumo() {
           )
         }
       />
-      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
-        <KpiCard
-          label="Orçamento usado"
-          icon={<SavingsOutlinedIcon />}
-          tone={tomOrc === 'neutral' ? 'info' : tomOrc}
-          loading={carregando}
-          value={orc ? formatPercent(orc.usadoPct, 1) : 'Não definido'}
-          footer={
-            orc ? (
-              <Box sx={{ width: '100%' }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={Math.min(100, orc.usadoPct * 100)}
-                  color={tomOrc === 'error' ? 'error' : tomOrc === 'warning' ? 'warning' : 'primary'}
-                  sx={{ height: 8, mb: 0.75 }}
-                  aria-label="Orçamento utilizado"
-                />
-                {orc.restante >= 0
-                  ? `Restam ${formatCurrency(orc.restante, true)}`
-                  : `Excedeu ${formatCurrency(-orc.restante, true)}`}
-                {orc.diasRestantes !== null && ` · ${orc.diasRestantes} dias`}
-              </Box>
-            ) : (
-              'Informe no campo “Orçamento mensal”'
-            )
-          }
-        />
-      </Box>
+      <KpiCard
+        label="Orçamento usado"
+        icon={<SavingsOutlinedIcon />}
+        tone={tomOrc === 'neutral' ? 'info' : tomOrc}
+        loading={carregando}
+        value={orc ? formatPercent(orc.usadoPct, 1) : 'Não definido'}
+        footer={
+          orc ? (
+            <Box sx={{ width: '100%' }}>
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(100, orc.usadoPct * 100)}
+                color={tomOrc === 'error' ? 'error' : tomOrc === 'warning' ? 'warning' : 'primary'}
+                sx={{ height: 8, mb: 0.75 }}
+                aria-label="Orçamento utilizado"
+              />
+              {orc.restante >= 0
+                ? `Restam ${formatCurrency(orc.restante, true)}`
+                : `Excedeu ${formatCurrency(-orc.restante, true)}`}
+              {orc.diasRestantes !== null && ` · ${orc.diasRestantes} dias`}
+            </Box>
+          ) : (
+            'Informe no campo “Orçamento mensal”'
+          )
+        }
+      />
     </Box>
   );
 }

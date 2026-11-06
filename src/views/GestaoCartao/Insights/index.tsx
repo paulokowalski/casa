@@ -14,7 +14,7 @@ import { SectionCard } from '../../../components/ui/SectionCard';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { IconBadge } from '../../../components/ui/IconBadge';
 import { StatusPill } from '../../../components/ui/StatusPill';
-import { useGestaoFinanceira } from '../../../contexts/GestaoFinanceiraContext';
+import { useGestaoCartao } from '../../../contexts/GestaoCartaoContext';
 import type { TipoInsight } from '../../../lib/financas/analise';
 import { palette, tones, type Tone } from '../../../styles/tokens';
 import { formatCurrency } from '../../../utils/format';
@@ -32,7 +32,7 @@ const VISUAL: Record<TipoInsight, { icone: ReactNode; tom: Tone }> = {
 const TOM_NOTA = { Saudável: 'success', Atenção: 'warning', Crítico: 'error' } as const;
 
 export function SaudeFinanceira() {
-  const { analise, loading } = useGestaoFinanceira();
+  const { analise, loading } = useGestaoCartao();
   const tom = analise ? tones[TOM_NOTA[analise.score.rotulo]] : tones.neutral;
 
   return (
@@ -136,7 +136,7 @@ export function SaudeFinanceira() {
 }
 
 export function Insights() {
-  const { analise, loading } = useGestaoFinanceira();
+  const { analise, loading } = useGestaoCartao();
 
   const acao =
     analise && analise.economiaTotal > 0 ? (

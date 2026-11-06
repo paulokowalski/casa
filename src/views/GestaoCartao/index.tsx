@@ -1,31 +1,30 @@
-import { useMemo, useState } from 'react';
-import { Box, Button } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, Box, Button, CircularProgress } from '@mui/material';
+import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import AddIcon from '@mui/icons-material/Add';
-import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
-import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
-import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { KpiCard } from '../../components/ui/KpiCard';
-import { SectionCard } from '../../components/ui/SectionCard';
-import { EmptyState } from '../../components/ui/EmptyState';
 import { FloatingAction } from '../../components/ui/FloatingAction';
-import { CategoryBars } from '../../components/charts/CategoryBars';
-import { ShareBar } from '../../components/charts/ShareBar';
 import { TransacaoModal, type AbaTransacao } from '../../components/financas/TransacaoModal';
 import { TransacoesTable, type AcaoTransacao } from '../../components/financas/TransacoesTable';
 import { ExclusaoTransacaoDialog } from '../../components/financas/ExclusaoTransacaoDialog';
 import { GestaoCartaoProvider, useGestaoCartao } from '../../contexts/GestaoCartaoContext';
 import { useToast } from '../../contexts/ToastContext';
+import { simularCompra } from '../../lib/financas/analise';
+import { exportarGastosCartaoPdf } from '../../lib/pdf/gastosCartaoPdf';
+import { calcularProximosMeses } from '../../lib/financas/proximosMeses';
 import type { Parcela } from '../../types/financas';
-import { MONTHS_PT, formatCurrency } from '../../utils/format';
+import { MONTHS_PT } from '../../utils/format';
 import { Filtro } from './Filtro';
-import { GraficoDespesasMensais } from './GraficoDespesasMensais';
+import { ProximosMeses } from './ProximosMeses';
+import { Resumo } from './Resumo';
+import { Insights, SaudeFinanceira } from './Insights';
+import { EvolucaoMensal, MaioresGastos, PorCartao, PorCategoria, PorDiaDaSemana } from './Graficos';
 
-function somarPor(parcelas: Parcela[], chave: (p: Parcela) => string) {
-  const mapa = new Map<string, number>();
-  parcelas.forEach((p) => mapa.set(chave(p), (mapa.get(chave(p)) ?? 0) + (Number(p.valorParcela) || 0)));
-  return [...mapa.entries()].map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
-}
+const linha = (colunas: object) => ({
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', ...colunas },
+  gap: { xs: 2, md: 2.5 },
+});
 
 function GestaoCartaoConteudo() {
   const ctx = useGestaoCartao();
@@ -33,17 +32,13 @@ function GestaoCartaoConteudo() {
   const [modal, setModal] = useState<{ parcela: Parcela | null; aba: AbaTransacao } | null>(null);
   const [paraExcluir, setParaExcluir] = useState<Parcela | null>(null);
   const [categoria, setCategoria] = useState<string | null>(null);
+  const [exportando, setExportando] = useState(false);
 
-  const porCartao = useMemo(() => somarPor(ctx.compras, (p) => p.nomeCartao || 'Sem cartão'), [ctx.compras]);
-  const porCategoria = useMemo(
-    () => somarPor(ctx.compras, (p) => (p.categoria || '').toUpperCase() || 'SEM CATEGORIA'),
-    [ctx.compras],
-  );
+  useEffect(() => setCategoria(null), [ctx.filtrosAplicados]);
 
-  const aplicados = ctx.filtrosAplicados;
-  const nomeMes = aplicados ? MONTHS_PT[Number(aplicados.mes) - 1] : '';
-  const qtdAVista = ctx.compras.filter((p) => p.numeroTotalParcela === 1).length;
-  const qtdParceladas = ctx.compras.length - qtdAVista;
+  const recorrentes = useMemo(() => new Set((ctx.analise?.recorrentes ?? []).map((r) => r.nome)), [ctx.analise]);
+  const nomeMes = ctx.filtrosAplicados ? MONTHS_PT[Number(ctx.filtrosAplicados.mes) - 1] : '';
+  const soUltimas = ctx.transacoes !== ctx.parcelasMes;
 
   const onAcao = (acao: AcaoTransacao, p: Parcela) => {
     if (acao === 'excluir') setParaExcluir(p);
@@ -51,91 +46,95 @@ function GestaoCartaoConteudo() {
   };
   const nova = () => setModal({ parcela: null, aba: 'dados' });
 
+  async function exportarPdf() {
+    const f = ctx.filtrosAplicados;
+    if (!f) return;
+    setExportando(true);
+    try {
+      await exportarGastosCartaoPdf({
+        ano: f.ano,
+        mes: f.mes,
+        pessoa: f.pessoa,
+        cartao: f.cartao,
+        parcelasMes: ctx.parcelasMes,
+        listadas: ctx.transacoes,
+        proximos: ctx.proximos ? calcularProximosMeses(ctx.proximos, ctx.orcamento) : null,
+        filtroUltimaParcela: soUltimas
+          ? ctx.ultimaParcela === 'SIM'
+            ? 'somente a última parcela'
+            : 'sem as últimas parcelas'
+          : null,
+      });
+    } catch (e) {
+      notify(e instanceof Error ? e.message : 'Não foi possível gerar o PDF.', 'error');
+    } finally {
+      setExportando(false);
+    }
+  }
+
+  const simular = (valor: number, n: number, data: string) =>
+    ctx.analise ? simularCompra(ctx.analise, valor, n, data, ctx.orcamento) : null;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 } }}>
       <PageHeader
         section="Finanças"
         title="Gestão de Cartão"
-        subtitle="Despesas e parcelamentos por mês"
+        subtitle="Gastos, parcelamentos, compromissos futuros e oportunidades de economia"
         actions={
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={nova}
-            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-          >
-            Nova transação
-          </Button>
+          <>
+            <Button
+              variant="outlined"
+              startIcon={exportando ? <CircularProgress size={16} color="inherit" /> : <PictureAsPdfOutlinedIcon />}
+              onClick={exportarPdf}
+              disabled={!ctx.filtrosAplicados || ctx.loading || !ctx.proximos || exportando}
+            >
+              Exportar PDF
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={nova}
+              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+            >
+              Nova transação
+            </Button>
+          </>
         }
       />
 
       <Filtro />
+      {!ctx.filtrosAplicados && !ctx.carregando && (
+        <Alert severity="info">Selecione ano, mês e pessoa e clique em Buscar.</Alert>
+      )}
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' },
-          gap: { xs: 1.5, md: 2.5 },
-        }}
-      >
-        <KpiCard
-          label="À vista no cartão"
-          icon={<CreditCardOutlinedIcon />}
-          tone="brand"
-          loading={ctx.loading}
-          value={formatCurrency(ctx.despesa?.gastosNoCartao ?? 0)}
-          footer={`${qtdAVista} compra${qtdAVista === 1 ? '' : 's'}`}
-        />
-        <KpiCard
-          label="Parceladas"
-          icon={<ReceiptLongOutlinedIcon />}
-          tone="warning"
-          loading={ctx.loading}
-          value={formatCurrency(ctx.despesa?.comprasParceladas ?? 0)}
-          footer={`${qtdParceladas} parcela${qtdParceladas === 1 ? '' : 's'} no mês`}
-        />
-        <KpiCard
-          label={nomeMes ? `Total de ${nomeMes}` : 'Total do mês'}
-          icon={<AccountBalanceWalletOutlinedIcon />}
-          tone="success"
-          loading={ctx.loading}
-          value={formatCurrency(ctx.despesa?.valorMes ?? 0)}
-        />
+      <Resumo />
+
+      <Box sx={linha({ lg: 'minmax(320px, 1fr) minmax(0, 2fr)' })}>
+        <SaudeFinanceira />
+        <Insights />
       </Box>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 2fr) minmax(0, 1fr)' },
-          gap: { xs: 2, md: 2.5 },
-        }}
-      >
-        <GraficoDespesasMensais />
-        <SectionCard title="Por cartão" subtitle="Participação no mês">
-          {porCartao.length === 0 ? (
-            <EmptyState message="Sem gastos no período." compact />
-          ) : (
-            <ShareBar itens={porCartao} />
-          )}
-        </SectionCard>
+      <Box sx={linha({ lg: 'minmax(0, 2fr) minmax(320px, 1fr)' })}>
+        <EvolucaoMensal />
+        <PorCategoria selecionada={categoria} onSelecionar={setCategoria} />
       </Box>
 
-      <SectionCard title="Por categoria" subtitle="Clique em uma categoria para filtrar as transações">
-        {porCategoria.length === 0 ? (
-          <EmptyState message="Sem gastos no período." compact />
-        ) : (
-          <Box sx={{ columnCount: { xs: 1, md: 2 }, columnGap: 6, '& > ul > li': { breakInside: 'avoid' } }}>
-            <CategoryBars itens={porCategoria} selecionada={categoria} onSelecionar={setCategoria} max={12} />
-          </Box>
-        )}
-      </SectionCard>
+      <ProximosMeses />
+
+      <Box sx={linha({ md: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' })}>
+        <PorCartao />
+        <PorDiaDaSemana />
+        <MaioresGastos />
+      </Box>
 
       <TransacoesTable
-        titulo={nomeMes ? `Transações de ${nomeMes}` : 'Transações'}
-        parcelas={ctx.compras}
+        titulo={`${nomeMes ? `Transações de ${nomeMes}` : 'Transações'}${soUltimas ? ' · filtro de última parcela' : ''}`}
+        parcelas={ctx.transacoes}
         loading={ctx.loading}
         categoria={categoria}
         onLimparCategoria={() => setCategoria(null)}
+        recorrentes={recorrentes}
         onAcao={onAcao}
       />
 
@@ -146,6 +145,7 @@ function GestaoCartaoConteudo() {
         categorias={ctx.categorias}
         tiposLancamento={ctx.tiposLancamento}
         onSalvar={ctx.salvarCompra}
+        simular={simular}
         onClose={() => setModal(null)}
         onSucesso={notify}
       />

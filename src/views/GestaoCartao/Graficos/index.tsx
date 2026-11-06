@@ -1,4 +1,4 @@
-import { Box, Skeleton, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Skeleton, Typography } from '@mui/material';
 import {
   Bar,
   BarChart,
@@ -13,12 +13,10 @@ import {
 } from 'recharts';
 import { SectionCard } from '../../../components/ui/SectionCard';
 import { EmptyState } from '../../../components/ui/EmptyState';
-import { StatusPill } from '../../../components/ui/StatusPill';
 import { CategoryBars } from '../../../components/charts/CategoryBars';
 import { ShareBar } from '../../../components/charts/ShareBar';
 import { axisProps, compactNumber, gridProps, tooltipProps, yAxisProps } from '../../../components/charts/chartTheme';
-import { useGestaoFinanceira } from '../../../contexts/GestaoFinanceiraContext';
-import { idxParaRef, rotuloMes, rotuloMesLongo } from '../../../lib/financas/parcelas';
+import { useGestaoCartao } from '../../../contexts/GestaoCartaoContext';
 import { colors } from '../../../styles/colors';
 import { palette, tones } from '../../../styles/tokens';
 import { capitalize, formatCurrency, formatPercent } from '../../../utils/format';
@@ -49,7 +47,7 @@ const valorNoTopo =
 
 // ---------------------------------------------------------------- Evolução
 export function EvolucaoMensal() {
-  const { analise, loading } = useGestaoFinanceira();
+  const { analise, loading } = useGestaoCartao();
   return (
     <SectionCard
       title="Evolução mensal"
@@ -102,7 +100,7 @@ export function PorCategoria({
   selecionada,
   onSelecionar,
 }: Readonly<{ selecionada: string | null; onSelecionar: (c: string | null) => void }>) {
-  const { analise, loading } = useGestaoFinanceira();
+  const { analise, loading } = useGestaoCartao();
   return (
     <SectionCard title="Por categoria" subtitle="Variação vs média de 3 meses · clique para filtrar">
       {loading || !analise ? (
@@ -117,120 +115,8 @@ export function PorCategoria({
 }
 
 // ---------------------------------------------------------------- Projeção
-export function ProjecaoCompromissos() {
-  const { analise, loading } = useGestaoFinanceira();
-  const theme = useTheme();
-  const celular = useMediaQuery(theme.breakpoints.down('sm'));
-
-  let selo = null;
-  if (analise) {
-    const atual = analise.projecao12[0]?.valor || 0;
-    const em6 = analise.projecao12[6]?.valor || 0;
-    if (atual > 0 && em6 < atual)
-      selo = <StatusPill tone="warning">Cai {formatPercent((atual - em6) / atual)} em 6 meses</StatusPill>;
-  }
-
-  return (
-    <SectionCard
-      title="Projeção de compromissos futuros"
-      subtitle="Parcelas já assumidas para os próximos 12 meses · em verde, o que é liberado"
-      action={selo}
-    >
-      {loading || !analise ? (
-        <Skeleton variant="rounded" height={240} />
-      ) : (
-        <Box sx={{ height: 240 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={analise.projecao12} margin={{ top: 22, right: 4, left: -8, bottom: 0 }}>
-              <CartesianGrid {...gridProps} />
-              <XAxis dataKey="rotulo" {...axisProps} interval={celular ? 1 : 0} fontSize={11} />
-              <YAxis {...yAxisProps} width={44} tickFormatter={compactNumber} />
-              <Tooltip
-                {...tooltipProps}
-                formatter={(v: number, _n, p) => [
-                  `${formatCurrency(v)}${p?.payload?.libera ? ` (libera ${formatCurrency(p.payload.libera)})` : ''}`,
-                  p?.payload?.idx === analise.refIdx ? 'Parcelado no mês' : 'Comprometido',
-                ]}
-              />
-              {analise.orcamento && (
-                <ReferenceLine
-                  y={analise.orcamento.valor * 0.3}
-                  stroke={tones.error.solid}
-                  strokeDasharray="6 4"
-                  label={{ value: '30% do orçamento', position: 'insideTopRight', fontSize: 11, fill: tones.error.fg }}
-                />
-              )}
-              <Bar dataKey="valor" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                {analise.projecao12.map((p, i) => (
-                  <Cell key={p.idx} fill={i === 0 ? colors.chart.primary : colors.chart.secondary} />
-                ))}
-                {!celular && <LabelList dataKey="libera" content={valorNoTopo(null, tones.success.fg, '−')} />}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
-      )}
-    </SectionCard>
-  );
-}
-
-// ---------------------------------------------------------------- Próximas a terminar
-export function ProximasParcelas() {
-  const { analise, loading } = useGestaoFinanceira();
-  return (
-    <SectionCard
-      title="Próximas parcelas a terminar"
-      subtitle="Dinheiro que volta para o seu bolso"
-      sx={{ height: '100%' }}
-    >
-      {loading || !analise ? (
-        <Skeleton variant="rounded" height={240} />
-      ) : analise.proximasTerminar.length === 0 ? (
-        <EmptyState message="Nenhuma compra parcelada em andamento." />
-      ) : (
-        <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 1.75 }}>
-          {analise.proximasTerminar.map((p) => {
-            const esteMes = p.fimIdx === analise.refIdx;
-            return (
-              <Box
-                component="li"
-                key={`${p.nome}-${p.fimIdx}-${p.total}`}
-                sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
-              >
-                <Box sx={{ minWidth: 60 }} title={rotuloMesLongo(p.fimIdx)}>
-                  <StatusPill tone={esteMes ? 'success' : 'neutral'}>
-                    {rotuloMes(p.fimIdx, idxParaRef(analise.refIdx).ano)}
-                  </StatusPill>
-                </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={500} noWrap sx={{ color: 'text.primary' }}>
-                    {capitalize(p.nome)} · {p.parcelaAtual}/{p.total}
-                  </Typography>
-                  <Box sx={{ mt: 0.75, height: 6, borderRadius: 99, bgcolor: palette.gray[100], overflow: 'hidden' }}>
-                    <Box
-                      sx={{
-                        width: `${p.progresso * 100}%`,
-                        height: '100%',
-                        bgcolor: esteMes ? tones.success.solid : tones.warning.solid,
-                      }}
-                    />
-                  </Box>
-                </Box>
-                <Typography variant="body2" fontWeight={600}>
-                  +{formatCurrency(p.valorParcela, true)}
-                </Typography>
-              </Box>
-            );
-          })}
-        </Box>
-      )}
-    </SectionCard>
-  );
-}
-
-// ---------------------------------------------------------------- Distribuições
 export function PorCartao() {
-  const { analise, loading } = useGestaoFinanceira();
+  const { analise, loading } = useGestaoCartao();
   return (
     <SectionCard title="Por cartão" subtitle="Concentração do gasto no mês" sx={{ height: '100%' }}>
       {loading || !analise ? (
@@ -245,7 +131,7 @@ export function PorCartao() {
 }
 
 export function PorDiaDaSemana() {
-  const { analise, loading } = useGestaoFinanceira();
+  const { analise, loading } = useGestaoCartao();
   const max = analise ? Math.max(0, ...analise.diasSemana.map((d) => d.valor)) : 0;
   return (
     <SectionCard title="Por dia da semana" subtitle="Compras à vista, pela data da compra" sx={{ height: '100%' }}>
@@ -282,7 +168,7 @@ export function PorDiaDaSemana() {
 }
 
 export function MaioresGastos() {
-  const { analise, loading } = useGestaoFinanceira();
+  const { analise, loading } = useGestaoCartao();
   return (
     <SectionCard
       title="Maiores gastos do mês"

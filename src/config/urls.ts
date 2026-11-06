@@ -27,6 +27,14 @@ export const API_URLS = {
     `/v1/compra/${ano}/${mes}/${pessoa}/TODOS/TODOS`,
   COMPRA_ID: (id?: string | number) => (id ? `/v1/compra/${id}` : `/v1/compra`),
 
+  //CONTAS (fora do cartão) E RENDA
+  CONTAS: '/v1/contas',
+  CONTA_ID: (id: string) => `/v1/contas/${id}`,
+  CONTAS_LANCAMENTOS: '/v1/contas/lancamentos',
+  CONTA_LANCAMENTO_ID: (id: string) => `/v1/contas/lancamentos/${id}`,
+  RENDA: (ano: string | number, mes: string | number) => `/v1/renda/${ano}/${Number(mes)}`,
+  FATURA: (ano: string | number, mes: string | number) => `/v1/fatura/${ano}/${Number(mes)}`,
+
   //FILTRO
   FILTRO_ANOS: '/v1/filtro/anos',
   FILTRO_MESES: (ano: string | number) => `/v1/filtro/meses/${ano}`,

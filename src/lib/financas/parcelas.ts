@@ -46,6 +46,12 @@ export function rotuloMes(idx: number, anoRef?: number): string {
   return abrev;
 }
 
+/** "dez/26": mês abreviado sempre com o ano */
+export function rotuloMesAno(idx: number): string {
+  const r = idxParaRef(idx);
+  return `${MONTHS_SHORT_PT[r.mes - 1]}/${String(r.ano).slice(-2)}`;
+}
+
 export function rotuloMesLongo(idx: number): string {
   const r = idxParaRef(idx);
   return `${MONTHS_PT[r.mes - 1]}/${r.ano}`;

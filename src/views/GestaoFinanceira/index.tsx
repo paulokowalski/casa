@@ -1,28 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Box, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { FloatingAction } from '../../components/ui/FloatingAction';
-import { TransacaoModal, type AbaTransacao } from '../../components/financas/TransacaoModal';
-import { TransacoesTable, type AcaoTransacao } from '../../components/financas/TransacoesTable';
-import { ExclusaoTransacaoDialog } from '../../components/financas/ExclusaoTransacaoDialog';
 import { GestaoFinanceiraProvider, useGestaoFinanceira } from '../../contexts/GestaoFinanceiraContext';
 import { useToast } from '../../contexts/ToastContext';
-import { simularCompra } from '../../lib/financas/analise';
-import type { Parcela } from '../../types/financas';
-import { MONTHS_PT } from '../../utils/format';
+import type { Conta, Lancamento } from '../../types/contas';
 import { Filtros } from './Filtros';
 import { Resumo } from './Resumo';
-import { Insights, SaudeFinanceira } from './Insights';
-import {
-  EvolucaoMensal,
-  MaioresGastos,
-  PorCartao,
-  PorCategoria,
-  PorDiaDaSemana,
-  ProjecaoCompromissos,
-  ProximasParcelas,
-} from './Graficos';
+import { Equilibrio, ParaOndeVai } from './Composicao';
+import { Evolucao } from './Evolucao';
+import { Insights } from './Insights';
+import { Financiamentos } from './Financiamentos';
+import { ContasTable } from './ContasTable';
+import { ContaModal } from './ContaModal';
+import { ExcluirContaDialog, ValorDialog } from './Dialogos';
 
 const linha = (colunas: object) => ({
   display: 'grid',
@@ -33,30 +25,38 @@ const linha = (colunas: object) => ({
 function GestaoFinanceiraConteudo() {
   const ctx = useGestaoFinanceira();
   const { notify } = useToast();
-  const [modal, setModal] = useState<{ parcela: Parcela | null; aba: AbaTransacao } | null>(null);
-  const [paraExcluir, setParaExcluir] = useState<Parcela | null>(null);
-  const [categoria, setCategoria] = useState<string | null>(null);
+  const [modal, setModal] = useState<{ conta: Conta | null } | null>(null);
+  const [paraExcluir, setParaExcluir] = useState<{ id: string; descricao: string } | null>(null);
+  const [valorDe, setValorDe] = useState<Lancamento | null>(null);
 
-  useEffect(() => setCategoria(null), [ctx.filtrosAplicados]);
-
-  const recorrentes = useMemo(() => new Set((ctx.analise?.recorrentes ?? []).map((r) => r.nome)), [ctx.analise]);
-  const nomeMes = ctx.filtrosAplicados ? MONTHS_PT[Number(ctx.filtrosAplicados.mes) - 1] : '';
-
-  const onAcao = (acao: AcaoTransacao, p: Parcela) => {
-    if (acao === 'excluir') setParaExcluir(p);
-    else setModal({ parcela: p, aba: acao === 'cancelar' ? 'cancelar' : 'dados' });
+  const nova = () => setModal({ conta: null });
+  const editar = (contaId: string) => {
+    const conta = ctx.contas.find((c) => c.id === contaId);
+    if (conta) setModal({ conta });
   };
-  const nova = () => setModal({ parcela: null, aba: 'dados' });
 
-  const simular = (valor: number, n: number, data: string) =>
-    ctx.analise ? simularCompra(ctx.analise, valor, n, data, ctx.orcamento) : null;
+  const alternarPaga = async (l: Lancamento) => {
+    try {
+      await ctx.atualizarLancamento(l.id, { paga: !l.paga });
+    } catch (e) {
+      notify(e instanceof Error ? e.message : 'Erro ao atualizar.', 'error');
+    }
+  };
+
+  const alternarFatura = async (paga: boolean) => {
+    try {
+      await ctx.marcarFatura(paga);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : 'Erro ao atualizar a fatura.', 'error');
+    }
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 } }}>
       <PageHeader
         section="Finanças"
         title="Gestão Financeira"
-        subtitle="Gastos, compromissos futuros e oportunidades de economia"
+        subtitle="Tudo o que sai no mês: contas fixas, financiamentos e o cartão de crédito"
         actions={
           <Button
             variant="contained"
@@ -64,71 +64,63 @@ function GestaoFinanceiraConteudo() {
             onClick={nova}
             sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
           >
-            Nova transação
+            Nova conta
           </Button>
         }
       />
 
       <Filtros />
-      {!ctx.filtrosAplicados && !ctx.carregando && (
-        <Alert severity="info">Selecione ano, mês e pessoa e clique em Buscar.</Alert>
-      )}
+      {ctx.erro && <Alert severity="error">{ctx.erro}</Alert>}
+      {!ctx.pessoa && !ctx.loading && <Alert severity="info">Cadastre uma pessoa para começar.</Alert>}
 
       <Resumo />
 
-      <Box sx={linha({ lg: 'minmax(320px, 1fr) minmax(0, 2fr)' })}>
-        <SaudeFinanceira />
+      <Box sx={linha({ lg: 'repeat(2, minmax(0, 1fr))' })}>
+        <ParaOndeVai />
+        <Equilibrio />
+      </Box>
+
+      <Box sx={linha({ lg: 'minmax(0, 1fr) minmax(0, 1fr)' })}>
+        <Evolucao />
         <Insights />
       </Box>
 
-      <Box sx={linha({ lg: 'minmax(0, 2fr) minmax(320px, 1fr)' })}>
-        <EvolucaoMensal />
-        <PorCategoria selecionada={categoria} onSelecionar={setCategoria} />
-      </Box>
+      <Financiamentos />
 
-      <Box sx={linha({ lg: 'minmax(0, 2fr) minmax(320px, 1fr)' })}>
-        <ProjecaoCompromissos />
-        <ProximasParcelas />
-      </Box>
-
-      <Box sx={linha({ md: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' })}>
-        <PorCartao />
-        <PorDiaDaSemana />
-        <MaioresGastos />
-      </Box>
-
-      <TransacoesTable
-        titulo={nomeMes ? `Transações de ${nomeMes}` : 'Transações'}
-        parcelas={ctx.parcelasMes}
-        loading={ctx.loading}
-        categoria={categoria}
-        onLimparCategoria={() => setCategoria(null)}
-        recorrentes={recorrentes}
-        onAcao={onAcao}
+      <ContasTable
+        onEditar={editar}
+        onExcluir={(id, descricao) => setParaExcluir({ id, descricao })}
+        onConfirmarValor={setValorDe}
+        onAlternarPaga={alternarPaga}
+        onAlternarFatura={alternarFatura}
       />
 
-      <TransacaoModal
+      <ContaModal
         open={Boolean(modal)}
-        parcela={modal?.parcela ?? null}
-        abaInicial={modal?.aba}
-        categorias={ctx.categorias}
-        tiposLancamento={ctx.tiposLancamento}
-        onSalvar={ctx.salvarCompra}
-        simular={simular}
+        conta={modal?.conta ?? null}
         onClose={() => setModal(null)}
         onSucesso={notify}
-      />
-      <ExclusaoTransacaoDialog
-        parcela={paraExcluir}
-        onExcluir={ctx.excluirCompra}
-        onClose={() => setParaExcluir(null)}
-        onSucesso={notify}
-        onCancelarParcelas={(p) => {
-          setParaExcluir(null);
-          setModal({ parcela: p, aba: 'cancelar' });
+        onExcluir={(c) => {
+          setModal(null);
+          setParaExcluir({ id: c.id, descricao: c.descricao });
         }}
       />
-      <FloatingAction label="Nova transação" icon={<AddIcon />} onClick={nova} />
+      <ExcluirContaDialog
+        conta={paraExcluir}
+        competencia={ctx.competencia}
+        onExcluir={ctx.excluirConta}
+        onClose={() => setParaExcluir(null)}
+        onSucesso={notify}
+      />
+      <ValorDialog
+        lancamento={valorDe}
+        onClose={() => setValorDe(null)}
+        onConfirmar={async (valor, paga) => {
+          await ctx.atualizarLancamento(valorDe!.id, paga ? { valor, paga: true } : { valor });
+          notify('Valor confirmado.');
+        }}
+      />
+      <FloatingAction label="Nova conta" icon={<AddIcon />} onClick={nova} />
     </Box>
   );
 }

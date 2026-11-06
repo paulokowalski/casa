@@ -1,145 +1,223 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { comprasService, TODOS } from '../services/financas';
-import { useFiltrosCompra, type FiltrosSelecionados } from '../hooks/useFiltrosCompra';
-import { calcularAnalise, type Analise } from '../lib/financas/analise';
+import { usePessoa, type Pessoa } from './PessoaContext';
+import { comprasService, despesasService, filtrosService } from '../services/financas';
+import { contasService, faturaService, rendaService } from '../services/contas';
+import { calcularVisao, type VisaoMensal } from '../lib/financas/visaoMensal';
 import { idxParaRef, mesIdx } from '../lib/financas/parcelas';
-import type { CompraInput, CompraRegistro, Parcela } from '../types/financas';
+import type { Competencia, Conta, ContaInput, Lancamento, LancamentoInput } from '../types/contas';
+import type { Item, Parcela } from '../types/financas';
 
-type GestaoFinanceiraValue = ReturnType<typeof useFiltrosCompra> & {
-  buscar: () => void;
-  filtrosAplicados: FiltrosSelecionados | null;
+interface Dados {
+  lancamentos: Lancamento[];
+  contas: Conta[];
+  parcelasCartao: Parcela[];
+  cartaoPorMes: Map<number, number>;
+  renda: number | null;
+  rendaHerdada: boolean;
+  faturaPaga: boolean;
+}
+
+type GestaoFinanceiraValue = {
+  ano: number;
+  mes: number;
+  pessoa: Pessoa | null;
+  pessoas: Pessoa[];
+  anos: number[];
+  categorias: Item[];
+  setAno: (ano: number) => void;
+  setMes: (mes: number) => void;
+  setPessoaId: (id: number) => void;
+  /** Mês selecionado no formato "2026-11" */
+  competencia: Competencia;
   loading: boolean;
-  parcelasMes: Parcela[];
-  analise: Analise | null;
-  /** Orçamento mensal definido pelo usuário (salvo no navegador, por pessoa) */
-  orcamento: number | null;
-  salvarOrcamento: (valor: number | null) => void;
-  /** POST sem `id`, PUT com `id` */
-  salvarCompra: (dados: CompraInput, id?: string) => Promise<void>;
-  excluirCompra: (id: string) => Promise<void>;
+  erro: string | null;
+  visao: VisaoMensal | null;
+  contas: Conta[];
+  renda: number | null;
+  rendaHerdada: boolean;
+  salvarRenda: (valor: number | null) => Promise<void>;
+  /** POST sem `id`; PUT com `id`, valendo a partir do mês selecionado */
+  salvarConta: (dados: ContaInput, id?: string) => Promise<void>;
+  excluirConta: (id: string, encerrarAPartirDoMes: boolean) => Promise<void>;
+  atualizarLancamento: (id: string, dados: LancamentoInput) => Promise<void>;
+  /** Marca ou desmarca a fatura do cartão do mês como paga */
+  marcarFatura: (paga: boolean) => Promise<void>;
 };
 
 const GestaoFinanceiraContext = createContext<GestaoFinanceiraValue | null>(null);
 
-const chaveOrcamento = (pessoa: string) => `casa.gestaoFinanceira.orcamento.${(pessoa || 'geral').toUpperCase()}`;
-
-function lerOrcamento(pessoa: string): number | null {
-  try {
-    const n = Number(window.localStorage.getItem(chaveOrcamento(pessoa)));
-    return Number.isFinite(n) && n > 0 ? n : null;
-  } catch {
-    return null;
-  }
-}
+const comp = (ano: number, mes: number): Competencia => `${ano}-${String(mes).padStart(2, '0')}`;
 
 export function GestaoFinanceiraProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [filtrosAplicados, setFiltrosAplicados] = useState<FiltrosSelecionados | null>(null);
+  const { pessoas } = usePessoa();
+  const hoje = new Date();
+  const [ano, setAno] = useState(hoje.getFullYear());
+  const [mes, setMes] = useState(hoje.getMonth() + 1);
+  const [pessoaId, setPessoaId] = useState<number | null>(null);
+  const [anosCompra, setAnosCompra] = useState<number[]>([]);
+  const [categorias, setCategorias] = useState<Item[]>([]);
+  const [dados, setDados] = useState<Dados | null>(null);
   const [loading, setLoading] = useState(false);
-  const [parcelasMes, setParcelasMes] = useState<Parcela[]>([]);
-  const [parcelasAnteriores, setParcelasAnteriores] = useState<Parcela[][]>([]);
-  const [registros, setRegistros] = useState<CompraRegistro[]>([]);
-  const [orcamento, setOrcamento] = useState<number | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
   const [versao, setVersao] = useState(0);
 
-  const filtros = useFiltrosCompra(setFiltrosAplicados);
+  const pessoa = pessoas.find((p) => p.id === pessoaId) ?? null;
+  const competencia = comp(ano, mes);
 
-  // Carrega o mês selecionado, os 3 anteriores (comparação por categoria) e todas as compras (histórico/projeção)
   useEffect(() => {
-    if (!filtrosAplicados) return;
+    filtrosService.anos().then((itens) => setAnosCompra(itens.map((i) => Number(i.codigo)).filter(Boolean)));
+    filtrosService.categorias().then(setCategorias);
+  }, []);
+
+  // Primeira pessoa como padrão
+  useEffect(() => {
+    if (pessoaId === null && pessoas.length > 0) setPessoaId(pessoas[0].id);
+  }, [pessoas, pessoaId]);
+
+  useEffect(() => {
+    if (!pessoa) return;
     let ativo = true;
-    const f = filtrosAplicados;
-    setOrcamento(lerOrcamento(f.pessoa));
+    const refIdx = mesIdx({ ano, mes });
+    const inicio = idxParaRef(refIdx - 11);
+    const anosJanela = [...new Set([inicio.ano, ano])];
     setLoading(true);
-    const idx = mesIdx({ ano: Number(f.ano), mes: Number(f.mes) });
-    const anteriores = [1, 2, 3].map((i) => idxParaRef(idx - i));
+    setErro(null);
     Promise.all([
-      comprasService.parcelasDoMesSeguro(f.ano, f.mes, f.pessoa, f.cartao),
-      ...anteriores.map((r) => comprasService.parcelasDoMesSeguro(r.ano, r.mes, f.pessoa, f.cartao)),
-      comprasService.todas(),
+      contasService.lancamentos(pessoa.id, comp(inicio.ano, inicio.mes), comp(ano, mes)),
+      contasService.listar(pessoa.id),
+      rendaService.obter(ano, mes, pessoa.id).catch(() => null),
+      comprasService.parcelasDoMesSeguro(ano, mes, pessoa.nome),
+      Promise.all(anosJanela.map((a) => despesasService.doAno(String(a), pessoa.nome).then((r) => [a, r] as const))),
+      faturaService.obter(ano, mes, pessoa.id).catch(() => null),
     ])
-      .then((resultados) => {
+      .then(([lancamentos, contas, renda, parcelasCartao, despesasAnos, fatura]) => {
         if (!ativo) return;
-        const [atual, a1, a2, a3] = resultados as Parcela[][];
-        const todas = resultados[4] as CompraRegistro[];
-        const pessoa = f.pessoa.toUpperCase();
-        const cartao = f.cartao.toUpperCase();
-        setParcelasMes(atual);
-        setParcelasAnteriores([a1, a2, a3]);
-        setRegistros(
-          todas.filter(
-            (r) =>
-              r.nomePessoaCompra?.toUpperCase() === pessoa &&
-              (cartao === TODOS || r.nomeCartao?.toUpperCase() === cartao),
+        const cartaoPorMes = new Map<number, number>();
+        despesasAnos.forEach(([a, porMes]) =>
+          Object.entries(porMes).forEach(([m, d]) =>
+            cartaoPorMes.set(mesIdx({ ano: a, mes: Number(m) }), Number(d?.valorMes) || 0),
           ),
         );
+        setDados({
+          lancamentos,
+          contas,
+          parcelasCartao,
+          cartaoPorMes,
+          renda: renda?.valor ?? null,
+          rendaHerdada: Boolean(renda?.herdada),
+          faturaPaga: Boolean(fatura?.paga),
+        });
       })
+      .catch((e: unknown) => ativo && setErro(e instanceof Error ? e.message : 'Erro ao carregar.'))
       .finally(() => ativo && setLoading(false));
     return () => {
       ativo = false;
     };
-  }, [filtrosAplicados, versao]);
-
-  const buscar = useCallback(() => {
-    if (filtros.completos) setFiltrosAplicados({ ...filtros.selecionados });
-  }, [filtros.completos, filtros.selecionados]);
-
-  const salvarOrcamento = useCallback(
-    (valor: number | null) => {
-      const pessoa = filtrosAplicados?.pessoa ?? filtros.selecionados.pessoa;
-      const v = valor && valor > 0 ? valor : null;
-      setOrcamento(v);
-      try {
-        if (v) window.localStorage.setItem(chaveOrcamento(pessoa), String(v));
-        else window.localStorage.removeItem(chaveOrcamento(pessoa));
-      } catch {
-        /* navegador sem storage: mantém só em memória */
-      }
-    },
-    [filtrosAplicados, filtros.selecionados.pessoa],
-  );
+  }, [pessoa, ano, mes, versao]);
 
   const recarregar = useCallback(() => setVersao((v) => v + 1), []);
 
-  const salvarCompra = useCallback(
-    async (dados: CompraInput, id?: string) => {
-      if (id) await comprasService.editar(id, dados);
-      else await comprasService.criar(dados);
-      recarregar();
+  const salvarRenda = useCallback(
+    async (valor: number | null) => {
+      if (!pessoa) return;
+      const r = await rendaService.salvar(ano, mes, pessoa.id, valor);
+      setDados((d) => (d ? { ...d, renda: r.valor, rendaHerdada: r.herdada } : d));
     },
-    [recarregar],
+    [pessoa, ano, mes],
   );
 
-  const excluirCompra = useCallback(
-    async (id: string) => {
-      await comprasService.excluir(id);
+  const salvarConta = useCallback(
+    async (input: ContaInput, id?: string) => {
+      if (id) await contasService.editar(id, input, competencia);
+      else await contasService.criar(input);
       recarregar();
     },
-    [recarregar],
+    [competencia, recarregar],
   );
 
-  const analise = useMemo<Analise | null>(() => {
-    if (!filtrosAplicados) return null;
-    return calcularAnalise({
-      ref: { ano: Number(filtrosAplicados.ano), mes: Number(filtrosAplicados.mes) },
-      parcelasMes,
-      parcelasAnteriores,
-      registros,
-      orcamento,
-      hoje: new Date(),
-    });
-  }, [filtrosAplicados, parcelasMes, parcelasAnteriores, registros, orcamento]);
+  const excluirConta = useCallback(
+    async (id: string, encerrarAPartirDoMes: boolean) => {
+      await contasService.excluir(id, encerrarAPartirDoMes ? competencia : undefined);
+      recarregar();
+    },
+    [competencia, recarregar],
+  );
+
+  const atualizarLancamento = useCallback(async (id: string, input: LancamentoInput) => {
+    const troca = (paga: boolean) =>
+      setDados((d) => (d ? { ...d, lancamentos: d.lancamentos.map((l) => (l.id === id ? { ...l, paga } : l)) } : d));
+    if (input.paga !== undefined && input.valor === undefined) troca(input.paga); // resposta imediata na tela
+    let atualizado: Lancamento;
+    try {
+      atualizado = await contasService.atualizarLancamento(id, input);
+    } catch (e) {
+      if (input.paga !== undefined && input.valor === undefined) troca(!input.paga);
+      throw e;
+    }
+    // Atualiza na hora; estimativas dos meses seguintes mudam no servidor, então recarrega em seguida
+    setDados((d) => (d ? { ...d, lancamentos: d.lancamentos.map((l) => (l.id === id ? atualizado : l)) } : d));
+    if (input.valor !== undefined) setVersao((v) => v + 1);
+  }, []);
+
+  const marcarFatura = useCallback(
+    async (paga: boolean) => {
+      if (!pessoa) return;
+      setDados((d) => (d ? { ...d, faturaPaga: paga } : d)); // resposta imediata na tela
+      try {
+        const r = await faturaService.salvar(ano, mes, pessoa.id, paga);
+        setDados((d) => (d ? { ...d, faturaPaga: r.paga } : d));
+      } catch (e) {
+        setDados((d) => (d ? { ...d, faturaPaga: !paga } : d));
+        throw e;
+      }
+    },
+    [pessoa, ano, mes],
+  );
+
+  const visao = useMemo(
+    () =>
+      dados
+        ? calcularVisao({
+            ref: { ano, mes },
+            lancamentos: dados.lancamentos,
+            contas: dados.contas,
+            parcelasCartao: dados.parcelasCartao,
+            cartaoPorMes: dados.cartaoPorMes,
+            renda: dados.renda,
+            faturaPaga: dados.faturaPaga,
+            hoje: new Date(),
+          })
+        : null,
+    [dados, ano, mes],
+  );
+
+  const anos = useMemo(
+    () => [...new Set([...anosCompra, hoje.getFullYear(), hoje.getFullYear() + 1, ano])].sort((a, b) => b - a),
+    [anosCompra, ano], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   const value: GestaoFinanceiraValue = {
-    ...filtros,
-    buscar,
-    filtrosAplicados,
+    ano,
+    mes,
+    pessoa,
+    pessoas,
+    anos,
+    categorias,
+    setAno,
+    setMes,
+    setPessoaId,
+    competencia,
     loading,
-    parcelasMes,
-    analise,
-    orcamento,
-    salvarOrcamento,
-    salvarCompra,
-    excluirCompra,
+    erro,
+    visao,
+    contas: dados?.contas ?? [],
+    renda: dados?.renda ?? null,
+    rendaHerdada: dados?.rendaHerdada ?? false,
+    salvarRenda,
+    salvarConta,
+    excluirConta,
+    atualizarLancamento,
+    marcarFatura,
   };
 
   return <GestaoFinanceiraContext.Provider value={value}>{children}</GestaoFinanceiraContext.Provider>;
