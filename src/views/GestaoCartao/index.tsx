@@ -82,24 +82,14 @@ function GestaoCartaoConteudo() {
         title="Gestão de Cartão"
         subtitle="Gastos, parcelamentos, compromissos futuros e oportunidades de economia"
         actions={
-          <>
-            <Button
-              variant="outlined"
-              startIcon={exportando ? <CircularProgress size={16} color="inherit" /> : <PictureAsPdfOutlinedIcon />}
-              onClick={exportarPdf}
-              disabled={!ctx.filtrosAplicados || ctx.loading || !ctx.proximos || exportando}
-            >
-              Exportar PDF
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={nova}
-              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-            >
-              Nova transação
-            </Button>
-          </>
+          <Button
+            variant="outlined"
+            startIcon={exportando ? <CircularProgress size={16} color="inherit" /> : <PictureAsPdfOutlinedIcon />}
+            onClick={exportarPdf}
+            disabled={!ctx.filtrosAplicados || ctx.loading || !ctx.proximos || exportando}
+          >
+            Exportar PDF
+          </Button>
         }
       />
 

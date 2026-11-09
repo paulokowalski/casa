@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Box, Button } from '@mui/material';
+import { Alert, Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { FloatingAction } from '../../components/ui/FloatingAction';
@@ -57,16 +57,6 @@ function GestaoFinanceiraConteudo() {
         section="Finanças"
         title="Gestão Financeira"
         subtitle="Tudo o que sai no mês: contas fixas, financiamentos e o cartão de crédito"
-        actions={
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={nova}
-            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-          >
-            Nova conta
-          </Button>
-        }
       />
 
       <Filtros />

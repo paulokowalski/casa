@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Avatar, Box, Button, IconButton, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, IconButton, Tooltip, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -99,21 +99,7 @@ export function PessoaView() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <PageHeader
-        section="Cadastros"
-        title="Pessoas"
-        subtitle="Quem pode ter compras e lançamentos no sistema"
-        actions={
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => abrirCadastro(null)}
-            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-          >
-            Nova pessoa
-          </Button>
-        }
-      />
+      <PageHeader section="Cadastros" title="Pessoas" subtitle="Quem pode ter compras e lançamentos no sistema" />
 
       <SectionCard
         title="Pessoas cadastradas"
