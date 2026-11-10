@@ -3,6 +3,8 @@ import { usePessoa, type Pessoa } from './PessoaContext';
 import { comprasService, despesasService, filtrosService } from '../services/financas';
 import { contasService, faturaService, rendaService } from '../services/contas';
 import { calcularVisao, type VisaoMensal } from '../lib/financas/visaoMensal';
+import { calcularFuturo, type Futuro } from '../lib/financas/futuro';
+import type { MesFuturo } from '../lib/financas/proximosMeses';
 import { idxParaRef, mesIdx } from '../lib/financas/parcelas';
 import type { Competencia, Conta, ContaInput, Lancamento, LancamentoInput } from '../types/contas';
 import type { Item, Parcela } from '../types/financas';
@@ -32,6 +34,8 @@ type GestaoFinanceiraValue = {
   loading: boolean;
   erro: string | null;
   visao: VisaoMensal | null;
+  /** Previsão dos próximos 12 meses (null enquanto carrega) */
+  futuro: Futuro | null;
   contas: Conta[];
   renda: number | null;
   rendaHerdada: boolean;
@@ -60,6 +64,7 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [versao, setVersao] = useState(0);
+  const [futuroBruto, setFuturoBruto] = useState<{ lancamentos: Lancamento[]; cartao: MesFuturo[] } | null>(null);
 
   const pessoa = pessoas.find((p) => p.id === pessoaId) ?? null;
   const competencia = comp(ano, mes);
@@ -94,9 +99,10 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
         if (!ativo) return;
         const cartaoPorMes = new Map<number, number>();
         despesasAnos.forEach(([a, porMes]) =>
-          Object.entries(porMes).forEach(([m, d]) =>
-            cartaoPorMes.set(mesIdx({ ano: a, mes: Number(m) }), Number(d?.valorMes) || 0),
-          ),
+          Object.entries(porMes).forEach(([m, d]) => {
+            const i = mesIdx({ ano: a, mes: Number(m) });
+            cartaoPorMes.set(i, Number(d?.valorMes) || 0);
+          }),
         );
         setDados({
           lancamentos,
@@ -110,6 +116,30 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
       })
       .catch((e: unknown) => ativo && setErro(e instanceof Error ? e.message : 'Erro ao carregar.'))
       .finally(() => ativo && setLoading(false));
+    return () => {
+      ativo = false;
+    };
+  }, [pessoa, ano, mes, versao]);
+
+  // Próximos 12 meses: carregados à parte para não atrasar o resto da tela
+  useEffect(() => {
+    if (!pessoa) return;
+    let ativo = true;
+    setFuturoBruto(null);
+    const refIdx = mesIdx({ ano, mes });
+    const de = idxParaRef(refIdx + 1);
+    const ate = idxParaRef(refIdx + 12);
+    Promise.all([
+      contasService.lancamentos(pessoa.id, comp(de.ano, de.mes), comp(ate.ano, ate.mes)).catch(() => []),
+      Promise.all(
+        Array.from({ length: 12 }, (_, k) => refIdx + 1 + k).map((i) => {
+          const r = idxParaRef(i);
+          return comprasService
+            .parcelasDoMesSeguro(r.ano, r.mes, pessoa.nome)
+            .then((parcelas) => ({ idx: i, parcelas }));
+        }),
+      ),
+    ]).then(([lancamentos, cartao]) => ativo && setFuturoBruto({ lancamentos, cartao }));
     return () => {
       ativo = false;
     };
@@ -191,6 +221,14 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
     [dados, ano, mes],
   );
 
+  const futuro = useMemo(
+    () =>
+      futuroBruto && dados
+        ? calcularFuturo(mesIdx({ ano, mes }), futuroBruto.lancamentos, futuroBruto.cartao, dados.renda)
+        : null,
+    [futuroBruto, dados, ano, mes],
+  );
+
   const anos = useMemo(
     () => [...new Set([...anosCompra, hoje.getFullYear(), hoje.getFullYear() + 1, ano])].sort((a, b) => b - a),
     [anosCompra, ano], // eslint-disable-line react-hooks/exhaustive-deps
@@ -210,6 +248,7 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
     loading,
     erro,
     visao,
+    futuro,
     contas: dados?.contas ?? [],
     renda: dados?.renda ?? null,
     rendaHerdada: dados?.rendaHerdada ?? false,

@@ -10,6 +10,7 @@ import { Filtros } from './Filtros';
 import { Resumo } from './Resumo';
 import { Equilibrio, ParaOndeVai } from './Composicao';
 import { Evolucao } from './Evolucao';
+import { Futuro } from './Futuro';
 import { Insights } from './Insights';
 import { Financiamentos } from './Financiamentos';
 import { ContasTable } from './ContasTable';
@@ -69,6 +70,8 @@ function GestaoFinanceiraConteudo() {
         <ParaOndeVai />
         <Equilibrio />
       </Box>
+
+      <Futuro />
 
       <Box sx={linha({ lg: 'minmax(0, 1fr) minmax(0, 1fr)' })}>
         <Evolucao />
