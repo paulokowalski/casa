@@ -1,15 +1,14 @@
 import { useMemo } from 'react';
 import { Box, LinearProgress } from '@mui/material';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
-import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
 import { KpiCard } from '../../../components/ui/KpiCard';
-import { StatusPill, TrendPill } from '../../../components/ui/StatusPill';
+import { TrendPill } from '../../../components/ui/StatusPill';
 import { useGestaoCartao } from '../../../contexts/GestaoCartaoContext';
-import { idxParaRef, nomeMes, rotuloMesLongo } from '../../../lib/financas/parcelas';
+import { idxParaRef, nomeMes } from '../../../lib/financas/parcelas';
 import type { Tone } from '../../../styles/tokens';
 import { formatCurrency, formatPercent } from '../../../utils/format';
 
@@ -35,7 +34,6 @@ export function Resumo() {
     return { aVista, qtdAVista, parcelado, qtdParcelas };
   }, [parcelasMes]);
 
-  const diffMedia = a && a.media6 !== null ? a.totalMes - a.media6 : null;
   const orc = a?.orcamento ?? null;
   const tomOrc: Tone = !orc ? 'neutral' : orc.usadoPct > 1 ? 'error' : orc.usadoPct > 0.9 ? 'warning' : 'success';
 
@@ -48,9 +46,11 @@ export function Resumo() {
         gridTemplateColumns: {
           xs: 'repeat(2, minmax(0, 1fr))',
           md: 'repeat(3, minmax(0, 1fr))',
-          xl: 'repeat(6, minmax(0, 1fr))',
+          lg: 'repeat(5, minmax(0, 1fr))',
         },
         gap: { xs: 1.5, md: 2.5 },
+        // celular: o último card ocupa a linha inteira
+        '& > :last-child': { gridColumn: { xs: 'span 2', md: 'auto' } },
       }}
     >
       <KpiCard
@@ -74,43 +74,26 @@ export function Resumo() {
         tone="info"
         loading={carregando}
         value={formatCurrency(composicao.parcelado)}
-        footer={`${composicao.qtdParcelas} parcela${composicao.qtdParcelas === 1 ? '' : 's'} · à vista ${formatCurrency(
-          composicao.aVista,
-          true,
-        )} (${composicao.qtdAVista})`}
+        footer={`${composicao.qtdParcelas} parcela${composicao.qtdParcelas === 1 ? '' : 's'}`}
       />
       <KpiCard
-        label="Média 6 meses"
-        icon={<ShowChartIcon />}
-        tone="violet"
-        loading={carregando}
-        value={a?.media6 != null ? formatCurrency(a.media6) : '—'}
-        footer={
-          diffMedia === null
-            ? 'Sem histórico suficiente'
-            : `${formatCurrency(Math.abs(diffMedia), true)} ${diffMedia > 0 ? 'acima' : 'abaixo'} da média`
-        }
-      />
-      <KpiCard
-        label="Parcelas futuras"
-        icon={<EventOutlinedIcon />}
-        tone="warning"
-        loading={carregando}
-        value={a ? formatCurrency(a.comprometidoFuturo) : '—'}
-        footer={a?.quitadoEmIdx != null ? `quitadas em ${rotuloMesLongo(a.quitadoEmIdx)}` : 'Nenhuma parcela futura'}
-      />
-      <KpiCard
-        label="Terminam este mês"
-        icon={<TaskAltIcon />}
+        label="À vista no mês"
+        icon={<PaymentsOutlinedIcon />}
         tone="success"
         loading={carregando}
-        value={a ? `${a.terminamEsteMes.qtd} compra${a.terminamEsteMes.qtd === 1 ? '' : 's'}` : '—'}
+        value={formatCurrency(composicao.aVista)}
+        footer={`${composicao.qtdAVista} compra${composicao.qtdAVista === 1 ? '' : 's'} à vista`}
+      />
+      <KpiCard
+        label="Finalizam no mês"
+        icon={<TaskAltIcon />}
+        tone="warning"
+        loading={carregando}
+        value={a ? formatCurrency(a.terminamEsteMes.libera) : '—'}
         footer={
-          a && a.terminamEsteMes.qtd > 0 ? (
-            <StatusPill tone="success">+{formatCurrency(a.terminamEsteMes.libera, true)}/mês</StatusPill>
-          ) : (
-            'Nenhuma termina'
-          )
+          a && a.terminamEsteMes.qtd > 0
+            ? `${a.terminamEsteMes.qtd} compra${a.terminamEsteMes.qtd === 1 ? ' quitada' : 's quitadas'} · alívio a partir de ${nomeMes(idxParaRef(a.refIdx + 1).mes).toLowerCase()}`
+            : 'Nenhuma parcela termina este mês'
         }
       />
       <KpiCard

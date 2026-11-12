@@ -5,6 +5,21 @@ import { fontFamily, palette, radius, shadow, surface, text } from './tokens';
  * Tema único do app. Todos os componentes do MUI herdam daqui:
  * tipografia, cores, raios, sombras e estados de foco.
  */
+/** Escala da tela no computador (equivale ao zoom de 75% do navegador) */
+export const ESCALA_DESKTOP = 0.75;
+
+const escalaAtiva = () =>
+  typeof window !== 'undefined' && Number(getComputedStyle(document.documentElement).zoom || 1) !== 1;
+
+/**
+ * O Select usa a largura do campo sem a escala como largura mínima do menu; com a tela em 75%
+ * o menu ficaria mais largo que o campo. Corrige a largura antes de o menu aparecer.
+ */
+function ajustarLarguraMenu(paper: HTMLElement) {
+  const min = parseFloat(paper.style.minWidth);
+  if (min && escalaAtiva()) paper.style.minWidth = `${min * ESCALA_DESKTOP}px`;
+}
+
 export const theme = createTheme({
   breakpoints: {
     values: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 },
@@ -49,6 +64,14 @@ export const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         html: { WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' },
+        // Computador (≥ 1200px): tudo em 75%, como o zoom de 75% do navegador. Celular e tablet ficam em 100%.
+        '@media (min-width: 1200px)': {
+          html: { zoom: ESCALA_DESKTOP },
+          // Menus e dicas são posicionados pelo MUI em pixels de tela: a camada volta a 100% para a posição
+          // bater com o campo, e só o conteúdo é reduzido.
+          '.MuiPopover-root, .MuiPopper-root': { zoom: 1 / ESCALA_DESKTOP },
+          '.MuiPopover-paper > *, .MuiTooltip-tooltip': { zoom: ESCALA_DESKTOP },
+        },
         body: { backgroundColor: surface.background, fontVariantNumeric: 'tabular-nums' },
         '*, *::before, *::after': { boxSizing: 'border-box' },
         '::selection': { backgroundColor: palette.brand[100] },
@@ -105,9 +128,24 @@ export const theme = createTheme({
     MuiSelect: {
       defaultProps: {
         MenuProps: {
-          slotProps: { paper: { sx: { mt: 0.5, boxShadow: shadow.lg, border: `1px solid ${surface.border}` } } },
+          anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+          transformOrigin: { vertical: 'top', horizontal: 'left' },
+          slotProps: {
+            paper: {
+              sx: {
+                mt: 0.5,
+                boxShadow: shadow.lg,
+                border: `1px solid ${surface.border}`,
+                // Opções dos selects sempre em maiúsculas
+                '& .MuiMenuItem-root': { textTransform: 'uppercase' },
+              },
+            },
+            transition: { onEntering: ajustarLarguraMenu },
+          },
         },
       },
+      // Valor escolhido também em maiúsculas, igual às opções
+      styleOverrides: { select: { textTransform: 'uppercase' } },
     },
     MuiMenuItem: { styleOverrides: { root: { fontSize: '0.875rem', minHeight: 40 } } },
     MuiChip: {
