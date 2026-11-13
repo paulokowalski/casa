@@ -25,3 +25,4 @@ Claude outputs/
 
 *.iml
 *.tsbuildinfo
+dist/
