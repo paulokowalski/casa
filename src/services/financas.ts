@@ -2,8 +2,6 @@ import { api, apiErrorMessage } from './api';
 import { API_URLS } from '../config/urls';
 import type { CompraInput, CompraRegistro, DespesaMes, Item, Parcela } from '../types/financas';
 
-/** Acesso aos endpoints de compras, despesas e filtros do casa-api. */
-
 export const TODOS = 'TODOS';
 
 async function lista<T>(url: string): Promise<T[]> {
@@ -11,7 +9,6 @@ async function lista<T>(url: string): Promise<T[]> {
   return Array.isArray(res.data) ? res.data : [];
 }
 
-/** Variante que devolve [] em vez de lançar erro (para filtros e dados auxiliares) */
 async function listaSegura<T>(url: string): Promise<T[]> {
   try {
     return await lista<T>(url);
@@ -30,7 +27,6 @@ export const filtrosService = {
 };
 
 export const comprasService = {
-  /** Parcelas de um mês. `cartao` e `ultimaParcela` aceitam "TODOS". */
   async parcelasDoMes(
     ano: string | number,
     mes: string | number,
@@ -44,7 +40,6 @@ export const comprasService = {
     return res.data?.compras ?? [];
   },
 
-  /** Igual a `parcelasDoMes`, mas devolve [] em caso de erro */
   async parcelasDoMesSeguro(
     ano: string | number,
     mes: string | number,
@@ -95,7 +90,6 @@ export const despesasService = {
     }
   },
 
-  /** Total por mês do ano: { "01": {...}, "02": {...} } */
   async doAno(ano: string, pessoa: string): Promise<Record<string, DespesaMes>> {
     try {
       const res = await api.get<{ despesasPorMes?: Record<string, DespesaMes> }>(API_URLS.DESPESA_SEM_MES(ano, pessoa));

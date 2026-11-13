@@ -9,7 +9,6 @@ interface StatusPillProps {
   title?: string;
 }
 
-/** Pílula de status (alta/queda, "Recorrente", "Cancelada" etc.). */
 export function StatusPill({ tone = 'neutral', children, size = 'md', title }: Readonly<StatusPillProps>) {
   const t = tones[tone];
   return (
@@ -39,16 +38,12 @@ export function StatusPill({ tone = 'neutral', children, size = 'md', title }: R
 }
 
 interface TrendPillProps {
-  /** Variação em fração (0.12 = 12%) */
   value: number | null | undefined;
-  /** Se subir é algo bom (ex.: geração solar) ou ruim (ex.: gastos) */
   positiveIsGood: boolean;
   suffix?: string;
-  /** Abaixo deste valor absoluto, mostra em cinza */
   neutralBelow?: number;
 }
 
-/** Pílula de tendência com seta e cor conforme a semântica. */
 export function TrendPill({ value, positiveIsGood, suffix, neutralBelow = 0.005 }: Readonly<TrendPillProps>) {
   if (value === null || value === undefined || !Number.isFinite(value)) return null;
   const abs = Math.abs(value);

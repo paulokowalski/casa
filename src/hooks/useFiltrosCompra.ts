@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { filtrosService, TODOS } from '../services/financas';
 import type { Item } from '../types/financas';
+import { useUsuario } from '../contexts/AuthContext';
 
 export interface FiltrosSelecionados {
   ano: string;
@@ -11,11 +12,6 @@ export interface FiltrosSelecionados {
 
 const ITEM_TODOS: Item = { codigo: TODOS, descricao: 'Todos' };
 
-/**
- * Cascata de filtros ano → mês → pessoa → cartão usada nas telas de cartão e financeira.
- * Ao abrir, já seleciona o mês atual (ou o mais recente com dados) e a primeira pessoa,
- * e chama `onPronto` com esses filtros para a tela carregar sozinha.
- */
 export function useFiltrosCompra(onPronto?: (f: FiltrosSelecionados) => void) {
   const [anos, setAnos] = useState<Item[]>([]);
   const [meses, setMeses] = useState<Item[]>([]);
@@ -30,13 +26,24 @@ export function useFiltrosCompra(onPronto?: (f: FiltrosSelecionados) => void) {
     cartao: TODOS,
   });
   const [carregando, setCarregando] = useState(false);
+  const { nome, isAdmin } = useUsuario();
+
+  const listarPessoas = useCallback(
+    async (ano: string, mes: string): Promise<Item[]> =>
+      isAdmin ? filtrosService.pessoas(ano, mes) : [{ codigo: nome.toUpperCase(), descricao: nome }],
+    [isAdmin, nome],
+  );
+  const pessoaPadrao = useCallback(
+    (lista: Item[]) =>
+      lista.find((p) => p.codigo.toUpperCase() === nome.toUpperCase())?.codigo ?? lista[0]?.codigo ?? '',
+    [nome],
+  );
 
   const carregarCartoes = useCallback(async (ano: string, mes: string, pessoa: string) => {
     const lista = pessoa ? await filtrosService.cartoes(ano, mes, pessoa) : [];
     setCartoes([ITEM_TODOS, ...lista]);
   }, []);
 
-  // Carga inicial
   useEffect(() => {
     let ativo = true;
     (async () => {
@@ -62,10 +69,10 @@ export function useFiltrosCompra(onPronto?: (f: FiltrosSelecionados) => void) {
         const mes =
           listaMeses.find((m) => m.codigo === mesAtual)?.codigo ?? listaMeses[listaMeses.length - 1]?.codigo ?? '';
 
-        const listaPessoas = mes ? await filtrosService.pessoas(ano, mes) : [];
+        const listaPessoas = mes ? await listarPessoas(ano, mes) : [];
         if (!ativo) return;
         setPessoas(listaPessoas);
-        const pessoa = listaPessoas[0]?.codigo ?? '';
+        const pessoa = pessoaPadrao(listaPessoas);
         await carregarCartoes(ano, mes, pessoa);
         if (!ativo) return;
 
@@ -79,7 +86,6 @@ export function useFiltrosCompra(onPronto?: (f: FiltrosSelecionados) => void) {
     return () => {
       ativo = false;
     };
-    // a carga inicial roda uma única vez
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -98,16 +104,16 @@ export function useFiltrosCompra(onPronto?: (f: FiltrosSelecionados) => void) {
       setCarregando(true);
       try {
         const ano = selecionados.ano;
-        const lista = await filtrosService.pessoas(ano, mes);
+        const lista = await listarPessoas(ano, mes);
         setPessoas(lista);
-        const pessoa = lista.find((p) => p.codigo === selecionados.pessoa)?.codigo ?? lista[0]?.codigo ?? '';
+        const pessoa = lista.find((p) => p.codigo === selecionados.pessoa)?.codigo ?? pessoaPadrao(lista);
         await carregarCartoes(ano, mes, pessoa);
         setSelecionados((s) => ({ ...s, mes, pessoa, cartao: TODOS }));
       } finally {
         setCarregando(false);
       }
     },
-    [selecionados.ano, selecionados.pessoa, carregarCartoes],
+    [selecionados.ano, selecionados.pessoa, carregarCartoes, listarPessoas, pessoaPadrao],
   );
 
   const selecionarPessoa = useCallback(

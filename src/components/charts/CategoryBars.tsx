@@ -6,7 +6,6 @@ import { capitalize, formatCurrency } from '../../utils/format';
 export interface CategoryBarItem {
   nome: string;
   valor: number;
-  /** variação vs período anterior (fração), opcional */
   delta?: number | null;
 }
 
@@ -17,7 +16,6 @@ interface CategoryBarsProps {
   max?: number;
 }
 
-/** Ranking em barras horizontais — mais fácil de comparar que pizza. Clique filtra. */
 export function CategoryBars({ itens, selecionada, onSelecionar, max = 8 }: Readonly<CategoryBarsProps>) {
   const visiveis = itens.filter((i) => i.valor > 0).slice(0, max);
   const maior = Math.max(1, ...visiveis.map((i) => i.valor));
@@ -53,7 +51,7 @@ export function CategoryBars({ itens, selecionada, onSelecionar, max = 8 }: Read
                   {capitalize(item.nome)}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {formatCurrency(item.valor, true)}
                   </Typography>
                   {item.delta !== undefined && (

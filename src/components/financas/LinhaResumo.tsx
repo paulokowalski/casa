@@ -8,7 +8,6 @@ interface LinhaResumoProps {
   cor?: string;
 }
 
-/** Linha "rótulo ........ valor" dos painéis de resumo. */
 export function LinhaResumo({ rotulo, valor, forte, riscado, cor }: Readonly<LinhaResumoProps>) {
   return (
     <Box

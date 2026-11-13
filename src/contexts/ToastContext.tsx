@@ -10,7 +10,6 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-/** Notificações curtas ("Transação salva", "Erro ao excluir") em um único lugar do app. */
 export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [toast, setToast] = useState<{ message: string; severity: Severity; key: number } | null>(null);
 

@@ -49,7 +49,6 @@ export function Resumo() {
           lg: 'repeat(5, minmax(0, 1fr))',
         },
         gap: { xs: 1.5, md: 2.5 },
-        // celular: o último card ocupa a linha inteira
         '& > :last-child': { gridColumn: { xs: 'span 2', md: 'auto' } },
       }}
     >

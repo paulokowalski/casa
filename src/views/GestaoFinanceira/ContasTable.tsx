@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Checkbox, Chip, IconButton, Link, Tooltip, Typography } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { SectionCard } from '../../components/ui/SectionCard';
 import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { StatusPill } from '../../components/ui/StatusPill';
@@ -85,7 +85,7 @@ export function ContasTable({
       <Checkbox
         checked={l.paga}
         onChange={() => (l.lancamento ? onAlternarPaga(l.lancamento) : onAlternarFatura(!l.paga))}
-        inputProps={{ 'aria-label': `${l.paga ? 'Desmarcar' : 'Marcar'} ${l.descricao} como paga` }}
+        slotProps={{ input: { 'aria-label': `${l.paga ? 'Desmarcar' : 'Marcar'} ${l.descricao} como paga` } }}
         size="small"
       />
     </Tooltip>
@@ -104,7 +104,7 @@ export function ContasTable({
         </Link>
       </Tooltip>
     ) : (
-      <Typography fontWeight={600} component="span">
+      <Typography sx={{ fontWeight: 600 }} component="span">
         {formatCurrency(l.valor)}
       </Typography>
     );
@@ -131,7 +131,7 @@ export function ContasTable({
         </Tooltip>
       </Box>
     ) : (
-      <Link component={RouterLink} to="/gestao-cartao" variant="body2" fontWeight={600} sx={{ whiteSpace: 'nowrap' }}>
+      <Link component={RouterLink} to="/gestao-cartao" variant="body2" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
         Ver na Gestão de Cartão
       </Link>
     );
@@ -144,12 +144,12 @@ export function ContasTable({
       render: (l) => (
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography fontWeight={500}>{l.descricao}</Typography>
+            <Typography sx={{ fontWeight: 500 }}>{l.descricao}</Typography>
             <StatusPill tone={TIPO[l.tipo].tom} size="sm">
               {TIPO[l.tipo].rotulo}
             </StatusPill>
           </Box>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             {l.detalhe}
           </Typography>
         </Box>
@@ -207,7 +207,7 @@ export function ContasTable({
         rowSx={(l) => (l.tipo === 'CARTAO' ? { bgcolor: 'grey.50' } : undefined)}
         footer={
           v ? (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Total do mês <b>{formatCurrency(v.totalMes)}</b>
             </Typography>
           ) : undefined
@@ -218,10 +218,10 @@ export function ContasTable({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {check(l)}
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography fontWeight={600} noWrap>
+                <Typography sx={{ fontWeight: 600 }} noWrap>
                   {l.descricao}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" noWrap>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
                   {l.vencimento ? `${formatDateBR(l.vencimento).slice(0, 5)} · ` : ''}
                   {l.detalhe}
                 </Typography>

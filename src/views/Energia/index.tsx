@@ -17,7 +17,6 @@ function Energia() {
   const { ano, mes, geracaoDiaria, geracaoMensal, loadingDiaria, loadingMensal } = useEnergia();
   const [diaSelecionado, setDiaSelecionado] = useState<number | null>(null);
 
-  // Mês atual: abre direto no dia de hoje; outros meses: nenhum dia selecionado
   useEffect(() => {
     const hoje = new Date();
     const ehMesAtual = Number(ano) === hoje.getFullYear() && Number(mes) === hoje.getMonth() + 1;

@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { TooltipProps } from 'recharts';
+import type { TooltipContentProps } from 'recharts';
 import { SectionCard } from '../../components/ui/SectionCard';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { StatusPill } from '../../components/ui/StatusPill';
@@ -28,13 +28,13 @@ const COR_PARCELAS = palette.brand[600];
 function Numero({ rotulo, valor, rodape }: Readonly<{ rotulo: string; valor: string; rodape: string }>) {
   return (
     <Box sx={{ border: `1px solid ${palette.gray[200]}`, borderRadius: 2.5, px: 1.75, py: 1.5, minWidth: 0 }}>
-      <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ display: 'block' }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, display: 'block' }}>
         {rotulo}
       </Typography>
       <Typography sx={{ fontSize: { xs: '1.0625rem', md: '1.25rem' }, fontWeight: 600, mt: 0.5 }} noWrap>
         {valor}
       </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
         {rodape}
       </Typography>
     </Box>
@@ -67,7 +67,7 @@ function Legenda({
   );
 }
 
-function Dica({ active, payload }: TooltipProps<number, string>) {
+function Dica({ active, payload }: TooltipContentProps) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as Dados['pontos'][number];
   return (
@@ -83,9 +83,7 @@ function Dica({ active, payload }: TooltipProps<number, string>) {
         fontSize: '0.75rem',
       }}
     >
-      <Typography fontWeight={600} fontSize="0.8125rem" sx={{ mb: 1 }}>
-        {rotuloMesLongo(p.idx)}
-      </Typography>
+      <Typography sx={{ fontWeight: 600, fontSize: '0.8125rem', mb: 1 }}>{rotuloMesLongo(p.idx)}</Typography>
       <Box
         sx={{
           display: 'flex',
@@ -106,10 +104,6 @@ function Dica({ active, payload }: TooltipProps<number, string>) {
   );
 }
 
-/**
- * Valor total do mês logo acima da barra. Com orçamento, a área "livre" fica por cima da barra,
- * então o rótulo é desenhado por ela (na base dela); sem área livre, pela própria barra.
- */
 const totalNoTopo =
   (pontos: Dados['pontos'], naBaseDoLivre: boolean) =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,7 +120,6 @@ const totalNoTopo =
     );
   };
 
-/** Celular: uma barra horizontal por mês, com o total ao lado */
 function BarrasCelular({ d }: Readonly<{ d: Dados }>) {
   const escala = Math.max(d.orcamento ?? 0, ...d.pontos.map((p) => p.total)) || 1;
   const pct = (v: number) => `${(v / escala) * 100}%`;
@@ -142,7 +135,7 @@ function BarrasCelular({ d }: Readonly<{ d: Dados }>) {
           key={p.idx}
           sx={{ display: 'grid', gridTemplateColumns: '48px minmax(0, 1fr) 74px', alignItems: 'center', gap: 1 }}
         >
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             {rotuloMesAno(p.idx)}
           </Typography>
           <Box sx={{ display: 'flex', height: 14, borderRadius: '4px', overflow: 'hidden', bgcolor: palette.gray[50] }}>
@@ -159,7 +152,7 @@ function BarrasCelular({ d }: Readonly<{ d: Dados }>) {
               />
             )}
           </Box>
-          <Typography variant="caption" fontWeight={600} sx={{ textAlign: 'right' }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, textAlign: 'right' }}>
             {p.total > 0 ? formatCurrency(p.total, true) : '—'}
           </Typography>
         </Box>
@@ -168,7 +161,6 @@ function BarrasCelular({ d }: Readonly<{ d: Dados }>) {
   );
 }
 
-/** Total das parcelas já assumidas nos próximos 12 meses e o espaço que sobra no orçamento */
 export function ProximosMeses() {
   const { proximos, orcamento } = useGestaoCartao();
   const theme = useTheme();
@@ -257,9 +249,10 @@ export function ProximosMeses() {
                     <CartesianGrid {...gridProps} />
                     <XAxis dataKey="rotulo" {...axisProps} interval={0} fontSize={11} />
                     <YAxis {...yAxisProps} width={48} tickFormatter={compactNumber} />
-                    <Tooltip cursor={{ fill: palette.gray[100] }} content={<Dica />} />
+                    <Tooltip cursor={{ fill: palette.gray[100] }} content={Dica} />
                     {d.orcamento && (
                       <ReferenceLine
+                        zIndex={250}
                         y={d.orcamento}
                         stroke={tones.error.solid}
                         strokeDasharray="6 4"
@@ -306,14 +299,14 @@ export function ProximosMeses() {
                 minWidth: 0,
               }}
             >
-              <Typography variant="body2" fontWeight={600}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 Quando cada parcelamento termina
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                 E quanto libera por mês a partir dali
               </Typography>
               {d.terminam.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1.5 }}>
                   Nenhum parcelamento termina nos próximos 12 meses.
                 </Typography>
               ) : (
@@ -331,14 +324,14 @@ export function ProximosMeses() {
                         borderTop: `1px solid ${palette.gray[100]}`,
                       }}
                     >
-                      <Typography variant="caption" fontWeight={600} color="text.secondary">
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                         {rotuloMesAno(t.idx)}
                       </Typography>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="body2" fontWeight={500} noWrap title={t.nome}>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap title={t.nome}>
                           {t.nome}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+                        <Typography variant="caption" noWrap sx={{ color: 'text.secondary', display: 'block' }}>
                           {t.cartao} · {t.parcela}
                         </Typography>
                       </Box>

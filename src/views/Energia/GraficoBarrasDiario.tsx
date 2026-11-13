@@ -35,12 +35,12 @@ export function GraficoBarrasDiario({ diaSelecionado, onDiaClick }: Readonly<Gra
               <Tooltip
                 {...tooltipProps}
                 labelFormatter={(d) => `Dia ${d}`}
-                formatter={(v: number) => [`${formatNumber(v)} kWh`, 'Geração']}
+                formatter={(v) => [`${formatNumber(Number(v))} kWh`, 'Geração']}
               />
               <Bar
                 dataKey="geracao"
                 radius={[3, 3, 0, 0]}
-                onClick={(d: { dia?: number }) => d?.dia && onDiaClick(d.dia)}
+                onClick={(d) => d?.payload?.dia && onDiaClick(d.payload.dia)}
                 style={{ cursor: 'pointer' }}
               >
                 {geracaoDiaria.map((d) => (

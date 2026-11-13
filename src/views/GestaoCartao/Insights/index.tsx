@@ -4,12 +4,12 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import LocalCafeOutlinedIcon from '@mui/icons-material/LocalCafeOutlined';
 import WeekendOutlinedIcon from '@mui/icons-material/WeekendOutlined';
-import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutlineOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 import { SectionCard } from '../../../components/ui/SectionCard';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { IconBadge } from '../../../components/ui/IconBadge';
@@ -181,8 +181,8 @@ export function Insights() {
             >
               <IconBadge tone={VISUAL[i.tipo].tom}>{VISUAL[i.tipo].icone}</IconBadge>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography fontWeight={600}>{i.titulo}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                <Typography sx={{ fontWeight: 600 }}>{i.titulo}</Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
                   {i.descricao}
                 </Typography>
               </Box>

@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { DataTable, type DataColumn } from '../ui/DataTable';
@@ -32,10 +32,8 @@ interface TransacoesTableProps {
   titulo: string;
   parcelas: Parcela[];
   loading?: boolean;
-  /** Categoria selecionada em um gráfico (filtra a tabela) */
   categoria?: string | null;
   onLimparCategoria?: () => void;
-  /** Nomes de compras recorrentes (assinaturas), em maiúsculas */
   recorrentes?: Set<string>;
   onAcao: (acao: AcaoTransacao, parcela: Parcela) => void;
 }
@@ -96,7 +94,6 @@ function Selos({ p, recorrente }: Readonly<{ p: Parcela; recorrente: boolean }>)
   );
 }
 
-/** Tabela de transações (parcelas do mês) com busca, filtros rápidos e ações. */
 export function TransacoesTable({
   titulo,
   parcelas,
@@ -170,8 +167,7 @@ export function TransacoesTable({
         <Box sx={{ minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
             <Typography
-              fontWeight={500}
-              sx={{ color: lerCancelamento(p.nomeCompra) ? 'text.secondary' : 'text.primary' }}
+              sx={{ fontWeight: 500, color: lerCancelamento(p.nomeCompra) ? 'text.secondary' : 'text.primary' }}
             >
               {capitalize(nomeSemMarcacao(p.nomeCompra))}
             </Typography>
@@ -188,7 +184,7 @@ export function TransacoesTable({
         p.categoria ? (
           <StatusPill tone="neutral">{capitalize(p.categoria)}</StatusPill>
         ) : (
-          <Typography color="text.secondary">—</Typography>
+          <Typography sx={{ color: 'text.secondary' }}>—</Typography>
         ),
     },
     { id: 'cartao', header: 'Cartão', render: (p) => capitalize(p.nomeCartao) },
@@ -199,7 +195,7 @@ export function TransacoesTable({
       header: 'Valor',
       align: 'right',
       render: (p) => (
-        <Typography fontWeight={600} sx={{ color: p.valorParcela < 0 ? tones.success.fg : 'text.primary' }}>
+        <Typography sx={{ fontWeight: 600, color: p.valorParcela < 0 ? tones.success.fg : 'text.primary' }}>
           {formatCurrency(p.valorParcela)}
         </Typography>
       ),
@@ -209,7 +205,7 @@ export function TransacoesTable({
       header: 'Restante',
       align: 'right',
       render: (p) => (
-        <Typography color="text.secondary">
+        <Typography sx={{ color: 'text.secondary' }}>
           {p.numeroTotalParcela > 1 ? formatCurrency(p.valorFaltante) : '—'}
         </Typography>
       ),
@@ -244,13 +240,15 @@ export function TransacoesTable({
             placeholder="Buscar transação"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            inputProps={{ 'aria-label': 'Buscar transação' }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
+            slotProps={{
+              htmlInput: { 'aria-label': 'Buscar transação' },
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
             }}
             sx={{ flex: { xs: '1 1 100%', md: '0 0 220px' } }}
           />
@@ -278,7 +276,7 @@ export function TransacoesTable({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-                <Typography fontWeight={600}>{capitalize(nomeSemMarcacao(p.nomeCompra))}</Typography>
+                <Typography sx={{ fontWeight: 600 }}>{capitalize(nomeSemMarcacao(p.nomeCompra))}</Typography>
                 <Selos p={p} recorrente={ehRecorrente(p)} />
               </Box>
               <Typography variant="caption" component="div" sx={{ mt: 0.25 }}>
@@ -292,7 +290,7 @@ export function TransacoesTable({
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'right' }}>
-              <Typography fontWeight={600} sx={{ color: p.valorParcela < 0 ? tones.success.fg : 'text.primary' }}>
+              <Typography sx={{ fontWeight: 600, color: p.valorParcela < 0 ? tones.success.fg : 'text.primary' }}>
                 {formatCurrency(p.valorParcela)}
               </Typography>
               {p.numeroTotalParcela > 1 && p.valorFaltante > 0 && (

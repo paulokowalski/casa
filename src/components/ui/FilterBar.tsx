@@ -21,11 +21,9 @@ interface FilterBarProps {
   onSubmit?: () => void;
   submitLabel?: string;
   loading?: boolean;
-  /** Campos extras (ex.: orçamento) depois dos seletores */
   children?: ReactNode;
 }
 
-/** Linha de filtros compactos. Quebra em várias linhas no celular. */
 export function FilterBar({ fields, onSubmit, submitLabel = 'Buscar', loading, children }: Readonly<FilterBarProps>) {
   return (
     <Box

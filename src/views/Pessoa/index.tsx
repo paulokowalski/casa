@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Avatar, Box, IconButton, Tooltip, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { SectionCard } from '../../components/ui/SectionCard';
 import { DataTable, type DataColumn } from '../../components/ui/DataTable';
@@ -10,6 +10,8 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { FloatingAction } from '../../components/ui/FloatingAction';
 import { usePessoa, type Pessoa } from '../../contexts/PessoaContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useUsuario } from '../../contexts/AuthContext';
+import { StatusPill } from '../../components/ui/StatusPill';
 import { palette } from '../../styles/tokens';
 import { CadastroModal } from './CadastroModal';
 
@@ -38,9 +40,31 @@ function PessoaAvatar({ nome }: Readonly<{ nome: string }>) {
   );
 }
 
+function AcessoPill({ pessoa }: Readonly<{ pessoa: Pessoa }>) {
+  if (!pessoa.ativo)
+    return (
+      <StatusPill tone="error" size="sm">
+        Bloqueado
+      </StatusPill>
+    );
+  if (!pessoa.temAcesso) return <StatusPill size="sm">Sem senha</StatusPill>;
+  if (pessoa.papel === 'ADMIN')
+    return (
+      <StatusPill tone="violet" size="sm">
+        Administrador
+      </StatusPill>
+    );
+  return (
+    <StatusPill tone="success" size="sm">
+      Usuário
+    </StatusPill>
+  );
+}
+
 export function PessoaView() {
   const { pessoas, loading, excluirPessoa } = usePessoa();
   const { notify } = useToast();
+  const { id: usuarioId } = useUsuario();
   const [modalAberto, setModalAberto] = useState(false);
   const [emEdicao, setEmEdicao] = useState<Pessoa | null>(null);
   const [paraExcluir, setParaExcluir] = useState<Pessoa | null>(null);
@@ -74,10 +98,17 @@ export function PessoaView() {
           <EditOutlinedIcon fontSize="small" />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Excluir">
-        <IconButton aria-label={`Excluir ${p.nome}`} onClick={() => setParaExcluir(p)} sx={{ color: 'error.main' }}>
-          <DeleteOutlineIcon fontSize="small" />
-        </IconButton>
+      <Tooltip title={p.id === usuarioId ? 'Você não pode excluir a si mesmo' : 'Excluir'}>
+        <span>
+          <IconButton
+            aria-label={`Excluir ${p.nome}`}
+            onClick={() => setParaExcluir(p)}
+            disabled={p.id === usuarioId}
+            sx={{ color: 'error.main' }}
+          >
+            <DeleteOutlineIcon fontSize="small" />
+          </IconButton>
+        </span>
       </Tooltip>
     </Box>
   );
@@ -89,17 +120,22 @@ export function PessoaView() {
       render: (p) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <PessoaAvatar nome={p.nome} />
-          <Typography fontWeight={500}>{p.nome}</Typography>
+          <Typography sx={{ fontWeight: 500 }}>{p.nome}</Typography>
         </Box>
       ),
     },
-    { id: 'email', header: 'E-mail', render: (p) => <Typography color="text.secondary">{p.email}</Typography> },
+    {
+      id: 'email',
+      header: 'E-mail',
+      render: (p) => <Typography sx={{ color: 'text.secondary' }}>{p.email}</Typography>,
+    },
+    { id: 'acesso', header: 'Acesso', render: (p) => <AcessoPill pessoa={p} /> },
     { id: 'acoes', header: '', align: 'right', width: 112, render: acoes },
   ];
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <PageHeader section="Cadastros" title="Pessoas" subtitle="Quem pode ter compras e lançamentos no sistema" />
+      <PageHeader section="Cadastros" title="Pessoas" subtitle="Quem tem compras no sistema e quem pode entrar" />
 
       <SectionCard
         title="Pessoas cadastradas"
@@ -117,10 +153,11 @@ export function PessoaView() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <PessoaAvatar nome={p.nome} />
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography fontWeight={600}>{p.nome}</Typography>
-                <Typography variant="body2" color="text.secondary" noWrap>
+                <Typography sx={{ fontWeight: 600 }}>{p.nome}</Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
                   {p.email}
                 </Typography>
+                <AcessoPill pessoa={p} />
               </Box>
               {acoes(p)}
             </Box>

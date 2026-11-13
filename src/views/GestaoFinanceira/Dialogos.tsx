@@ -23,7 +23,6 @@ interface ValorDialogProps {
   onClose: () => void;
 }
 
-/** Informar o valor real de uma conta de valor variável (água, luz…) */
 export function ValorDialog({ lancamento, onConfirmar, onClose }: Readonly<ValorDialogProps>) {
   const [texto, setTexto] = useState('');
   const [paga, setPaga] = useState(false);
@@ -74,7 +73,7 @@ export function ValorDialog({ lancamento, onConfirmar, onClose }: Readonly<Valor
       }
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           A estimativa era {formatCurrency(lancamento?.valor ?? 0)}. Os próximos meses passam a usar o valor informado
           como estimativa.
         </Typography>
@@ -82,8 +81,10 @@ export function ValorDialog({ lancamento, onConfirmar, onClose }: Readonly<Valor
           label="Valor da conta"
           value={texto}
           onChange={(e) => setTexto(maskCurrencyInput(e.target.value.replace('-', '')))}
-          InputProps={{ startAdornment: <InputAdornment position="start">R$</InputAdornment> }}
-          inputProps={{ inputMode: 'decimal' }}
+          slotProps={{
+            input: { startAdornment: <InputAdornment position="start">R$</InputAdornment> },
+            htmlInput: { inputMode: 'decimal' },
+          }}
           autoFocus
         />
         <FormControlLabel
@@ -104,7 +105,6 @@ interface ExcluirContaDialogProps {
   onSucesso: (mensagem: string) => void;
 }
 
-/** Encerrar a conta a partir do mês (mantém o histórico) ou apagar tudo */
 export function ExcluirContaDialog({
   conta,
   competencia,
@@ -170,10 +170,10 @@ export function ExcluirContaDialog({
           sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { mt: -0.75 } }}
           label={
             <Box>
-              <Typography variant="body2" fontWeight={600}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 Encerrar a partir de {mes}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 Some deste mês em diante. Os meses anteriores continuam no histórico.
               </Typography>
             </Box>
@@ -185,10 +185,10 @@ export function ExcluirContaDialog({
           sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { mt: -0.75 } }}
           label={
             <Box>
-              <Typography variant="body2" fontWeight={600}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 Apagar a conta e todo o histórico
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 Use se ela foi cadastrada por engano. Não pode ser desfeito.
               </Typography>
             </Box>

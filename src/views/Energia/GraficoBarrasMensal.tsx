@@ -25,7 +25,7 @@ export function GraficoBarrasMensal() {
               <CartesianGrid {...gridProps} />
               <XAxis dataKey="mes" {...axisProps} interval={0} fontSize={11} />
               <YAxis {...yAxisProps} width={44} />
-              <Tooltip {...tooltipProps} formatter={(v: number) => [`${formatNumber(v, 0)} kWh`, 'Geração']} />
+              <Tooltip {...tooltipProps} formatter={(v) => [`${formatNumber(Number(v), 0)} kWh`, 'Geração']} />
               <Bar dataKey="geracao" radius={[4, 4, 0, 0]} maxBarSize={40}>
                 {geracaoMensal.map((m, i) => (
                   <Cell key={m.mes} fill={i === mesIdx ? colors.chart.primary : colors.chart.primarySoft} />

@@ -21,7 +21,6 @@ export interface DataColumn<T> {
   header: ReactNode;
   align?: 'left' | 'right' | 'center';
   width?: number | string;
-  /** Conteúdo da célula. Sem ele, usa `row[id]`. */
   render?: (row: T) => ReactNode;
 }
 
@@ -31,21 +30,14 @@ interface DataTableProps<T> {
   getRowKey: (row: T, index: number) => string | number;
   loading?: boolean;
   emptyMessage?: string;
-  /** Como cada linha aparece no celular. Sem ele, mostra pares rótulo/valor. */
   renderMobileRow?: (row: T) => ReactNode;
   rowSx?: (row: T) => SxProps<Theme> | undefined;
   minWidth?: number;
   rowsPerPageOptions?: number[];
   defaultRowsPerPage?: number;
-  /** Conteúdo à esquerda da paginação (ex.: total filtrado) */
   footer?: ReactNode;
 }
 
-/**
- * Tabela padrão do app.
- * - Desktop/iPad: tabela com cabeçalho cinza e rolagem horizontal se faltar espaço.
- * - Celular: vira uma lista de itens, fácil de tocar.
- */
 export function DataTable<T>({
   columns,
   rows,

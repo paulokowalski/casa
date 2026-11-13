@@ -1,55 +1,48 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+type Valor = string | number;
+
+const query = (params: Record<string, Valor>) =>
+  '?' +
+  Object.entries(params)
+    .map(([chave, valor]) => `${chave}=${encodeURIComponent(String(valor))}`)
+    .join('&');
+
 export const API_URLS = {
-  //PUBLICAS
   FIPE: 'https://parallelum.com.br/fipe/api/v2/cars/brands/26/models/9602/years/2027-5',
   DOLLAR: 'https://economia.awesomeapi.com.br/last/USD-BRL',
   EURO: 'https://economia.awesomeapi.com.br/last/EUR-BRL',
 
-  //PESSOA
+  AUTH_LOGIN: '/v1/auth/login',
+  AUTH_ME: '/v1/auth/me',
+  AUTH_SENHA: '/v1/auth/senha',
+
   PESSOAS: '/v1/pessoas',
-  PESSOA_ID: (id: string | number) => `/v1/pessoas/${id}`,
+  PESSOA_ID: (id: Valor) => `/v1/pessoas/${id}`,
 
-  //DESPESA
-  DESPESA: (ano: string | number, mes: string | number, pessoa: string | number) =>
-    `/v1/despesa/${ano}/${mes}/${pessoa}`,
-  DESPESA_SEM_MES: (ano: string | number, pessoa: string | number) => `/v1/despesa/${ano}/${pessoa}`,
+  DESPESA: (ano: Valor, mes: Valor, pessoa: Valor) => `/v1/despesas/${ano}/${mes}${query({ pessoa })}`,
+  DESPESA_SEM_MES: (ano: Valor, pessoa: Valor) => `/v1/despesas/${ano}${query({ pessoa })}`,
 
-  //COMPRA
-  COMPRA: (
-    ano: string | number,
-    mes: string | number,
-    pessoa: string | number,
-    cartao: string | number,
-    ultimaParcela: string | number,
-  ) => `/v1/compra/${ano}/${mes}/${pessoa}/${cartao}/${ultimaParcela}`,
-  COMPRA_SEM_CARTAO: (ano: string | number, mes: string | number, pessoa: string | number) =>
-    `/v1/compra/${ano}/${mes}/${pessoa}/TODOS/TODOS`,
-  COMPRA_ID: (id?: string | number) => (id ? `/v1/compra/${id}` : `/v1/compra`),
+  COMPRA: (ano: Valor, mes: Valor, pessoa: Valor, cartao: Valor, ultimaParcela: Valor) =>
+    `/v1/compras/parcelas/${ano}/${mes}${query({ pessoa, cartao, ultimaParcela })}`,
+  COMPRA_ID: (id?: Valor) => (id ? `/v1/compras/${id}` : `/v1/compras`),
 
-  //CONTAS (fora do cartão) E RENDA
   CONTAS: '/v1/contas',
   CONTA_ID: (id: string) => `/v1/contas/${id}`,
   CONTAS_LANCAMENTOS: '/v1/contas/lancamentos',
   CONTA_LANCAMENTO_ID: (id: string) => `/v1/contas/lancamentos/${id}`,
-  RENDA: (ano: string | number, mes: string | number) => `/v1/renda/${ano}/${Number(mes)}`,
-  FATURA: (ano: string | number, mes: string | number) => `/v1/fatura/${ano}/${Number(mes)}`,
+  RENDA: (ano: Valor, mes: Valor) => `/v1/rendas/${ano}/${Number(mes)}`,
+  FATURA: (ano: Valor, mes: Valor) => `/v1/faturas/${ano}/${Number(mes)}`,
 
-  //FILTRO
-  FILTRO_ANOS: '/v1/filtro/anos',
-  FILTRO_MESES: (ano: string | number) => `/v1/filtro/meses/${ano}`,
-  FILTRO_PESSOAS: (ano: string | number, mes: string | number) => `/v1/filtro/pessoas/${ano}/${mes}`,
-  FILTRO_CARTAO: (ano: string | number, mes: string | number, pessoa: string | number) =>
-    `/v1/filtro/cartao/${ano}/${mes}/${pessoa}`,
-  FILTRO_CATEGORIAS: '/v1/filtro/categorias',
-  FILTRO_TIPOS_LANCAMENTOS: '/v1/filtro/tipos-lancamentos',
-  //ENERGIA SOLAR
-  GERACAO_SOLAR: (data: string) => `/v1/geracao-solar?data=${data}`,
-  GERACAO_SOLAR_ANO: (ano: string | number) => `/v1/geracao-solar/ano/${ano}`,
-  GERACAO_SOLAR_ANO_MES: (ano: string | number, mes: string | number) => `/v1/geracao-solar/ano/${ano}/mes/${mes}`,
+  FILTRO_ANOS: '/v1/filtros/anos',
+  FILTRO_MESES: (ano: Valor) => `/v1/filtros/meses${query({ ano })}`,
+  FILTRO_PESSOAS: (ano: Valor, mes: Valor) => `/v1/filtros/pessoas${query({ ano, mes })}`,
+  FILTRO_CARTAO: (ano: Valor, mes: Valor, pessoa: Valor) => `/v1/filtros/cartoes${query({ ano, mes, pessoa })}`,
+  FILTRO_CATEGORIAS: '/v1/filtros/categorias',
+  FILTRO_TIPOS_LANCAMENTOS: '/v1/filtros/tipos-lancamento',
+
+  GERACAO_SOLAR: (data: string) => `/v1/geracao-solar${query({ data })}`,
+  GERACAO_SOLAR_ANO: (ano: Valor) => `/v1/geracao-solar/${ano}`,
+  GERACAO_SOLAR_ANO_MES: (ano: Valor, mes: Valor) => `/v1/geracao-solar/${ano}/${mes}`,
   CARRO_FIPE: (codigoFipe: string) => `/v1/carros/${codigoFipe}`,
-
-  //BRASILEIRAO
-  API_BRASILEIRAO_POSICAO: (idTime: string | number) => `/v1/brasileirao-serie-a/posicao/${idTime}`,
-  API_BRASILEIRAO_RODADA: (idTime: string | number) => `/v1/brasileirao-serie-a/rodada-atual/${idTime}`,
 };

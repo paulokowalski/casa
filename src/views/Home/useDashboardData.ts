@@ -5,7 +5,6 @@ import { useCurrencyData, useFipeData } from '../../hooks/useApiData';
 import { MONTHS_PT, MONTHS_SHORT_PT } from '../../utils/format';
 import type { CurrencyData } from '../../types/api';
 
-/** Código FIPE do veículo acompanhado pelo histórico do backend */
 export const CODIGO_FIPE_HISTORICO = '015203-0';
 
 const MESES_EN = [
@@ -28,7 +27,6 @@ export const TARIFA_PADRAO = 0.95;
 
 type Status = 'loading' | 'ok' | 'erro';
 
-// ------------------------------------------------------------------ helpers
 const pad = (n: number) => String(n).padStart(2, '0');
 
 function hojeLocal() {
@@ -109,12 +107,9 @@ export function lerTarifa(): number {
 function gravarTarifa(v: number) {
   try {
     window.localStorage.setItem(CHAVE_TARIFA, String(v));
-  } catch {
-    /* sem storage: só em memória */
-  }
+  } catch {}
 }
 
-// ------------------------------------------------------------------ tipos
 export interface SolarHoje {
   kwh: number | null;
   curva: { horario: string; potencia: number }[];
@@ -150,7 +145,7 @@ export interface FipeHistorico {
 export interface Cambio {
   codigo: 'USD' | 'EUR';
   valor: number;
-  variacao: number; // em %
+  variacao: number;
   minimo: number;
   maximo: number;
 }
@@ -164,7 +159,6 @@ export interface InsightDia {
   texto: string;
 }
 
-// ------------------------------------------------------------------ hook
 export function useDashboardData() {
   const hoje = useMemo(hojeLocal, []);
 
@@ -192,7 +186,6 @@ export function useDashboardData() {
   const carregar = useCallback(async () => {
     setAtualizadoEm(new Date());
 
-    // Solar: hoje
     setHojeStatus('loading');
     api
       .get(API_URLS.GERACAO_SOLAR(hoje.iso))
@@ -218,7 +211,6 @@ export function useDashboardData() {
         setHojeStatus('erro');
       });
 
-    // Solar: mês (kWh por dia)
     setMesStatus('loading');
     api
       .get(API_URLS.GERACAO_SOLAR_ANO_MES(hoje.ano, pad(hoje.mes)))
@@ -231,7 +223,6 @@ export function useDashboardData() {
         });
         const diasNoMes = new Date(hoje.ano, hoje.mes, 0).getDate();
         const acumulado = Object.keys(porDia).reduce((a, k) => a + porDia[Number(k)], 0);
-        // média só de dias completos (antes de hoje) com geração
         const completos = Object.keys(porDia)
           .map(Number)
           .filter((d) => d < hoje.dia && porDia[d] > 0);
@@ -248,7 +239,6 @@ export function useDashboardData() {
         setMesStatus('erro');
       });
 
-    // Solar: ano atual x anterior
     setAnoStatus('loading');
     Promise.all([
       api
@@ -267,7 +257,6 @@ export function useDashboardData() {
       }
       const atual = serieAnual(atualBruto);
       const anterior = serieAnual(anteriorBruto || []);
-      // compara só meses completos (antes do mês atual)
       const mesesCompletos = hoje.mes - 1;
       const ytdAtual = atual.slice(0, mesesCompletos).reduce((a, b) => a + b, 0);
       const ytdAnterior = anterior.slice(0, mesesCompletos).reduce((a, b) => a + b, 0);
@@ -279,7 +268,6 @@ export function useDashboardData() {
       setAnoStatus('ok');
     });
 
-    // FIPE: histórico do backend
     setFipeStatus('loading');
     api
       .get(API_URLS.CARRO_FIPE(CODIGO_FIPE_HISTORICO))
@@ -345,7 +333,6 @@ export function useDashboardData() {
         ? 'erro'
         : 'ok';
 
-  // ------------------------------------------------------------- insights
   const insights = useMemo<InsightDia[]>(() => {
     const out: InsightDia[] = [];
     const kwh = (v: number) => `${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kWh`;

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Box, Skeleton, Typography } from '@mui/material';
+import { createSvgIcon } from '@mui/material/utils';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import DirectionsCarOutlinedIcon from '@mui/icons-material/DirectionsCarOutlined';
@@ -16,6 +16,11 @@ import type { Insight } from '../../lib/financas/visaoMensal';
 import { palette, tones } from '../../styles/tokens';
 import { formatCurrency } from '../../utils/format';
 
+const CheckCircleOutlineIcon = createSvgIcon(
+  <path d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8" />,
+  'CheckCircleOutline',
+);
+
 function icone(i: Insight): ReactNode {
   if (i.id.startsWith('cartao') || i.id.startsWith('reajuste')) return <TrendingUpIcon />;
   if (i.id === 'sobra' || i.id === 'renda') return <ReportProblemOutlinedIcon />;
@@ -26,7 +31,6 @@ function icone(i: Insight): ReactNode {
   return <EditNoteIcon />;
 }
 
-/** Onde economizar: sugestões geradas a partir das contas e do cartão */
 export function Insights() {
   const { visao: v, loading } = useGestaoFinanceira();
 
@@ -37,7 +41,7 @@ export function Insights() {
       action={
         v && v.economiaPossivel > 0 ? (
           <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               Economia possível
             </Typography>
             <Typography sx={{ fontWeight: 700, color: tones.success.fg, fontSize: '1.125rem', lineHeight: 1.2 }}>
@@ -68,10 +72,10 @@ export function Insights() {
             >
               <IconBadge tone={i.tone}>{icone(i)}</IconBadge>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
                   {i.titulo}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, lineHeight: 1.5 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25, lineHeight: 1.5 }}>
                   {i.texto}
                 </Typography>
               </Box>

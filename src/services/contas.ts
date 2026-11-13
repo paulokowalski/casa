@@ -2,8 +2,6 @@ import { api, apiErrorMessage } from './api';
 import { API_URLS } from '../config/urls';
 import type { Competencia, Conta, ContaInput, FaturaStatus, Lancamento, LancamentoInput, Renda } from '../types/contas';
 
-/** Acesso a /v1/contas (contas fora do cartão) e /v1/renda. */
-
 async function comErro<T>(promessa: Promise<{ data: T }>, mensagem: string): Promise<T> {
   try {
     return (await promessa).data;
@@ -18,14 +16,12 @@ export const contasService = {
 
   criar: (dados: ContaInput) => comErro(api.post<Conta>(API_URLS.CONTAS, dados), 'Não foi possível cadastrar a conta.'),
 
-  /** Os meses não pagos a partir de `aPartirDe` passam a usar os novos dados */
   editar: (id: string, dados: ContaInput, aPartirDe: Competencia) =>
     comErro(
       api.put<Conta>(API_URLS.CONTA_ID(id), dados, { params: { aPartirDe } }),
       'Não foi possível salvar a conta.',
     ),
 
-  /** Com `aPartirDe`: encerra a conta antes desse mês. Sem: apaga a conta e todo o histórico. */
   excluir: (id: string, aPartirDe?: Competencia) =>
     comErro(
       api.delete<void>(API_URLS.CONTA_ID(id), { params: aPartirDe ? { aPartirDe } : {} }),

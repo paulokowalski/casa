@@ -8,12 +8,10 @@ interface KpiCardProps {
   value: ReactNode;
   icon?: ReactNode;
   tone?: Tone;
-  /** Linha inferior: tendência, comparação, barra de progresso… */
   footer?: ReactNode;
   loading?: boolean;
 }
 
-/** Card de indicador: rótulo, valor em destaque e rodapé de contexto. */
 export function KpiCard({ label, value, icon, tone = 'brand', footer, loading }: Readonly<KpiCardProps>) {
   return (
     <Paper

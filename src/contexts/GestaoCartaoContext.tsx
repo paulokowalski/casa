@@ -7,23 +7,17 @@ import type { MesFuturo } from '../lib/financas/proximosMeses';
 import type { CompraInput, CompraRegistro, Parcela } from '../types/financas';
 
 type GestaoCartaoValue = ReturnType<typeof useFiltrosCompra> & {
-  /** Filtro "Última parcela" (TODOS | SIM | NAO): vale só para a tabela de transações */
   ultimaParcela: string;
   setUltimaParcela: (v: string) => void;
   buscar: () => void;
   filtrosAplicados: FiltrosSelecionados | null;
   loading: boolean;
-  /** Todas as parcelas do mês: base dos indicadores, insights e gráficos */
   parcelasMes: Parcela[];
-  /** Parcelas exibidas na tabela (respeitam o filtro "Última parcela") */
   transacoes: Parcela[];
   analise: Analise | null;
-  /** Parcelas já assumidas nos 12 meses seguintes ao mês buscado (null enquanto carrega) */
   proximos: MesFuturo[] | null;
-  /** Orçamento mensal definido pelo usuário (salvo no navegador, por pessoa) */
   orcamento: number | null;
   salvarOrcamento: (valor: number | null) => void;
-  /** POST sem `id`, PUT com `id` */
   salvarCompra: (dados: CompraInput, id?: string) => Promise<void>;
   excluirCompra: (id: string) => Promise<void>;
 };
@@ -34,7 +28,6 @@ interface Consulta extends FiltrosSelecionados {
 
 const GestaoCartaoContext = createContext<GestaoCartaoValue | null>(null);
 
-// Mantém a chave antiga para não perder orçamentos já salvos no navegador
 const chaveOrcamento = (pessoa: string) => `casa.gestaoFinanceira.orcamento.${(pessoa || 'geral').toUpperCase()}`;
 
 function lerOrcamento(pessoa: string): number | null {
@@ -60,8 +53,6 @@ export function GestaoCartaoProvider({ children }: Readonly<{ children: ReactNod
 
   const filtros = useFiltrosCompra((iniciais) => setConsulta({ ...iniciais, ultimaParcela: TODOS }));
 
-  // Mês selecionado, os 3 anteriores (comparação por categoria), todas as compras (histórico/projeção)
-  // e, se houver filtro de última parcela, a lista filtrada para a tabela.
   useEffect(() => {
     if (!consulta) return;
     let ativo = true;
@@ -100,7 +91,6 @@ export function GestaoCartaoProvider({ children }: Readonly<{ children: ReactNod
     };
   }, [consulta, versao]);
 
-  // Próximos 12 meses: carregados à parte para não atrasar o restante da tela
   useEffect(() => {
     if (!consulta) return;
     let ativo = true;
@@ -132,9 +122,7 @@ export function GestaoCartaoProvider({ children }: Readonly<{ children: ReactNod
       try {
         if (v) window.localStorage.setItem(chaveOrcamento(pessoa), String(v));
         else window.localStorage.removeItem(chaveOrcamento(pessoa));
-      } catch {
-        /* navegador sem storage: mantém só em memória */
-      }
+      } catch {}
     },
     [consulta, filtros.selecionados.pessoa],
   );

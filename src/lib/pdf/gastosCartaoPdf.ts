@@ -9,13 +9,9 @@ export interface DadosPdfCartao {
   mes: string;
   pessoa: string;
   cartao: string;
-  /** Todas as parcelas do mês (base do total e do resumo) */
   parcelasMes: Parcela[];
-  /** Parcelas listadas (podem estar filtradas por "Última parcela") */
   listadas: Parcela[];
-  /** Descrição do filtro de última parcela quando ativo */
   filtroUltimaParcela?: string | null;
-  /** Parcelas já assumidas nos próximos 12 meses (gráfico); omitido se não houver */
   proximos?: ProximosMeses | null;
 }
 
@@ -42,7 +38,6 @@ function passoDoEixo(max: number): number {
   return passos.find((p) => max / p <= 5) ?? Math.ceil(max / 5);
 }
 
-/** Desenha o gráfico "Próximos 12 meses no cartão" a partir de `y` e devolve onde ele termina. */
 function desenharProximos(doc: JsPDF, p: ProximosMeses, x: number, y: number, largura: number): number {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
@@ -63,7 +58,6 @@ function desenharProximos(doc: JsPDF, p: ProximosMeses, x: number, y: number, la
     y + 5,
   );
 
-  // Legenda
   let lx = x;
   const ly = y + 11;
   const item = (cor: Rgb, texto: string, tipo: 'cheio' | 'livre' | 'linha' = 'cheio') => {
@@ -94,7 +88,6 @@ function desenharProximos(doc: JsPDF, p: ProximosMeses, x: number, y: number, la
     item(VERMELHO, 'Orçamento mensal', 'linha');
   }
 
-  // Área do gráfico
   const topo = y + 18;
   const altura = 56;
   const base = topo + altura;
@@ -154,10 +147,6 @@ function desenharProximos(doc: JsPDF, p: ProximosMeses, x: number, y: number, la
   return base + 12;
 }
 
-/**
- * Gera e baixa o PDF com o total gasto no mês e a listagem das compras do cartão.
- * As bibliotecas de PDF são carregadas só quando o botão é usado.
- */
 export async function exportarGastosCartaoPdf(d: DadosPdfCartao): Promise<void> {
   const [{ jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
 
@@ -167,7 +156,6 @@ export async function exportarGastosCartaoPdf(d: DadosPdfCartao): Promise<void> 
   const nomeMes = MONTHS_PT[Number(d.mes) - 1] ?? d.mes;
   const agora = new Date();
 
-  // Cabeçalho
   doc.setFillColor(...AZUL);
   doc.rect(0, 0, larg, 4, 'F');
   doc.setFont('helvetica', 'bold');
@@ -183,7 +171,6 @@ export async function exportarGastosCartaoPdf(d: DadosPdfCartao): Promise<void> 
     25,
   );
 
-  // Resumo
   const aVista = d.parcelasMes.filter((p) => p.numeroTotalParcela === 1);
   const parceladas = d.parcelasMes.filter((p) => p.numeroTotalParcela > 1);
   const ultimas = parceladas.filter((p) => p.numeroParcela === p.numeroTotalParcela);
@@ -222,7 +209,6 @@ export async function exportarGastosCartaoPdf(d: DadosPdfCartao): Promise<void> 
     y = desenharProximos(doc, d.proximos, margem, y, larg - margem * 2);
   }
 
-  // Listagem
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(...CINZA_900);
@@ -278,7 +264,6 @@ export async function exportarGastosCartaoPdf(d: DadosPdfCartao): Promise<void> 
     },
   });
 
-  // Numeração das páginas
   const total = doc.getNumberOfPages();
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);

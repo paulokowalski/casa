@@ -1,7 +1,3 @@
-/**
- * Análise da Gestão Financeira: indicadores, saúde financeira, insights de economia
- * e simulação de impacto de uma nova compra. Funções puras, sem acesso à API.
- */
 import type { CompraRegistro, Parcela } from '../../types/financas';
 import { capitalize } from '../../utils/format';
 import {
@@ -22,21 +18,14 @@ import {
 
 export type { Parcela, CompraRegistro };
 
-// ---------------------------------------------------------------------------
-// Projeção a partir de todas as compras
-// ---------------------------------------------------------------------------
-
 export interface Termino {
   nome: string;
   valorParcela: number;
 }
 
 interface Projecao {
-  /** total lançado por mês (idx), à vista + parcelado */
   porMes: Record<number, number>;
-  /** apenas parcelas de compras parceladas (n>1) por mês */
   parceladoPorMes: Record<number, number>;
-  /** compras parceladas (n>1) que têm a ÚLTIMA parcela no mês idx */
   terminos: Record<number, Termino[]>;
 }
 
@@ -62,14 +51,9 @@ function projetar(registros: CompraRegistro[]): Projecao {
   return { porMes, parceladoPorMes, terminos };
 }
 
-// ---------------------------------------------------------------------------
-// Análise completa
-// ---------------------------------------------------------------------------
-
 export interface EntradaAnalise {
   ref: MesRef;
   parcelasMes: Parcela[];
-  /** [0] = mês anterior, [1] = dois meses antes ... */
   parcelasAnteriores: Parcela[][];
   registros: CompraRegistro[];
   orcamento: number | null;
@@ -147,8 +131,8 @@ const categoriaDe = (p: Parcela) => normalizar(p.categoria) || 'SEM CATEGORIA';
 function diaDaSemana(data: string): number | null {
   const p = partesData(data);
   if (!p) return null;
-  const d = new Date(p.ano, p.mes - 1, p.dia).getDay(); // 0=dom
-  return d === 0 ? 6 : d - 1; // 0=seg ... 6=dom
+  const d = new Date(p.ano, p.mes - 1, p.dia).getDay();
+  return d === 0 ? 6 : d - 1;
 }
 
 const fmt = (v: number) =>
@@ -165,7 +149,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
   const anoRef = e.ref.ano;
   const proj = projetar(e.registros);
 
-  // --- Totais do mês --------------------------------------------------------
   const totalMes = somar(e.parcelasMes.map((p) => Number(p.valorParcela || 0)));
   const parcelado = somar(e.parcelasMes.filter((p) => p.numeroTotalParcela > 1).map((p) => p.valorParcela));
   const aVista = arred(totalMes - parcelado);
@@ -176,7 +159,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
   const variacaoMesAnterior =
     totalMesAnterior && totalMesAnterior > 0 ? (totalMes - totalMesAnterior) / totalMesAnterior : null;
 
-  // --- Série de 12 meses (a partir de todas as compras) ----------------------
   const serie12 = [];
   for (let i = 11; i >= 0; i--) {
     const idx = refIdx - i;
@@ -186,7 +168,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
   const ultimos6 = serie12.slice(5, 11).filter((s) => s.valor > 0);
   const media6 = ultimos6.length > 0 ? arred(ultimos6.reduce((a, s) => a + s.valor, 0) / ultimos6.length) : null;
 
-  // --- Projeção / compromissos futuros -------------------------------------
   let comprometidoFuturo = 0;
   let quitadoEmIdx: number | null = null;
   Object.keys(proj.parceladoPorMes).forEach((k) => {
@@ -236,7 +217,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
     .sort((a, b) => a.fimIdx - b.fimIdx || b.valorParcela - a.valorParcela)
     .slice(0, 6);
 
-  // --- Orçamento ------------------------------------------------------------
   let orcamento: Analise['orcamento'] = null;
   if (e.orcamento && e.orcamento > 0) {
     const hojeIdx = e.hoje.getFullYear() * 12 + e.hoje.getMonth();
@@ -253,7 +233,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
     };
   }
 
-  // --- Categorias -----------------------------------------------------------
   const catAtual = agrupar(e.parcelasMes, categoriaDe);
   const mesesComDados = e.parcelasAnteriores.filter((l) => l && l.length > 0);
   const catAnteriores = mesesComDados.map((l) => agrupar(l, categoriaDe));
@@ -269,13 +248,11 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
     })
     .sort((a, b) => b.valor - a.valor);
 
-  // --- Cartões ----------------------------------------------------------------
   const porCartao = agrupar(e.parcelasMes, (p) => normalizar(p.nomeCartao) || 'SEM CARTÃO');
   const cartoes = Object.keys(porCartao)
     .map((nome) => ({ nome, valor: porCartao[nome], pct: totalMes > 0 ? porCartao[nome] / totalMes : 0 }))
     .sort((a, b) => b.valor - a.valor);
 
-  // --- Dia da semana (compras à vista, pela data da compra) ----------------
   const dias = [0, 0, 0, 0, 0, 0, 0];
   e.parcelasMes
     .filter((p) => p.numeroTotalParcela === 1 && p.valorParcela > 0)
@@ -288,7 +265,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
   const pctFimDeSemana = totalDias > 0 ? fimDeSemana / totalDias : 0;
   const diasSemana = dias.map((valor, i) => ({ dia: DIAS_SEMANA[i], valor }));
 
-  // --- Maiores gastos -------------------------------------------------------
   const ordenadas = e.parcelasMes.slice().sort((a, b) => b.valorParcela - a.valorParcela);
   const topGastos = ordenadas.slice(0, 5).map((p) => ({
     nome: nomeSemMarcacao(p.nomeCompra),
@@ -297,7 +273,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
   }));
   const pctTop5 = totalMes > 0 ? somar(topGastos.map((t) => t.valor)) / totalMes : 0;
 
-  // --- Recorrentes (assinaturas) -------------------------------------------
   const janelaIni = refIdx - 7;
   const grupos: Record<
     string,
@@ -329,9 +304,8 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
     .map((k) => grupos[k])
     .filter((g) => {
       const valores = Object.keys(g.meses).map((k) => g.meses[Number(k)]);
-      // assinatura = 1 cobrança por mês, valor praticamente fixo, em 3+ meses
       if (valores.length < 3 || g.repetidoNoMes) return false;
-      if (g.ultimoIdx < refIdx - 2) return false; // não aparece mais
+      if (g.ultimoIdx < refIdx - 2) return false;
       const min = Math.min.apply(null, valores);
       const max = Math.max.apply(null, valores);
       return max > 0 && min / max >= 0.9;
@@ -340,13 +314,11 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
     .sort((a, b) => b.valorMensal - a.valorMensal);
   const totalRecorrente = somar(recorrentes.map((r) => r.valorMensal));
 
-  // --- Pequenas compras -----------------------------------------------------
   const pequenasLista = e.parcelasMes.filter(
     (p) => p.numeroTotalParcela === 1 && p.valorParcela > 0 && p.valorParcela < 50,
   );
   const pequenas = { qtd: pequenasLista.length, total: somar(pequenasLista.map((p) => p.valorParcela)) };
 
-  // --- Saúde financeira -----------------------------------------------------
   const penalidades: { motivo: string; valor: number }[] = [];
   const fatores: FatorSaude[] = [];
 
@@ -426,7 +398,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
     }
   }
 
-  // --- Insights -------------------------------------------------------------
   const insights: Insight[] = [];
 
   categorias
@@ -478,7 +449,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
     });
   }
 
-  // Melhor mês para voltar a parcelar (maior liberação nos próximos 6 meses)
   let melhor: { idx: number; libera: number } | null = null;
   for (let i = 1; i <= 6; i++) {
     const p = projecao12[i];
@@ -562,10 +532,6 @@ export function calcularAnalise(e: EntradaAnalise): Analise {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Simulação de impacto de uma nova compra
-// ---------------------------------------------------------------------------
-
 export interface Simulacao {
   valorParcela: number;
   primeiraIdx: number;
@@ -596,7 +562,6 @@ export function simularCompra(
 
   let sugestao: Simulacao['sugestao'] = null;
   if (n > 1) {
-    // primeiro mês futuro em que as parcelas que terminam liberam espaço >= nova parcela
     for (let m = primeiraIdx + 1; m <= primeiraIdx + 12; m++) {
       const comprometidoEm = analise.projecaoMapa[m] || 0;
       if (comprometidoEm + vp <= antes) {

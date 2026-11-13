@@ -1,7 +1,3 @@
-/**
- * Próximos 12 meses na Gestão Financeira: só valores já lançados — contas cadastradas e
- * parcelas/compras do cartão que caem em cada fatura — e quanto sobra da renda. Funções puras.
- */
 import type { Lancamento } from '../../types/contas';
 import { arred, mesIdx, rotuloMesAno, somar } from './parcelas';
 import type { MesFuturo } from './proximosMeses';
@@ -9,12 +5,9 @@ import type { MesFuturo } from './proximosMeses';
 export interface PontoFuturo {
   idx: number;
   rotulo: string;
-  /** contas fora do cartão (recorrentes, parceladas e únicas) */
   contas: number;
-  /** parcelas e compras do cartão já feitas que caem no mês */
   parcelas: number;
   total: number;
-  /** renda − total; null sem renda */
   sobra: number | null;
 }
 

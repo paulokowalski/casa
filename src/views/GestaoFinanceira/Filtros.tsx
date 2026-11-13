@@ -3,13 +3,14 @@ import { InputAdornment, TextField, Tooltip } from '@mui/material';
 import { FilterBar } from '../../components/ui/FilterBar';
 import { useGestaoFinanceira } from '../../contexts/GestaoFinanceiraContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { MONTHS_PT, maskCurrencyInput, parseCurrency, toCurrencyInput } from '../../utils/format';
 
 const MESES = MONTHS_PT.map((m, i) => ({ value: String(i + 1), label: m }));
 
-/** Mês, pessoa e renda líquida. Mudar um filtro recarrega a tela na hora. */
 export function Filtros() {
   const f = useGestaoFinanceira();
+  const { isAdmin } = useAuth();
   const { notify } = useToast();
   const [rendaTexto, setRendaTexto] = useState('');
 
@@ -44,6 +45,7 @@ export function Filtros() {
           value: f.pessoa ? String(f.pessoa.id) : '',
           options: f.pessoas.map((p) => ({ value: String(p.id), label: p.nome })),
           onChange: (v) => f.setPessoaId(Number(v)),
+          disabled: !isAdmin,
         },
       ]}
     >
@@ -62,8 +64,10 @@ export function Filtros() {
               void confirmarRenda();
             }
           }}
-          inputProps={{ inputMode: 'decimal' }}
-          InputProps={{ startAdornment: <InputAdornment position="start">R$</InputAdornment> }}
+          slotProps={{
+            htmlInput: { inputMode: 'decimal' },
+            input: { startAdornment: <InputAdornment position="start">R$</InputAdornment> },
+          }}
           fullWidth
           sx={{ '& .MuiFormHelperText-root': { position: 'absolute', bottom: -18, m: 0 } }}
         />

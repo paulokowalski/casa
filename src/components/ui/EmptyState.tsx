@@ -7,7 +7,6 @@ interface EmptyStateProps {
   compact?: boolean;
 }
 
-/** Mensagem para listas/gráficos sem dados ou com erro de carga. */
 export function EmptyState({ message, action, compact }: Readonly<EmptyStateProps>) {
   return (
     <Box
@@ -21,7 +20,7 @@ export function EmptyState({ message, action, compact }: Readonly<EmptyStateProp
         gap: 1.5,
       }}
     >
-      <Typography variant="body1" color="text.secondary">
+      <Typography variant="body1" sx={{ color: 'text.secondary' }}>
         {message}
       </Typography>
       {action}

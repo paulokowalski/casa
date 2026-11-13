@@ -6,7 +6,6 @@ import { rotuloMesLongo } from '../../lib/financas/parcelas';
 import { palette } from '../../styles/tokens';
 import { formatCurrency } from '../../utils/format';
 
-/** Financiamentos e parcelados em andamento no mês: parcela atual, quanto falta e quando termina */
 export function Financiamentos() {
   const { visao: v } = useGestaoFinanceira();
   const lista = v?.financiamentos ?? [];
@@ -21,10 +20,10 @@ export function Financiamentos() {
       subtitle="Quanto falta e quando cada um termina"
       action={
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Saldo restante <b style={{ color: palette.gray[900] }}>{formatCurrency(saldo)}</b>
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Por mês <b style={{ color: palette.gray[900] }}>{formatCurrency(porMes)}</b>
           </Typography>
         </Box>
@@ -37,7 +36,7 @@ export function Financiamentos() {
           return (
             <Box key={f.contaId} sx={{ border: `1px solid ${palette.gray[200]}`, borderRadius: 2.5, p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'flex-start' }}>
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
                   {f.descricao}
                 </Typography>
                 <StatusPill tone={termina ? 'success' : pct >= 0.5 ? 'brand' : 'neutral'}>
@@ -46,7 +45,7 @@ export function Financiamentos() {
               </Box>
               <Typography sx={{ fontSize: '1.25rem', fontWeight: 600, mt: 1 }}>
                 {formatCurrency(f.valor)}
-                <Typography component="span" variant="body2" color="text.secondary">
+                <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
                   {' '}
                   /mês
                 </Typography>
@@ -59,14 +58,14 @@ export function Financiamentos() {
                 aria-label={`Parcela ${f.parcela} de ${f.total}`}
               />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                   Parcela {f.parcela} de {f.total}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                   {termina ? 'termina este mês' : `termina em ${rotuloMesLongo(f.fimIdx).toLowerCase()}`}
                 </Typography>
               </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
                 {termina ? (
                   'Última parcela'
                 ) : (

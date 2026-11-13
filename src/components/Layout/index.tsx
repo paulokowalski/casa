@@ -14,7 +14,9 @@ import {
 } from '@mui/material';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import { layout, palette } from '../../styles/tokens';
-import { NAV_ITEMS, NAV_SECTIONS, findNavItem } from './navigation';
+import { useAuth } from '../../contexts/AuthContext';
+import { findNavItem, navegacao, type NavItem, type NavSection } from './navigation';
+import { UsuarioMenu } from './UsuarioMenu';
 
 const isActive = (pathname: string, to: string) => (to === '/' ? pathname === '/' : pathname.startsWith(to));
 
@@ -49,8 +51,7 @@ function Logo({ compact }: Readonly<{ compact?: boolean }>) {
   );
 }
 
-/** Menu lateral completo (desktop ≥ 1200px) */
-function Sidebar({ pathname }: Readonly<{ pathname: string }>) {
+function Sidebar({ pathname, sections }: Readonly<{ pathname: string; sections: NavSection[] }>) {
   return (
     <Box
       component="nav"
@@ -63,13 +64,15 @@ function Sidebar({ pathname }: Readonly<{ pathname: string }>) {
         px: 1.5,
         py: 2.5,
         overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
         zIndex: (t) => t.zIndex.drawer,
       }}
     >
       <Box sx={{ px: 1.5, pb: 1.5 }}>
         <Logo />
       </Box>
-      {NAV_SECTIONS.map((section) => (
+      {sections.map((section) => (
         <Box key={section.label} component="section" aria-label={section.label}>
           <Typography
             component="h2"
@@ -119,12 +122,14 @@ function Sidebar({ pathname }: Readonly<{ pathname: string }>) {
           })}
         </Box>
       ))}
+      <Box sx={{ mt: 'auto', pt: 2 }}>
+        <UsuarioMenu variante="sidebar" />
+      </Box>
     </Box>
   );
 }
 
-/** Barra só de ícones (iPad: 600–1199px) */
-function Rail({ pathname }: Readonly<{ pathname: string }>) {
+function Rail({ pathname, items }: Readonly<{ pathname: string; items: NavItem[] }>) {
   return (
     <Box
       component="nav"
@@ -145,7 +150,7 @@ function Rail({ pathname }: Readonly<{ pathname: string }>) {
       <Box sx={{ mb: 2 }}>
         <Logo compact />
       </Box>
-      {NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const active = isActive(pathname, item.to);
         return (
           <Tooltip key={item.to} title={item.label} placement="right">
@@ -173,14 +178,16 @@ function Rail({ pathname }: Readonly<{ pathname: string }>) {
           </Tooltip>
         );
       })}
+      <Box sx={{ mt: 'auto' }}>
+        <UsuarioMenu variante="compacto" />
+      </Box>
     </Box>
   );
 }
 
-/** Barra superior + barra de navegação inferior (celular: < 600px) */
-function MobileChrome({ pathname }: Readonly<{ pathname: string }>) {
-  const current = findNavItem(pathname);
-  const value = NAV_ITEMS.findIndex((i) => i === current);
+function MobileChrome({ pathname, items }: Readonly<{ pathname: string; items: NavItem[] }>) {
+  const current = findNavItem(items, pathname);
+  const value = items.findIndex((i) => i === current);
   return (
     <>
       <AppBar
@@ -208,6 +215,9 @@ function MobileChrome({ pathname }: Readonly<{ pathname: string }>) {
           <Typography component="p" sx={{ fontWeight: 600, fontSize: '1rem' }}>
             Kowalski House
           </Typography>
+          <Box sx={{ ml: 'auto' }}>
+            <UsuarioMenu variante="compacto" />
+          </Box>
         </Toolbar>
       </AppBar>
       <Paper
@@ -226,7 +236,7 @@ function MobileChrome({ pathname }: Readonly<{ pathname: string }>) {
         }}
       >
         <BottomNavigation showLabels value={value} sx={{ height: layout.bottomNavHeight }}>
-          {NAV_ITEMS.map((item) => (
+          {items.map((item) => (
             <BottomNavigationAction
               key={item.to}
               component={NavLink}
@@ -247,23 +257,24 @@ function MobileChrome({ pathname }: Readonly<{ pathname: string }>) {
   );
 }
 
-/** Estrutura do app: navegação adequada ao tamanho de tela + área de conteúdo. */
 export function Layout({ children }: Readonly<{ children: ReactNode }>) {
   const theme = useTheme();
   const { pathname } = useLocation();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { isAdmin } = useAuth();
+  const { sections, items } = navegacao(isAdmin);
 
   const offset = isDesktop ? layout.sidebarWidth : isMobile ? 0 : layout.railWidth;
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {isDesktop ? (
-        <Sidebar pathname={pathname} />
+        <Sidebar pathname={pathname} sections={sections} />
       ) : isMobile ? (
-        <MobileChrome pathname={pathname} />
+        <MobileChrome pathname={pathname} items={items} />
       ) : (
-        <Rail pathname={pathname} />
+        <Rail pathname={pathname} items={items} />
       )}
       <Box
         component="main"

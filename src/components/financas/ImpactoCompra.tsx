@@ -10,7 +10,6 @@ interface ImpactoCompraProps {
   numeroParcelas: number;
 }
 
-/** Painel lateral da nova transação: quanto a compra pesa nos próximos meses. */
 export function ImpactoCompra({ simulacao: s, numeroParcelas }: Readonly<ImpactoCompraProps>) {
   const antes = s.pctOrcamentoAntes;
   const depois = s.pctOrcamentoDepois;

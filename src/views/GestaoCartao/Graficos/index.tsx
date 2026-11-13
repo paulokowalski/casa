@@ -45,7 +45,6 @@ const valorNoTopo =
       </text>
     ) : null;
 
-// ---------------------------------------------------------------- Evolução
 export function EvolucaoMensal() {
   const { analise, loading } = useGestaoCartao();
   return (
@@ -69,9 +68,10 @@ export function EvolucaoMensal() {
               <CartesianGrid {...gridProps} />
               <XAxis dataKey="rotulo" {...axisProps} interval={0} fontSize={11} />
               <YAxis {...yAxisProps} width={44} tickFormatter={compactNumber} />
-              <Tooltip {...tooltipProps} formatter={(v: number) => [formatCurrency(v), 'Gasto']} />
+              <Tooltip {...tooltipProps} formatter={(v) => [formatCurrency(Number(v)), 'Gasto']} />
               {analise.orcamento && (
                 <ReferenceLine
+                  zIndex={250}
                   y={analise.orcamento.valor}
                   stroke={tones.error.solid}
                   strokeDasharray="6 4"
@@ -79,7 +79,13 @@ export function EvolucaoMensal() {
                 />
               )}
               {analise.media6 && (
-                <ReferenceLine y={analise.media6} stroke={palette.gray[400]} strokeDasharray="6 4" strokeWidth={1.5} />
+                <ReferenceLine
+                  zIndex={250}
+                  y={analise.media6}
+                  stroke={palette.gray[400]}
+                  strokeDasharray="6 4"
+                  strokeWidth={1.5}
+                />
               )}
               <Bar dataKey="valor" radius={[4, 4, 0, 0]} maxBarSize={40}>
                 {analise.serie12.map((s) => (
@@ -95,7 +101,6 @@ export function EvolucaoMensal() {
   );
 }
 
-// ---------------------------------------------------------------- Categorias
 export function PorCategoria({
   selecionada,
   onSelecionar,
@@ -114,7 +119,6 @@ export function PorCategoria({
   );
 }
 
-// ---------------------------------------------------------------- Projeção
 export function PorCartao() {
   const { analise, loading } = useGestaoCartao();
   return (
@@ -144,7 +148,7 @@ export function PorDiaDaSemana() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={analise.diasSemana} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
               <XAxis dataKey="dia" {...axisProps} />
-              <Tooltip {...tooltipProps} formatter={(v: number) => [formatCurrency(v), 'Gasto']} />
+              <Tooltip {...tooltipProps} formatter={(v) => [formatCurrency(Number(v)), 'Gasto']} />
               <Bar dataKey="valor" radius={[4, 4, 0, 0]}>
                 {analise.diasSemana.map((d) => (
                   <Cell
@@ -193,7 +197,7 @@ export function MaioresGastos() {
                   · {capitalize(t.detalhe)}
                 </Box>
               </Typography>
-              <Typography variant="body2" fontWeight={600}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {formatCurrency(t.valor)}
               </Typography>
             </Box>

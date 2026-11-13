@@ -111,7 +111,7 @@ export function GraficoLinhasPotenciaDia({ diaSelecionado }: Readonly<{ diaSelec
                 <CartesianGrid {...gridProps} />
                 <XAxis dataKey="horario" {...axisProps} minTickGap={28} />
                 <YAxis {...yAxisProps} width={44} tickFormatter={(v: number) => `${compactNumber(v)}`} unit="W" />
-                <Tooltip {...tooltipProps} formatter={(v: number) => [kw(v), 'Potência']} />
+                <Tooltip {...tooltipProps} formatter={(v) => [kw(Number(v)), 'Potência']} />
                 <Area
                   type="monotone"
                   dataKey="potencia"

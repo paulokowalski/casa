@@ -56,7 +56,6 @@ function saudacao(hora: number) {
   return 'Boa noite';
 }
 
-// ------------------------------------------------------------------ Resumo do dia
 const ICONES: Record<InsightDia['icone'], ReactNode> = {
   sol: <WbSunnyOutlinedIcon />,
   grafico: <ShowChartIcon />,
@@ -98,8 +97,8 @@ function ResumoDoDia({ insights, carregando }: Readonly<{ insights: InsightDia[]
             >
               <IconBadge tone={TOM[i.tom]}>{ICONES[i.icone]}</IconBadge>
               <Box sx={{ minWidth: 0 }}>
-                <Typography fontWeight={600}>{i.titulo}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                <Typography sx={{ fontWeight: 600 }}>{i.titulo}</Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
                   {i.texto}
                 </Typography>
               </Box>
@@ -111,7 +110,6 @@ function ResumoDoDia({ insights, carregando }: Readonly<{ insights: InsightDia[]
   );
 }
 
-// ------------------------------------------------------------------ Tarifa editável
 function Tarifa({ tarifa, setTarifa }: Readonly<{ tarifa: number; setTarifa: (v: number) => void }>) {
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState('');
@@ -153,21 +151,22 @@ function Tarifa({ tarifa, setTarifa }: Readonly<{ tarifa: number; setTarifa: (v:
         if (e.key === 'Enter') salvar();
         if (e.key === 'Escape') setEditando(false);
       }}
-      inputProps={{ inputMode: 'decimal' }}
-      InputProps={{ startAdornment: <InputAdornment position="start">R$</InputAdornment> }}
+      slotProps={{
+        htmlInput: { inputMode: 'decimal' },
+        input: { startAdornment: <InputAdornment position="start">R$</InputAdornment> },
+      }}
       sx={{ maxWidth: 170 }}
     />
   );
 }
 
-// ------------------------------------------------------------------ Câmbio
 function LinhaCambio({ c }: Readonly<{ c: Cambio }>) {
   const faixa = c.maximo - c.minimo;
   const pos = faixa > 0 ? Math.min(100, Math.max(0, ((c.valor - c.minimo) / faixa) * 100)) : 50;
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.25, flexWrap: 'wrap' }}>
-        <Typography fontWeight={600} sx={{ flex: 1, minWidth: 100 }}>
+        <Typography sx={{ fontWeight: 600, flex: 1, minWidth: 100 }}>
           {c.codigo === 'USD' ? 'Dólar (USD)' : 'Euro (EUR)'}
         </Typography>
         <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>R$ {quatroCasas(c.valor)}</Typography>
@@ -198,7 +197,6 @@ function LinhaCambio({ c }: Readonly<{ c: Cambio }>) {
   );
 }
 
-// ------------------------------------------------------------------ Página
 export function Home() {
   const d = useDashboardData();
   const theme = useTheme();
@@ -244,7 +242,6 @@ export function Home() {
         }
       />
 
-      {/* Indicadores */}
       <Box
         component="section"
         aria-label="Indicadores"
@@ -313,7 +310,6 @@ export function Home() {
         />
       </Box>
 
-      {/* Resumo + potência */}
       <Box sx={grade({ lg: 'minmax(320px, 1fr) minmax(0, 2fr)' })}>
         <ResumoDoDia insights={d.insights} carregando={d.carregandoResumo} />
         <SectionCard
@@ -358,7 +354,7 @@ export function Home() {
                   <CartesianGrid {...gridProps} />
                   <XAxis dataKey="horario" {...axisProps} minTickGap={celular ? 40 : 28} />
                   <YAxis {...yAxisProps} width={56} tickFormatter={(v: number) => kw(v)} />
-                  <RTooltip {...tooltipProps} formatter={(v: number) => [kw(v), 'Potência']} />
+                  <RTooltip {...tooltipProps} formatter={(v) => [kw(Number(v)), 'Potência']} />
                   <Area
                     type="monotone"
                     dataKey="potencia"
@@ -383,7 +379,6 @@ export function Home() {
         </SectionCard>
       </Box>
 
-      {/* Geração no ano + carro */}
       <Box sx={grade({ lg: 'repeat(2, minmax(0, 1fr))' })}>
         <SectionCard
           title="Geração no ano"
@@ -424,10 +419,7 @@ export function Home() {
                     <YAxis {...yAxisProps} width={40} />
                     <RTooltip
                       {...tooltipProps}
-                      formatter={(v: number, n: string) => [
-                        kwh(v, 0),
-                        n === 'atual' ? String(hoje.ano) : String(hoje.ano - 1),
-                      ]}
+                      formatter={(v, n) => [kwh(Number(v), 0), n === 'atual' ? String(hoje.ano) : String(hoje.ano - 1)]}
                     />
                     <Bar dataKey="anterior" fill={palette.gray[300]} radius={[3, 3, 0, 0]} />
                     <Bar dataKey="atual" fill={colors.chart.primary} radius={[3, 3, 0, 0]} />
@@ -435,7 +427,7 @@ export function Home() {
                 </ResponsiveContainer>
               </Box>
               {d.solarMes?.previsao ? (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1.5 }}>
                   Previsão de {MONTHS_PT[hoje.mes - 1]}: <b>~{kwh(Math.round(d.solarMes.previsao), 0)}</b>
                 </Typography>
               ) : null}
@@ -475,7 +467,7 @@ export function Home() {
                     />
                     <RTooltip
                       {...tooltipProps}
-                      formatter={(v: number) => [formatCurrency(v), 'FIPE']}
+                      formatter={(v) => [formatCurrency(Number(v)), 'FIPE']}
                       labelFormatter={(l) => `Referência ${l}`}
                     />
                     <Line
@@ -519,7 +511,6 @@ export function Home() {
         </SectionCard>
       </Box>
 
-      {/* Câmbio */}
       <SectionCard title="Câmbio hoje" subtitle="Cotação atual entre a mínima e a máxima do dia">
         {d.cambioStatus === 'loading' ? (
           <Skeleton variant="rounded" height={90} />

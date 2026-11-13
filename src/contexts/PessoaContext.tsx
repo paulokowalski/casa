@@ -1,16 +1,23 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api, apiErrorMessage } from '../services/api';
 import { API_URLS } from '../config/urls';
+import type { Papel } from '../types/auth';
 
 export interface Pessoa {
   id: number;
   nome: string;
   email: string;
+  papel: Papel;
+  ativo: boolean;
+  temAcesso: boolean;
 }
 
 export interface PessoaInput {
   nome: string;
   email: string;
+  senha?: string;
+  papel: Papel;
+  ativo: boolean;
 }
 
 interface PessoaContextValue {

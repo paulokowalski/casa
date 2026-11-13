@@ -10,7 +10,6 @@ interface ExclusaoTransacaoDialogProps {
   onExcluir: (id: string) => Promise<void>;
   onClose: () => void;
   onSucesso: (mensagem: string) => void;
-  /** Se informado, sugere cancelar só as parcelas restantes em compras parceladas */
   onCancelarParcelas?: (p: Parcela) => void;
 }
 
@@ -58,7 +57,7 @@ export function ExclusaoTransacaoDialog({
           <>
             Excluir <b>{nomeSemMarcacao(parcela.nomeCompra)}</b> ({formatCurrency(parcela.valorTotal)} em{' '}
             {parcela.numeroTotalParcela}x, compra de {formatDateBR(parcela.dataCompra)}, {parcela.nomeCartao})?
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
               Todas as parcelas serão removidas, inclusive as já pagas.
             </Typography>
           </>

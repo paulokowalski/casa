@@ -9,7 +9,6 @@ import { formatCurrency, formatPercent } from '../../utils/format';
 const COR_CARTAO = '#5ab0f6';
 const coresGrupos = chartPalette.filter((c) => c !== COR_CARTAO);
 
-/** Para onde vai o dinheiro: contas por categoria + cartão */
 export function ParaOndeVai() {
   const { visao: v, loading } = useGestaoFinanceira();
   const total = v?.totalMes || 1;
@@ -55,18 +54,18 @@ export function ParaOndeVai() {
               >
                 <Box sx={{ width: 10, height: 10, borderRadius: '3px', bgcolor: g.cor, flexShrink: 0 }} />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={500} component="span">
+                  <Typography variant="body2" sx={{ fontWeight: 500 }} component="span">
                     {g.nome}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" component="span" noWrap>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }} component="span" noWrap>
                     {' · '}
                     {g.itens.join(', ')}
                   </Typography>
                 </Box>
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
                   {formatCurrency(g.valor)}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ width: 44, textAlign: 'right' }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', width: 44, textAlign: 'right' }}>
                   {formatPercent(g.valor / total)}
                 </Typography>
               </Box>
@@ -80,7 +79,6 @@ export function ParaOndeVai() {
 
 const CORES_REGRA = [palette.brand[600], COR_CARTAO, '#12b76a'];
 
-/** Renda dividida na regra 50/30/20 */
 export function Equilibrio() {
   const { visao: v, loading } = useGestaoFinanceira();
   const regra = v?.regra;
@@ -110,13 +108,13 @@ export function Equilibrio() {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
                   <Typography variant="body2">
                     <b>{r.nome}</b>{' '}
-                    <Typography component="span" variant="body2" color="text.secondary">
+                    <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
                       · {r.descricao}
                     </Typography>
                   </Typography>
                   <Typography variant="body2">
                     <b style={{ color: ok ? undefined : palette.warning[700] }}>{formatPercent(r.pct, 1)}</b>{' '}
-                    <Typography component="span" variant="body2" color="text.secondary">
+                    <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
                       meta {r.acimaEhBom ? '≥' : '≤'} {formatPercent(r.meta)}
                     </Typography>
                   </Typography>
@@ -145,7 +143,7 @@ export function Equilibrio() {
                     }}
                   />
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.75 }}>
                   {formatCurrency(r.valor)} de {formatCurrency(v?.renda ?? 0)}
                 </Typography>
               </Box>

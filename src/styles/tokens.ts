@@ -1,9 +1,3 @@
-/**
- * Design tokens — fonte única de cores, espaçamentos e medidas do app.
- * Use sempre estes valores (ou o tema do MUI, que é gerado a partir deles)
- * em vez de cores soltas nos componentes.
- */
-
 export const palette = {
   brand: {
     50: '#eff4ff',
@@ -43,7 +37,6 @@ export const palette = {
   white: '#ffffff',
 } as const;
 
-/** Cores para séries de gráficos (distintas também em luminosidade) */
 export const chartPalette = [
   '#1d4ed8',
   '#5ab0f6',
@@ -92,7 +85,6 @@ export const layout = {
 
 export const fontFamily = "'Inter', 'Segoe UI', Roboto, Arial, sans-serif";
 
-/** Tons semânticos usados por ícones, pílulas de status e indicadores */
 export type Tone = 'brand' | 'success' | 'warning' | 'error' | 'info' | 'violet' | 'neutral';
 
 export const tones: Record<Tone, { bg: string; border: string; fg: string; solid: string }> = {

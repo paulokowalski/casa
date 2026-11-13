@@ -1,12 +1,8 @@
-/** Tipos compartilhados das telas de cartão e de gestão financeira (contrato do casa-api). */
-
-/** Item de filtro devolvido por /v1/filtro/* */
 export interface Item {
   codigo: string;
   descricao: string;
 }
 
-/** Uma parcela de compra em um mês — GET /v1/compra/{ano}/{mes}/{pessoa}/{cartao}/{ultimaParcela} */
 export interface Parcela {
   id: string;
   dataParcela: string;
@@ -23,7 +19,6 @@ export interface Parcela {
   categoria?: string;
 }
 
-/** Compra completa — GET /v1/compra */
 export interface CompraRegistro {
   id: string;
   nomeProduto: string;
@@ -34,18 +29,16 @@ export interface CompraRegistro {
   nomeCartao: string;
 }
 
-/** Corpo de POST/PUT /v1/compra */
 export interface CompraInput {
   nomeProduto: string;
   valorProduto: number;
-  dataCompra: string; // yyyy-MM-dd
+  dataCompra: string;
   numeroParcelas: number;
-  nomePessoaCompra: string; // várias pessoas separadas por vírgula
+  nomePessoaCompra: string;
   tipoLancamentoId: string;
   categoriaId?: string | null;
 }
 
-/** GET /v1/despesa/{ano}/{mes}/{pessoa} */
 export interface DespesaMes {
   valorMes: number;
   comprasParceladas: number;

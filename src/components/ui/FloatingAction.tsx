@@ -6,11 +6,9 @@ interface FloatingActionProps {
   label: string;
   icon: ReactNode;
   onClick: () => void;
-  /** Tecla de atalho que dispara a ação (padrão: N). `null` desliga. */
   atalho?: string | null;
 }
 
-/** Não dispara o atalho enquanto a pessoa digita ou com um modal aberto */
 function podeUsarAtalho(e: KeyboardEvent): boolean {
   if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return false;
   const alvo = e.target as HTMLElement | null;
@@ -18,11 +16,6 @@ function podeUsarAtalho(e: KeyboardEvent): boolean {
   return !document.querySelector('[role="dialog"], [role="presentation"].MuiPopover-root');
 }
 
-/**
- * Botão flutuante da ação principal da tela (novo registro). Fica sempre no canto inferior direito:
- * com ícone e texto no iPad/desktop e só o ícone no celular, acima da barra de navegação.
- * Inclui um espaço no fim da página para não cobrir a última linha do conteúdo.
- */
 export function FloatingAction({ label, icon, onClick, atalho = 'n' }: Readonly<FloatingActionProps>) {
   const acao = useRef(onClick);
   acao.current = onClick;
@@ -44,7 +37,6 @@ export function FloatingAction({ label, icon, onClick, atalho = 'n' }: Readonly<
 
   return (
     <>
-      {/* Espaço no fim da página: o botão nunca cobre a última linha ou a paginação */}
       <Box aria-hidden sx={{ height: { xs: 64, sm: 72 }, flexShrink: 0 }} />
       <Tooltip title={dica} placement="left" describeChild>
         <Fab

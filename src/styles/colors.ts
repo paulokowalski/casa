@@ -1,9 +1,5 @@
 import { chartPalette, palette, surface, text, tones, type Tone } from './tokens';
 
-/**
- * Aliases semânticos sobre os tokens (src/styles/tokens.ts).
- * Prefira `colors.text.secondary` a um hexadecimal solto no componente.
- */
 export const colors = {
   bg: {
     default: surface.background,
@@ -47,11 +43,3 @@ export const colors = {
 } as const;
 
 export { tones, type Tone };
-
-/** Estilo padrão de superfície (card): fundo branco, borda fina e sombra leve */
-export const surfaceSx = {
-  backgroundColor: surface.paper,
-  border: `1px solid ${surface.border}`,
-  borderRadius: '12px',
-  boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
-} as const;

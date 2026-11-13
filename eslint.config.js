@@ -25,11 +25,11 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
       eqeqeq: ['error', 'smart'],
     },
   },
   {
-    // Providers de contexto exportam o componente e o hook de acesso juntos (padrão do React)
     files: ['src/contexts/**/*.tsx'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },

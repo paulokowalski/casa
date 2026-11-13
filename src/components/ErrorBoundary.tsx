@@ -5,7 +5,6 @@ interface State {
   hasError: boolean;
 }
 
-/** Evita tela branca: mostra uma mensagem amigável se algum componente quebrar. */
 export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
   state: State = { hasError: false };
 
@@ -24,9 +23,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
         <Typography variant="h3" component="h1" gutterBottom>
           Ocorreu um erro inesperado
         </Typography>
-        <Typography color="text.secondary" sx={{ mb: 2 }}>
-          Tente recarregar a página.
-        </Typography>
+        <Typography sx={{ color: 'text.secondary', mb: 2 }}>Tente recarregar a página.</Typography>
         <Button variant="contained" onClick={() => window.location.reload()}>
           Recarregar
         </Button>

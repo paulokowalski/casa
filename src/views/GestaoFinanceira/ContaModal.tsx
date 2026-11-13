@@ -25,7 +25,6 @@ import { formatCurrency, maskCurrencyInput, parseCurrency, toCurrencyInput } fro
 
 interface ContaModalProps {
   open: boolean;
-  /** Conta em edição; `null` para cadastrar */
   conta: Conta | null;
   onClose: () => void;
   onSucesso: (mensagem: string) => void;
@@ -45,8 +44,8 @@ interface Form {
   pessoaId: string;
   valor: string;
   dia: string;
-  inicio: string; // yyyy-MM
-  fim: string; // yyyy-MM (recorrente, opcional)
+  inicio: string;
+  fim: string;
   parcelaAtual: string;
   totalParcelas: string;
   juros: string;
@@ -187,7 +186,7 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
         onSubmit={handleSubmit}
         sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
       >
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Gastos que não passam pelo cartão de crédito.
         </Typography>
 
@@ -216,10 +215,10 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
                   bgcolor: on ? tones.brand.bg : 'background.paper',
                 }}
               >
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
                   {t.nome}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                   {t.desc}
                 </Typography>
               </ButtonBase>
@@ -233,7 +232,7 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
           onChange={(e) => set('descricao', e.target.value)}
           required
           fullWidth
-          inputProps={{ maxLength: 120 }}
+          slotProps={{ htmlInput: { maxLength: 120 } }}
         />
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
@@ -277,8 +276,10 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
             label={f.tipo === 'PARCELADA' ? 'Valor da parcela' : 'Valor'}
             value={f.valor}
             onChange={(e) => set('valor', maskCurrencyInput(e.target.value.replace('-', '')))}
-            InputProps={{ startAdornment: <InputAdornment position="start">R$</InputAdornment> }}
-            inputProps={{ inputMode: 'decimal' }}
+            slotProps={{
+              input: { startAdornment: <InputAdornment position="start">R$</InputAdornment> },
+              htmlInput: { inputMode: 'decimal' },
+            }}
             required
           />
           <TextField
@@ -286,7 +287,7 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
             type="number"
             value={f.dia}
             onChange={(e) => set('dia', e.target.value)}
-            inputProps={{ min: 1, max: 31 }}
+            slotProps={{ htmlInput: { min: 1, max: 31 } }}
             required
           />
           <TextField
@@ -294,7 +295,7 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
             type="month"
             value={f.inicio}
             onChange={(e) => set('inicio', e.target.value)}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             required
             sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}
           />
@@ -310,14 +311,14 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
                 type="number"
                 value={f.parcelaAtual}
                 onChange={(e) => set('parcelaAtual', e.target.value)}
-                inputProps={{ min: 1 }}
+                slotProps={{ htmlInput: { min: 1 } }}
               />
               <TextField
                 label="Total de parcelas"
                 type="number"
                 value={f.totalParcelas}
                 onChange={(e) => set('totalParcelas', e.target.value)}
-                inputProps={{ min: 1 }}
+                slotProps={{ htmlInput: { min: 1 } }}
                 required
               />
               <TextField
@@ -325,12 +326,14 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
                 value={f.juros}
                 placeholder="ex.: 1,49"
                 onChange={(e) => set('juros', e.target.value.replace(/[^\d,]/g, ''))}
-                InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                inputProps={{ inputMode: 'decimal' }}
+                slotProps={{
+                  input: { endAdornment: <InputAdornment position="end">%</InputAdornment> },
+                  htmlInput: { inputMode: 'decimal' },
+                }}
                 sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}
               />
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: -1 }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', mt: -1 }}>
               Financiamento já em andamento? Informe a parcela deste primeiro mês (ex.: 24 de 48). Os juros permitem
               calcular quanto você economiza antecipando parcelas.
             </Typography>
@@ -343,7 +346,7 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
             type="month"
             value={f.fim}
             onChange={(e) => set('fim', e.target.value)}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             helperText="Deixe vazio se não tem data para acabar."
           />
         )}
@@ -353,10 +356,10 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
             control={<Switch checked={f.valorVariavel} onChange={(e) => set('valorVariavel', e.target.checked)} />}
             label={
               <Box>
-                <Typography variant="body2" fontWeight={500}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   Valor varia todo mês
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                   Água, luz e gás: o valor vira estimativa e você confirma quando a conta chegar
                 </Typography>
               </Box>
@@ -369,10 +372,10 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
             }
             label={
               <Box>
-                <Typography variant="body2" fontWeight={500}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   Débito automático
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                   Marca como paga sozinha na data do vencimento
                 </Typography>
               </Box>
@@ -394,10 +397,10 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
           >
             <EventRepeatIcon sx={{ color: palette.brand[600], fontSize: 20, mt: 0.25 }} />
             <Box>
-              <Typography variant="body2" fontWeight={600}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {resumo.titulo}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 {resumo.texto}
               </Typography>
             </Box>
@@ -405,7 +408,7 @@ export function ContaModal({ open, conta, onClose, onSucesso, onExcluir }: Reado
         )}
 
         {conta && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             As mudanças valem a partir de {rotuloMesLongo(idxDe(ctx.competencia)).toLowerCase()}. Meses já pagos não
             mudam.
           </Typography>

@@ -22,7 +22,6 @@ interface CancelamentoParcelasProps {
   setDataEstorno: (v: string) => void;
 }
 
-/** Aba "Cancelar parcelas": escolhe quantas foram pagas, lança estorno e mostra o resumo. */
 export function CancelamentoParcelas(p: Readonly<CancelamentoParcelasProps>) {
   const ini = idxDaData(p.dataCompra);
   const removidas = p.totalOriginal - p.pagas;
@@ -35,7 +34,7 @@ export function CancelamentoParcelas(p: Readonly<CancelamentoParcelasProps>) {
           <Typography variant="h6" component="h3">
             Quantas parcelas foram realmente pagas?
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.5 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25, mb: 1.5 }}>
             As demais serão removidas. As pagas continuam no histórico e nos gráficos.
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
@@ -126,8 +125,8 @@ export function CancelamentoParcelas(p: Readonly<CancelamentoParcelasProps>) {
             control={<Checkbox checked={p.comEstorno} onChange={(e) => p.setComEstorno(e.target.checked)} />}
             label={
               <Box>
-                <Typography fontWeight={600}>Recebi estorno de valor já pago</Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography sx={{ fontWeight: 600 }}>Recebi estorno de valor já pago</Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                   Cria um lançamento negativo (crédito) na fatura
                 </Typography>
               </Box>
@@ -142,7 +141,7 @@ export function CancelamentoParcelas(p: Readonly<CancelamentoParcelasProps>) {
                 value={p.valorEstorno}
                 onChange={(e) => p.setValorEstorno(maskCurrencyInput(e.target.value.replace('-', '')))}
                 placeholder={toCurrencyInput(p.valorParcela)}
-                inputProps={{ inputMode: 'decimal' }}
+                slotProps={{ htmlInput: { inputMode: 'decimal' } }}
               />
               <TextField
                 size="small"
@@ -150,7 +149,7 @@ export function CancelamentoParcelas(p: Readonly<CancelamentoParcelasProps>) {
                 type="date"
                 value={p.dataEstorno}
                 onChange={(e) => p.setDataEstorno(e.target.value)}
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
               {idxEstorno !== null && (
                 <Typography variant="caption" sx={{ gridColumn: '1 / -1' }}>

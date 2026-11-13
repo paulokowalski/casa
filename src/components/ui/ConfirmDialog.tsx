@@ -15,7 +15,6 @@ interface ConfirmDialogProps {
   children?: ReactNode;
 }
 
-/** Confirmação padrão (ex.: excluir). */
 export function ConfirmDialog({
   open,
   title,

@@ -7,7 +7,6 @@ export interface ShareItem {
   valor: number;
 }
 
-/** Barra empilhada de participação + legenda (ex.: gasto por cartão). */
 export function ShareBar({ itens }: Readonly<{ itens: ShareItem[] }>) {
   const positivos = itens.filter((i) => i.valor > 0).sort((a, b) => b.valor - a.valor);
   const total = positivos.reduce((a, i) => a + i.valor, 0) || 1;
@@ -41,10 +40,10 @@ export function ShareBar({ itens }: Readonly<{ itens: ShareItem[] }>) {
             <Typography variant="body2" sx={{ flex: 1, color: 'text.primary' }} noWrap>
               {capitalize(i.nome)}
             </Typography>
-            <Typography variant="body2" fontWeight={600}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
               {formatCurrency(i.valor, true)}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ width: 40, textAlign: 'right' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', width: 40, textAlign: 'right' }}>
               {formatPercent(i.valor / total)}
             </Typography>
           </Box>

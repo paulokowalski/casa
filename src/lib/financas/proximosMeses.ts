@@ -1,7 +1,3 @@
-/**
- * Próximos 12 meses no cartão: total das parcelas já assumidas por mês, espaço livre no orçamento
- * e quando cada parcelamento termina. Funções puras.
- */
 import type { Parcela } from '../../types/financas';
 import { arred, nomeSemMarcacao, rotuloMesAno, somar } from './parcelas';
 
@@ -14,7 +10,6 @@ export interface PontoProximo {
   idx: number;
   rotulo: string;
   total: number;
-  /** espaço do orçamento que sobra para compras novas (0 sem orçamento) */
   livre: number;
 }
 
@@ -32,9 +27,7 @@ export interface ProximosMeses {
   media: number;
   qtdCompras: number;
   maisPesado: { idx: number; total: number } | null;
-  /** primeiro mês sem parcelas depois do último mês com parcelas; null se não há parcelas */
   livreDeParcelasIdx: number | null;
-  /** true quando ainda há parcelas no último mês da janela (termina depois dela) */
   continuaDepois: boolean;
   terminam: TerminoFuturo[];
   orcamento: number | null;
@@ -60,7 +53,6 @@ export function calcularProximosMeses(meses: MesFuturo[], orcamento: number | nu
   const ultimoDaJanela = pontos.at(-1);
   const continuaDepois = Boolean(ultimoComParcelas && ultimoDaJanela && ultimoComParcelas.idx === ultimoDaJanela.idx);
 
-  // Compras distintas e parcelamentos que terminam na janela
   const compras = new Set<string>();
   const terminam: TerminoFuturo[] = [];
   ordenados.forEach((m) =>

@@ -1,14 +1,8 @@
-/**
- * Visão consolidada do mês (contas fora do cartão + cartão de crédito) e insights de economia
- * da Gestão Financeira. Funções puras: recebem os dados já carregados e devolvem números e textos.
- */
 import type { Conta, Lancamento, TipoConta } from '../../types/contas';
 import type { Parcela } from '../../types/financas';
 import type { Tone } from '../../styles/tokens';
 import { formatCurrency, formatPercent } from '../../utils/format';
 import { mesIdx, rotuloMes, rotuloMesLongo, type MesRef } from './parcelas';
-
-// ---------------------------------------------------------------------------- tipos
 
 export interface Grupo {
   nome: string;
@@ -21,11 +15,8 @@ export interface FaixaRegra {
   nome: string;
   descricao: string;
   valor: number;
-  /** fração da renda */
   pct: number;
-  /** meta (fração) */
   meta: number;
-  /** essenciais e estilo de vida: abaixo da meta é bom; reserva: acima é bom */
   acimaEhBom: boolean;
 }
 
@@ -55,13 +46,11 @@ export interface Insight {
   titulo: string;
   texto: string;
   tag: string;
-  /** economia mensal estimada (entra no total "Economia possível") */
   economiaMensal?: number;
 }
 
 export type SituacaoConta = 'paga' | 'atrasada' | 'hoje' | 'breve' | 'pendente';
 
-/** Linha da lista "Contas do mês": uma conta ou a fatura do cartão */
 export interface LinhaConta {
   chave: string;
   lancamento: Lancamento | null;
@@ -72,7 +61,6 @@ export interface LinhaConta {
   vencimento: string | null;
   valor: number;
   situacao: SituacaoConta | 'cartao';
-  /** conta ou fatura marcada como paga */
   paga: boolean;
   diasParaVencer: number | null;
 }
@@ -105,20 +93,14 @@ export interface VisaoMensal {
 
 export interface EntradaVisao {
   ref: MesRef;
-  /** contas dos 12 meses até `ref` */
   lancamentos: Lancamento[];
   contas: Conta[];
-  /** parcelas do cartão no mês `ref` */
   parcelasCartao: Parcela[];
-  /** total do cartão por mês (índice de mês → valor) */
   cartaoPorMes: Map<number, number>;
   renda: number | null;
-  /** fatura do cartão do mês marcada como paga */
   faturaPaga: boolean;
   hoje: Date;
 }
-
-// ------------------------------------------------------------------------ helpers
 
 const soma = (xs: number[]) => xs.reduce((a, x) => a + x, 0);
 const idxDeCompetencia = (c: string) => {
@@ -163,8 +145,6 @@ export function detalheLancamento(l: Lancamento): string {
   return partes.join(' · ');
 }
 
-// ----------------------------------------------------------------------- cálculo
-
 export function calcularVisao(e: EntradaVisao): VisaoMensal {
   const refIdx = mesIdx(e.ref);
   const hoje = hojeISO(e.hoje);
@@ -175,7 +155,6 @@ export function calcularVisao(e: EntradaVisao): VisaoMensal {
   });
   const doMes = porMes.get(refIdx) ?? [];
 
-  // Cartão do mês: soma exata das parcelas (o histórico vem do total mensal)
   const cartaoMes = soma(e.parcelasCartao.map((p) => Number(p.valorParcela) || 0));
   const cartaoDe = (i: number) => (i === refIdx ? cartaoMes : (e.cartaoPorMes.get(i) ?? 0));
   const contasDe = (i: number) => soma((porMes.get(i) ?? []).map((l) => l.valor));
@@ -201,7 +180,6 @@ export function calcularVisao(e: EntradaVisao): VisaoMensal {
     .filter((v) => v >= hoje)
     .sort()[0];
 
-  // Para onde vai o dinheiro
   const mapaGrupos = new Map<string, Grupo>();
   doMes.forEach((l) => {
     const nome = l.categoria || 'Outros';
@@ -337,11 +315,9 @@ function calcularFinanciamentos(contas: Conta[], doMes: Lancamento[], refIdx: nu
         jurosMes: c.jurosMes,
       };
     })
-    .filter((f) => f.parcela >= 1 && f.parcela <= f.total) // em andamento no mês
+    .filter((f) => f.parcela >= 1 && f.parcela <= f.total)
     .sort((a, b) => b.saldo - a.saldo);
 }
-
-// ---------------------------------------------------------------------- insights
 
 type Base = Omit<VisaoMensal, 'insights' | 'economiaPossivel'>;
 
@@ -349,7 +325,6 @@ function gerarInsights(v: Base, porMes: Map<number, Lancamento[]>, doMes: Lancam
   const lista: Insight[] = [];
   const mesNome = (idx: number) => rotuloMesLongo(idx).toLowerCase();
 
-  // 1. Cartão acima da média
   if (v.mediaCartao6 && v.cartaoMes > v.mediaCartao6 * 1.1) {
     const excesso = v.cartaoMes - v.mediaCartao6;
     lista.push({
@@ -362,7 +337,6 @@ function gerarInsights(v: Base, porMes: Map<number, Lancamento[]>, doMes: Lancam
     });
   }
 
-  // 2. Sobra baixa (ou renda não informada)
   if (v.renda === null) {
     lista.push({
       id: 'renda',
@@ -384,7 +358,6 @@ function gerarInsights(v: Base, porMes: Map<number, Lancamento[]>, doMes: Lancam
     });
   }
 
-  // 3. Reajustes de contas fixas (não variáveis) nos últimos 12 meses
   const porConta = new Map<string, Lancamento[]>();
   [...porMes.values()].flat().forEach((l) => porConta.set(l.contaId, [...(porConta.get(l.contaId) ?? []), l]));
   porConta.forEach((ls) => {
@@ -407,7 +380,6 @@ function gerarInsights(v: Base, porMes: Map<number, Lancamento[]>, doMes: Lancam
     }
   });
 
-  // 4. Parcelamentos que terminam neste mês
   const terminam = doMes.filter(
     (l) => l.tipo === 'PARCELADA' && l.numeroParcela && l.numeroParcela === l.totalParcelas,
   );
@@ -425,7 +397,6 @@ function gerarInsights(v: Base, porMes: Map<number, Lancamento[]>, doMes: Lancam
     });
   }
 
-  // 5. Contas de valor variável subindo 3 meses seguidos
   porConta.forEach((ls) => {
     if (!ls[0].valorVariavel) return;
     const reais = ls
@@ -447,7 +418,6 @@ function gerarInsights(v: Base, porMes: Map<number, Lancamento[]>, doMes: Lancam
     }
   });
 
-  // 6. Vencimentos concentrados (janela de 6 dias com mais da metade das contas a pagar)
   const pendentes = doMes.filter((l) => !l.paga);
   if (pendentes.length >= 2 && v.contasMes > 0) {
     let melhor = { de: 0, valor: 0, qtd: 0 };
@@ -468,7 +438,6 @@ function gerarInsights(v: Base, porMes: Map<number, Lancamento[]>, doMes: Lancam
     }
   }
 
-  // 7. Financiamentos: antecipar parcelas (com juros) ou pedir a taxa
   v.financiamentos
     .filter((f) => f.restantes >= 1)
     .forEach((f) => {
@@ -496,7 +465,6 @@ function gerarInsights(v: Base, porMes: Map<number, Lancamento[]>, doMes: Lancam
       }
     });
 
-  // 8. Contas com valor estimado aguardando confirmação
   const estimadas = doMes.filter((l) => l.valorEstimado && !l.paga);
   if (estimadas.length > 0) {
     lista.push({

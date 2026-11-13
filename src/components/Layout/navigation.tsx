@@ -7,10 +7,10 @@ import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 
 export interface NavItem {
   label: string;
-  /** Rótulo curto da barra inferior no celular */
   shortLabel: string;
   to: string;
   icon: ReactNode;
+  adminOnly?: boolean;
 }
 
 export interface NavSection {
@@ -18,7 +18,6 @@ export interface NavSection {
   items: NavItem[];
 }
 
-/** Menu do app: fonte única para sidebar, barra de ícones e barra inferior. */
 export const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Visão geral',
@@ -37,12 +36,19 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: 'Cadastros',
-    items: [{ label: 'Pessoas', shortLabel: 'Pessoas', to: '/pessoa', icon: <PeopleAltOutlinedIcon /> }],
+    items: [
+      { label: 'Pessoas', shortLabel: 'Pessoas', to: '/pessoa', icon: <PeopleAltOutlinedIcon />, adminOnly: true },
+    ],
   },
 ];
 
-export const NAV_ITEMS: NavItem[] = NAV_SECTIONS.flatMap((s) => s.items);
+export function navegacao(isAdmin: boolean): { sections: NavSection[]; items: NavItem[] } {
+  const sections = NAV_SECTIONS.map((s) => ({ ...s, items: s.items.filter((i) => isAdmin || !i.adminOnly) })).filter(
+    (s) => s.items.length > 0,
+  );
+  return { sections, items: sections.flatMap((s) => s.items) };
+}
 
-export function findNavItem(pathname: string): NavItem | undefined {
-  return NAV_ITEMS.find((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to)));
+export function findNavItem(items: NavItem[], pathname: string): NavItem | undefined {
+  return items.find((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to)));
 }

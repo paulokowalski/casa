@@ -4,12 +4,10 @@ import { Box, Typography } from '@mui/material';
 interface PageHeaderProps {
   title: ReactNode;
   subtitle?: ReactNode;
-  /** Seção do menu (ex.: "Finanças"), exibida acima do título */
   section?: string;
   actions?: ReactNode;
 }
 
-/** Cabeçalho padrão de página: seção, título, descrição e ações. */
 export function PageHeader({ title, subtitle, section, actions }: Readonly<PageHeaderProps>) {
   return (
     <Box
@@ -24,7 +22,7 @@ export function PageHeader({ title, subtitle, section, actions }: Readonly<PageH
     >
       <Box sx={{ minWidth: 0 }}>
         {section && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, display: { xs: 'none', sm: 'block' } }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5, display: { xs: 'none', sm: 'block' } }}>
             {section}
           </Typography>
         )}
@@ -34,8 +32,7 @@ export function PageHeader({ title, subtitle, section, actions }: Readonly<PageH
         {subtitle && (
           <Typography
             variant="body1"
-            color="text.secondary"
-            sx={{ mt: 0.5, '&::first-letter': { textTransform: 'uppercase' } }}
+            sx={{ color: 'text.secondary', mt: 0.5, '&::first-letter': { textTransform: 'uppercase' } }}
           >
             {subtitle}
           </Typography>

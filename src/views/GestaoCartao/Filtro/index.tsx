@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { InputAdornment, TextField, Tooltip } from '@mui/material';
 import { FilterBar } from '../../../components/ui/FilterBar';
 import { useGestaoCartao } from '../../../contexts/GestaoCartaoContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { TODOS } from '../../../services/financas';
 import type { Item } from '../../../types/financas';
 import { maskCurrencyInput, parseCurrency, toCurrencyInput } from '../../../utils/format';
@@ -16,6 +17,7 @@ const ULTIMA_PARCELA = [
 
 export function Filtro() {
   const f = useGestaoCartao();
+  const { isAdmin } = useAuth();
   const [orcamentoTexto, setOrcamentoTexto] = useState(f.orcamento ? toCurrencyInput(f.orcamento) : '');
 
   useEffect(() => setOrcamentoTexto(f.orcamento ? toCurrencyInput(f.orcamento) : ''), [f.orcamento]);
@@ -50,6 +52,7 @@ export function Filtro() {
           value: f.selecionados.pessoa,
           options: opcoes(f.pessoas),
           onChange: f.selecionarPessoa,
+          disabled: !isAdmin,
         },
         {
           id: 'cartao-cartao',
@@ -81,8 +84,10 @@ export function Filtro() {
               confirmarOrcamento();
             }
           }}
-          inputProps={{ inputMode: 'decimal' }}
-          InputProps={{ startAdornment: <InputAdornment position="start">R$</InputAdornment> }}
+          slotProps={{
+            htmlInput: { inputMode: 'decimal' },
+            input: { startAdornment: <InputAdornment position="start">R$</InputAdornment> },
+          }}
           fullWidth
         />
       </Tooltip>

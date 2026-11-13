@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { TooltipProps } from 'recharts';
+import type { TooltipContentProps } from 'recharts';
 import { SectionCard } from '../../components/ui/SectionCard';
 import { axisProps, compactNumber, gridProps, yAxisProps } from '../../components/charts/chartTheme';
 import { useGestaoFinanceira } from '../../contexts/GestaoFinanceiraContext';
@@ -48,7 +48,7 @@ function Legenda({ cor, texto, tipo }: Readonly<{ cor: string; texto: string; ti
 const sinal = (v: number) => `${v < 0 ? '−' : '+'}${compactNumber(Math.abs(v))}`;
 const corSobra = (v: number) => (v >= 0 ? tones.success.fg : tones.error.fg);
 
-function Dica({ active, payload }: TooltipProps<number, string>) {
+function Dica({ active, payload }: TooltipContentProps) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload as PontoFuturo;
   const linha = (rotulo: string, valor: number, cor?: string) => (
@@ -70,9 +70,7 @@ function Dica({ active, payload }: TooltipProps<number, string>) {
         fontSize: '0.75rem',
       }}
     >
-      <Typography fontWeight={600} fontSize="0.8125rem" sx={{ mb: 0.5 }}>
-        {rotuloMesLongo(p.idx)}
-      </Typography>
+      <Typography sx={{ fontWeight: 600, fontSize: '0.8125rem', mb: 0.5 }}>{rotuloMesLongo(p.idx)}</Typography>
       {linha('Contas fixas', p.contas)}
       {linha('Parcelas do cartão', p.parcelas)}
       <Box sx={{ borderTop: `1px solid ${palette.gray[100]}`, mt: 0.75, pt: 0.25 }}>
@@ -84,7 +82,6 @@ function Dica({ active, payload }: TooltipProps<number, string>) {
   );
 }
 
-/** Rótulo em cima de cada barra: o custo total previsto e, com renda informada, a sobra do mês */
 const rotuloTopo =
   (pontos: PontoFuturo[]) =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,7 +103,6 @@ const rotuloTopo =
     );
   };
 
-/** Celular: uma barra horizontal por mês, com o custo total e a sobra ao lado */
 function BarrasCelular({ d }: Readonly<{ d: Dados }>) {
   const escala = Math.max(d.renda ?? 0, ...d.pontos.map((p) => p.total)) || 1;
   const pct = (v: number) => `${(v / escala) * 100}%`;
@@ -118,7 +114,7 @@ function BarrasCelular({ d }: Readonly<{ d: Dados }>) {
           key={p.idx}
           sx={{ display: 'grid', gridTemplateColumns: '48px minmax(0, 1fr) 72px', alignItems: 'center', gap: 1 }}
         >
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             {p.rotulo}
           </Typography>
           <Box sx={{ display: 'flex', height: 14, borderRadius: '4px', overflow: 'hidden', bgcolor: palette.gray[50] }}>
@@ -126,11 +122,11 @@ function BarrasCelular({ d }: Readonly<{ d: Dados }>) {
             <Box sx={{ width: pct(p.parcelas), bgcolor: COR.parcelas }} />
           </Box>
           <Box sx={{ textAlign: 'right', lineHeight: 1.25 }}>
-            <Typography variant="caption" fontWeight={600} sx={{ display: 'block', color: 'text.primary' }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', color: 'text.primary' }}>
               {compactNumber(p.total)}
             </Typography>
             {p.sobra !== null && (
-              <Typography variant="caption" fontWeight={600} sx={{ display: 'block', color: corSobra(p.sobra) }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', color: corSobra(p.sobra) }}>
                 {sinal(p.sobra)}
               </Typography>
             )}
@@ -141,7 +137,6 @@ function BarrasCelular({ d }: Readonly<{ d: Dados }>) {
   );
 }
 
-/** Custo e sobra previstos nos próximos 12 meses */
 export function Futuro() {
   const { futuro: d } = useGestaoFinanceira();
   const theme = useTheme();
@@ -197,8 +192,16 @@ export function Futuro() {
                     tickFormatter={compactNumber}
                     domain={[0, (max: number) => Math.max(max, d.renda ?? 0) * 1.08]}
                   />
-                  <Tooltip cursor={{ fill: palette.gray[100] }} content={<Dica />} />
-                  {d.renda && <ReferenceLine y={d.renda} stroke={COR.renda} strokeDasharray="6 4" strokeWidth={1.5} />}
+                  <Tooltip cursor={{ fill: palette.gray[100] }} content={Dica} />
+                  {d.renda && (
+                    <ReferenceLine
+                      zIndex={250}
+                      y={d.renda}
+                      stroke={COR.renda}
+                      strokeDasharray="6 4"
+                      strokeWidth={1.5}
+                    />
+                  )}
                   <Bar dataKey="contas" stackId="f" fill={COR.contas} maxBarSize={44} isAnimationActive={false} />
                   <Bar
                     dataKey="parcelas"
@@ -215,7 +218,7 @@ export function Futuro() {
             </Box>
           )}
 
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1.5 }}>
             Compras no cartão que ainda não foram feitas não entram na conta.{' '}
             {d.renda
               ? `Em cima de cada barra: o custo total previsto e, acima dele, quanto sobra da renda líquida de ${formatCurrency(d.renda)} (em vermelho quando falta).`

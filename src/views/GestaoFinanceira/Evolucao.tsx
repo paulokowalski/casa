@@ -31,7 +31,6 @@ function Legenda({ cor, texto, tracejado }: Readonly<{ cor: string; texto: strin
   );
 }
 
-/** Contas fixas + cartão nos últimos 12 meses, com a linha da renda */
 export function Evolucao() {
   const { visao: v, loading } = useGestaoFinanceira();
   const ultimo = v?.serie.length ? v.serie.length - 1 : -1;
@@ -65,12 +64,14 @@ export function Evolucao() {
               />
               <Tooltip
                 {...tooltipProps}
-                formatter={(valor: number, nome: string) => [
-                  formatCurrency(valor),
+                formatter={(valor, nome) => [
+                  formatCurrency(Number(valor)),
                   nome === 'contas' ? 'Contas fixas' : 'Cartão',
                 ]}
               />
-              {v.renda ? <ReferenceLine y={v.renda} stroke="#12b76a" strokeDasharray="6 4" strokeWidth={1.5} /> : null}
+              {v.renda ? (
+                <ReferenceLine zIndex={250} y={v.renda} stroke="#12b76a" strokeDasharray="6 4" strokeWidth={1.5} />
+              ) : null}
               <Bar dataKey="contas" stackId="t" maxBarSize={40}>
                 {v.serie.map((p, i) => (
                   <Cell key={p.idx} fill={i === ultimo ? COR.contas : COR.contasSoft} />
@@ -86,7 +87,7 @@ export function Evolucao() {
         </Box>
       )}
       {v && v.serie.every((p) => p.total === 0) && (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
           Sem gastos no período.
         </Typography>
       )}

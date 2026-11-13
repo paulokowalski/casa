@@ -8,7 +8,6 @@ interface IconBadgeProps {
   children: ReactNode;
 }
 
-/** Ícone dentro de um quadrado arredondado com fundo suave. */
 export function IconBadge({ tone = 'brand', size = 32, children }: Readonly<IconBadgeProps>) {
   const t = tones[tone];
   return (

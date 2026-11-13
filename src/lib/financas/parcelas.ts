@@ -1,20 +1,10 @@
-/**
- * Regras de parcelas e datas, iguais às do casa-api:
- *  - valor da parcela = valorProduto / numeroParcelas, truncado em 2 casas (RoundingMode.DOWN)
- *  - a parcela k (1..n) cai em dataCompra + k meses
- * e a marcação de compras com parcelas canceladas ("[CANCELADA 2/10]" no nome).
- */
 import type { CompraInput, Parcela } from '../../types/financas';
 import { MONTHS_PT, MONTHS_SHORT_PT } from '../../utils/format';
 
 export interface MesRef {
   ano: number;
-  mes: number; // 1..12
+  mes: number;
 }
-
-// ---------------------------------------------------------------------------
-// Utilitários de data / valores
-// ---------------------------------------------------------------------------
 
 export const DIAS_SEMANA = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
 
@@ -38,7 +28,6 @@ export function idxDaData(data: string): number | null {
   return p ? p.ano * 12 + (p.mes - 1) : null;
 }
 
-/** "nov", ou "jan/27" quando o ano difere do ano de referência */
 export function rotuloMes(idx: number, anoRef?: number): string {
   const r = idxParaRef(idx);
   const abrev = MONTHS_SHORT_PT[r.mes - 1];
@@ -46,7 +35,6 @@ export function rotuloMes(idx: number, anoRef?: number): string {
   return abrev;
 }
 
-/** "dez/26": mês abreviado sempre com o ano */
 export function rotuloMesAno(idx: number): string {
   const r = idxParaRef(idx);
   return `${MONTHS_SHORT_PT[r.mes - 1]}/${String(r.ano).slice(-2)}`;
@@ -61,7 +49,6 @@ export function nomeMes(mes: number): string {
   return MONTHS_PT[mes - 1] ?? '';
 }
 
-/** Valor de cada parcela como o backend calcula (truncado em centavos). */
 export function valorParcelaDe(valorProduto: number, numeroParcelas: number): number {
   const n = Math.max(1, numeroParcelas || 1);
   const centavos = Math.round(Number(valorProduto || 0) * 100);
@@ -81,10 +68,6 @@ export function normalizar(texto: string | undefined | null): string {
     .trim()
     .toUpperCase();
 }
-
-// ---------------------------------------------------------------------------
-// Cancelamento de parcelas (marcação no nome da compra)
-// ---------------------------------------------------------------------------
 
 const REGEX_CANCELADA = /\s*\[CANCELADA (\d+)\/(\d+)\]\s*$/i;
 
@@ -112,15 +95,13 @@ export function nomeComCancelamento(nome: string, pagas: number, totalOriginal: 
   return `${nomeSemMarcacao(nome)} [CANCELADA ${pagas}/${totalOriginal}]`;
 }
 
-/** Quantas parcelas da compra já venceram até o mês informado (inclusive). */
 export function parcelasVencidasAte(dataCompra: string, numeroParcelas: number, ateIdx: number): number {
   const inicio = idxDaData(dataCompra);
   if (inicio === null) return 0;
-  const vencidas = ateIdx - inicio; // parcela k cai em inicio + k
+  const vencidas = ateIdx - inicio;
   return Math.max(0, Math.min(numeroParcelas, vencidas));
 }
 
-/** Monta o PUT que mantém só as `pagas` primeiras parcelas (as demais deixam de existir). */
 export function montarCancelamento(
   p: Parcela,
   pagas: number,
@@ -141,7 +122,6 @@ export function montarCancelamento(
   };
 }
 
-/** Monta o PUT que desfaz o cancelamento, voltando ao número original de parcelas. */
 export function montarReversao(p: Parcela, tipoLancamentoId: string, categoriaId: string | null): CompraInput | null {
   const info = lerCancelamento(p.nomeCompra);
   if (!info) return null;

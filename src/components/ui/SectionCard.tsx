@@ -4,16 +4,13 @@ import { Box, Paper, Typography, type SxProps, type Theme } from '@mui/material'
 interface SectionCardProps {
   title?: ReactNode;
   subtitle?: ReactNode;
-  /** Conteúdo à direita do título (botão, legenda, status) */
   action?: ReactNode;
-  /** `flush` remove o padding do corpo — útil para tabelas e listas de borda a borda */
   padding?: 'default' | 'flush';
   children: ReactNode;
   sx?: SxProps<Theme>;
   'aria-label'?: string;
 }
 
-/** Card padrão de seção: superfície branca com cabeçalho opcional. */
 export function SectionCard({
   title,
   subtitle,
@@ -63,7 +60,7 @@ export function SectionCard({
               </Typography>
             )}
             {subtitle && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
                 {subtitle}
               </Typography>
             )}

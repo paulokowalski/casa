@@ -11,7 +11,6 @@ interface ModalProps {
   maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
-/** Diálogo padrão. No celular abre em tela cheia. */
 export function Modal({ open, onClose, title, children, actions, maxWidth = 'sm' }: Readonly<ModalProps>) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));

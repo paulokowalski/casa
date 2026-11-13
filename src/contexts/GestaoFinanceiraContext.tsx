@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { usePessoa, type Pessoa } from './PessoaContext';
+import { useUsuario } from './AuthContext';
 import { comprasService, despesasService, filtrosService } from '../services/financas';
 import { contasService, faturaService, rendaService } from '../services/contas';
 import { calcularVisao, type VisaoMensal } from '../lib/financas/visaoMensal';
@@ -29,22 +30,18 @@ type GestaoFinanceiraValue = {
   setAno: (ano: number) => void;
   setMes: (mes: number) => void;
   setPessoaId: (id: number) => void;
-  /** Mês selecionado no formato "2026-11" */
   competencia: Competencia;
   loading: boolean;
   erro: string | null;
   visao: VisaoMensal | null;
-  /** Previsão dos próximos 12 meses (null enquanto carrega) */
   futuro: Futuro | null;
   contas: Conta[];
   renda: number | null;
   rendaHerdada: boolean;
   salvarRenda: (valor: number | null) => Promise<void>;
-  /** POST sem `id`; PUT com `id`, valendo a partir do mês selecionado */
   salvarConta: (dados: ContaInput, id?: string) => Promise<void>;
   excluirConta: (id: string, encerrarAPartirDoMes: boolean) => Promise<void>;
   atualizarLancamento: (id: string, dados: LancamentoInput) => Promise<void>;
-  /** Marca ou desmarca a fatura do cartão do mês como paga */
   marcarFatura: (paga: boolean) => Promise<void>;
 };
 
@@ -53,11 +50,16 @@ const GestaoFinanceiraContext = createContext<GestaoFinanceiraValue | null>(null
 const comp = (ano: number, mes: number): Competencia => `${ano}-${String(mes).padStart(2, '0')}`;
 
 export function GestaoFinanceiraProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const { pessoas } = usePessoa();
+  const { pessoas: todas } = usePessoa();
+  const { id: usuarioId, isAdmin } = useUsuario();
+  const pessoas = useMemo(
+    () => (isAdmin ? todas : todas.filter((p) => p.id === usuarioId)),
+    [todas, isAdmin, usuarioId],
+  );
   const hoje = new Date();
   const [ano, setAno] = useState(hoje.getFullYear());
   const [mes, setMes] = useState(hoje.getMonth() + 1);
-  const [pessoaId, setPessoaId] = useState<number | null>(null);
+  const [pessoaId, setPessoaId] = useState<number | null>(usuarioId);
   const [anosCompra, setAnosCompra] = useState<number[]>([]);
   const [categorias, setCategorias] = useState<Item[]>([]);
   const [dados, setDados] = useState<Dados | null>(null);
@@ -74,9 +76,8 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
     filtrosService.categorias().then(setCategorias);
   }, []);
 
-  // Primeira pessoa como padrão
   useEffect(() => {
-    if (pessoaId === null && pessoas.length > 0) setPessoaId(pessoas[0].id);
+    if (pessoas.length > 0 && !pessoas.some((p) => p.id === pessoaId)) setPessoaId(pessoas[0].id);
   }, [pessoas, pessoaId]);
 
   useEffect(() => {
@@ -121,7 +122,6 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
     };
   }, [pessoa, ano, mes, versao]);
 
-  // Próximos 12 meses: carregados à parte para não atrasar o resto da tela
   useEffect(() => {
     if (!pessoa) return;
     let ativo = true;
@@ -176,7 +176,7 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
   const atualizarLancamento = useCallback(async (id: string, input: LancamentoInput) => {
     const troca = (paga: boolean) =>
       setDados((d) => (d ? { ...d, lancamentos: d.lancamentos.map((l) => (l.id === id ? { ...l, paga } : l)) } : d));
-    if (input.paga !== undefined && input.valor === undefined) troca(input.paga); // resposta imediata na tela
+    if (input.paga !== undefined && input.valor === undefined) troca(input.paga);
     let atualizado: Lancamento;
     try {
       atualizado = await contasService.atualizarLancamento(id, input);
@@ -184,7 +184,6 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
       if (input.paga !== undefined && input.valor === undefined) troca(!input.paga);
       throw e;
     }
-    // Atualiza na hora; estimativas dos meses seguintes mudam no servidor, então recarrega em seguida
     setDados((d) => (d ? { ...d, lancamentos: d.lancamentos.map((l) => (l.id === id ? atualizado : l)) } : d));
     if (input.valor !== undefined) setVersao((v) => v + 1);
   }, []);
@@ -192,7 +191,7 @@ export function GestaoFinanceiraProvider({ children }: Readonly<{ children: Reac
   const marcarFatura = useCallback(
     async (paga: boolean) => {
       if (!pessoa) return;
-      setDados((d) => (d ? { ...d, faturaPaga: paga } : d)); // resposta imediata na tela
+      setDados((d) => (d ? { ...d, faturaPaga: paga } : d));
       try {
         const r = await faturaService.salvar(ano, mes, pessoa.id, paga);
         setDados((d) => (d ? { ...d, faturaPaga: r.paga } : d));

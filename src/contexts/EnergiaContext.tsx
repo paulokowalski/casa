@@ -4,23 +4,23 @@ import { API_URLS } from '../config/urls';
 import { MONTHS_SHORT_PT } from '../utils/format';
 
 export interface GeracaoMes {
-  mes: string; // "jan"
-  geracao: number; // kWh
+  mes: string;
+  geracao: number;
 }
 
 export interface GeracaoDia {
   dia: number;
-  geracao: number; // kWh
+  geracao: number;
 }
 
 export interface PotenciaPonto {
-  horario: string; // "12:40"
-  potencia: number; // W
+  horario: string;
+  potencia: number;
 }
 
 interface EnergiaContextValue {
   ano: string;
-  mes: string; // "01".."12"
+  mes: string;
   setAno: (ano: string) => void;
   setMes: (mes: string) => void;
   geracaoMensal: GeracaoMes[];
@@ -52,7 +52,6 @@ const MESES_EN = [
 
 type ApiData = string | number[];
 
-/** Lê "2026-11-05T12:40:00" ou [2026, 11, 5, 12, 40] */
 function horarioDe(data: ApiData): string {
   if (Array.isArray(data) && data.length >= 5)
     return `${String(data[3]).padStart(2, '0')}:${String(data[4]).padStart(2, '0')}`;
@@ -85,7 +84,6 @@ export function EnergiaProvider({ children }: Readonly<{ children: ReactNode }>)
   const [loadingDiaria, setLoadingDiaria] = useState(false);
   const [loadingPotencia, setLoadingPotencia] = useState(false);
 
-  // Geração por mês do ano
   useEffect(() => {
     let ativo = true;
     setLoadingMensal(true);
@@ -110,7 +108,6 @@ export function EnergiaProvider({ children }: Readonly<{ children: ReactNode }>)
     };
   }, [ano]);
 
-  // Geração por dia do mês
   useEffect(() => {
     let ativo = true;
     setLoadingDiaria(true);

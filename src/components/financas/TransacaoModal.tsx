@@ -20,6 +20,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { usePessoa } from '../../contexts/PessoaContext';
+import { useUsuario } from '../../contexts/AuthContext';
 import {
   lerCancelamento,
   montarCancelamento,
@@ -39,14 +40,11 @@ export type AbaTransacao = 'dados' | 'cancelar';
 
 interface TransacaoModalProps {
   open: boolean;
-  /** Parcela da compra em edição; `null` para cadastrar */
   parcela: Parcela | null;
   abaInicial?: AbaTransacao;
   categorias: Item[];
   tiposLancamento: Item[];
-  /** Grava a compra: POST sem `id`, PUT com `id`. Deve lançar Error com a mensagem em caso de falha. */
   onSalvar: (dados: CompraInput, id?: string) => Promise<void>;
-  /** Simulação de impacto de uma nova compra (opcional) */
   simular?: (valor: number, numeroParcelas: number, dataCompra: string) => Simulacao | null;
   onClose: () => void;
   onSucesso: (mensagem: string) => void;
@@ -54,14 +52,12 @@ interface TransacaoModalProps {
 
 const PARCELAS = Array.from({ length: 48 }, (_, i) => i + 1);
 
-/** Acha o código do item pelo código ou pela descrição (a API devolve só o nome do cartão/categoria). */
 function resolverId(valor: string | undefined, itens: Item[]): string {
   if (!valor) return '';
   const alvo = valor.toUpperCase();
   return itens.find((i) => i.codigo === valor || i.descricao?.toUpperCase() === alvo)?.codigo ?? '';
 }
 
-/** Cadastro/edição de transação, com simulação de impacto e cancelamento de parcelas. */
 export function TransacaoModal({
   open,
   parcela,
@@ -74,6 +70,7 @@ export function TransacaoModal({
   onSucesso,
 }: Readonly<TransacaoModalProps>) {
   const { pessoas } = usePessoa();
+  const usuario = useUsuario();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -99,7 +96,6 @@ export function TransacaoModal({
   const [valorEstorno, setValorEstorno] = useState('');
   const [dataEstorno, setDataEstorno] = useState(todayISO());
 
-  // Preenche o formulário ao abrir
   useEffect(() => {
     if (!open) return;
     setErro(null);
@@ -131,11 +127,10 @@ export function TransacaoModal({
       setValor('');
       setData(todayISO());
       setNumParcelas(1);
-      setPessoasSel([]);
+      setPessoasSel([pessoas.find((p) => p.id === usuario.id)?.nome ?? usuario.nome]);
       setTipoId('');
       setCategoriaId('');
     }
-    // pessoas/categorias/tipos podem chegar depois; o formulário só é preenchido ao abrir
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, parcela, abaInicial]);
 
@@ -242,7 +237,7 @@ export function TransacaoModal({
         <Box sx={{ minWidth: 0 }}>
           {edicao ? 'Editar transação' : 'Nova transação'}
           {parcela && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 400 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, fontWeight: 400 }}>
               {nomeSemMarcacao(parcela.nomeCompra)} · {formatCurrency(parcela.valorTotal)} em{' '}
               {parcela.numeroTotalParcela}x de {formatCurrency(valorParcela)} · {parcela.nomeCartao}
             </Typography>
@@ -314,7 +309,7 @@ export function TransacaoModal({
                 onChange={(e) => setValor(maskCurrencyInput(e.target.value))}
                 fullWidth
                 helperText="Use “-” na frente para estornos/créditos"
-                inputProps={{ inputMode: 'decimal' }}
+                slotProps={{ htmlInput: { inputMode: 'decimal' } }}
               />
               <TextField
                 label="Data da compra"
@@ -322,7 +317,7 @@ export function TransacaoModal({
                 value={data}
                 onChange={(e) => setData(e.target.value)}
                 fullWidth
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
               <TextField
                 select
@@ -375,10 +370,13 @@ export function TransacaoModal({
                   else setPessoasSel(typeof v === 'string' ? v.split(',').filter(Boolean) : v);
                 }}
                 fullWidth
-                SelectProps={{ multiple: !edicao, renderValue: (s) => (Array.isArray(s) ? s.join(', ') : String(s)) }}
+                disabled={edicao && !usuario.isAdmin}
+                slotProps={{
+                  select: { multiple: !edicao, renderValue: (s) => (Array.isArray(s) ? s.join(', ') : String(s)) },
+                }}
                 helperText={
                   !edicao && pessoasSel.length > 1
-                    ? `O valor será dividido igualmente entre ${pessoasSel.length} pessoas`
+                    ? `O valor será dividido igualmente entre ${pessoasSel.length} pessoas. Cada uma verá só a sua parte.`
                     : ' '
                 }
               >
