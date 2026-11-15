@@ -12,6 +12,7 @@ const GestaoCartao = lazy(() => import('./views/GestaoCartao').then((m) => ({ de
 const GestaoFinanceira = lazy(() => import('./views/GestaoFinanceira').then((m) => ({ default: m.GestaoFinanceira })));
 const Energia = lazy(() => import('./views/Energia').then((m) => ({ default: m.EnergiaWithProvider })));
 const Pessoas = lazy(() => import('./views/Pessoa').then((m) => ({ default: m.PessoaView })));
+const Servidor = lazy(() => import('./views/Servidor').then((m) => ({ default: m.ServidorView })));
 
 function RotaProtegida() {
   const { usuario } = useAuth();
@@ -49,6 +50,14 @@ export default function App() {
               element={
                 <SoAdmin>
                   <Pessoas />
+                </SoAdmin>
+              }
+            />
+            <Route
+              path="/servidor"
+              element={
+                <SoAdmin>
+                  <Servidor />
                 </SoAdmin>
               }
             />

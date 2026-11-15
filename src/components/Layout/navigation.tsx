@@ -4,6 +4,7 @@ import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
 import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 
 export interface NavItem {
   label: string;
@@ -38,6 +39,18 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Cadastros',
     items: [
       { label: 'Pessoas', shortLabel: 'Pessoas', to: '/pessoa', icon: <PeopleAltOutlinedIcon />, adminOnly: true },
+    ],
+  },
+  {
+    label: 'Administração',
+    items: [
+      {
+        label: 'Saúde do Servidor',
+        shortLabel: 'Servidor',
+        to: '/servidor',
+        icon: <MonitorHeartOutlinedIcon />,
+        adminOnly: true,
+      },
     ],
   },
 ];

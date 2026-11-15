@@ -20,14 +20,15 @@ geração de energia solar e cadastro de pessoas. Consome a [`casa-api`](../casa
 
 ## Telas
 
-| Rota                 | Tela               | O que mostra                                                                                                                                                                                             |
-| -------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/login`             | Login              | E-mail e senha; a sessão fica salva no navegador até o token expirar                                                                                                                                     |
-| `/`                  | Dashboard          | Resumo do dia: câmbio (dólar/euro), valor do carro (FIPE atual e histórico), potência e geração solar                                                                                                    |
-| `/gestao-cartao`     | Gestão de Cartão   | Gastos do mês por pessoa/cartão, saúde financeira, insights, gráficos (categoria, cartão, dia da semana, maiores gastos), próximos 12 meses, cadastro/edição/cancelamento de parcelas, exportação em PDF |
-| `/gestao-financeira` | Gestão Financeira  | Contas fixas, financiamentos e cartão juntos: regra 50/30/20 sobre a renda, evolução de 12 meses, previsão de custo e sobra, onde economizar                                                             |
-| `/energia`           | Energia Solar      | Geração dos painéis por dia, mês e ano                                                                                                                                                                   |
-| `/pessoa`            | Pessoas (só admin) | Quem tem compras no sistema e quem pode entrar (senha, papel, ativo)                                                                                                                                     |
+| Rota                 | Tela                         | O que mostra                                                                                                                                                                                                                                                                         |
+| -------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/login`             | Login                        | E-mail e senha; a sessão fica salva no navegador até o token expirar                                                                                                                                                                                                                 |
+| `/`                  | Dashboard                    | Resumo do dia: câmbio (dólar/euro), valor do carro (FIPE atual e histórico), potência e geração solar                                                                                                                                                                                |
+| `/gestao-cartao`     | Gestão de Cartão             | Gastos do mês por pessoa/cartão, saúde financeira, insights, gráficos (categoria, cartão, dia da semana, maiores gastos), próximos 12 meses, cadastro/edição/cancelamento de parcelas, exportação em PDF                                                                             |
+| `/gestao-financeira` | Gestão Financeira            | Contas fixas, financiamentos e cartão juntos: regra 50/30/20 sobre a renda, evolução de 12 meses, previsão de custo e sobra, onde economizar                                                                                                                                         |
+| `/energia`           | Energia Solar                | Geração dos painéis por dia, mês e ano                                                                                                                                                                                                                                               |
+| `/pessoa`            | Pessoas (só admin)           | Quem tem compras no sistema e quem pode entrar (senha, papel, ativo)                                                                                                                                                                                                                 |
+| `/servidor`          | Saúde do Servidor (só admin) | CPU (total e por núcleo), memória, swap, temperaturas, carga, discos e rede ao vivo (a cada 15 s); histórico de um dia em gráficos a cada 5 min; estatísticas diárias dos últimos 30 dias. Os dados vêm de `/v1/servidor/*` do casa-api, que grava uma amostra por minuto no MariaDB |
 
 Todas as rotas, menos `/login`, exigem sessão. As telas carregam sob demanda (`React.lazy`).
 
@@ -98,7 +99,7 @@ docker compose up -d --build casa
 ```
 src/
 ├── index.tsx / App.tsx   # Providers globais, rotas e proteção por login
-├── views/                # Uma pasta por tela (Home, GestaoCartao, GestaoFinanceira, Energia, Pessoa, Login)
+├── views/                # Uma pasta por tela (Home, GestaoCartao, GestaoFinanceira, Energia, Pessoa, Servidor, Login)
 ├── components/
 │   ├── Layout/           # Menu lateral/inferior, cabeçalho, menu do usuário
 │   ├── ui/               # Componentes genéricos (KpiCard, DataTable, Modal, PageHeader…)

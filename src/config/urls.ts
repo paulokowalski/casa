@@ -46,4 +46,8 @@ export const API_URLS = {
   GERACAO_SOLAR_ANO: (ano: Valor) => `/v1/geracao-solar/${ano}`,
   GERACAO_SOLAR_ANO_MES: (ano: Valor, mes: Valor) => `/v1/geracao-solar/${ano}/${mes}`,
   CARRO_FIPE: (codigoFipe: string) => `/v1/carros/${codigoFipe}`,
+
+  SERVIDOR_AGORA: '/v1/servidor/agora',
+  SERVIDOR_DIA: '/v1/servidor/dia',
+  SERVIDOR_DIAS: '/v1/servidor/dias',
 };
