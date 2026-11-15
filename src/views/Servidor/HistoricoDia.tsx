@@ -14,12 +14,15 @@ import { SectionCard } from '../../components/ui/SectionCard';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { axisProps, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
 import { colors } from '../../styles/colors';
-import type { ServidorDia, ServidorPonto } from '../../types/servidor';
+import type { ContainerDia, SerieContainer, ServidorDia } from '../../types/servidor';
 import { bytes, graus, LIMITES, numero, pct, taxa } from './formatos';
 import { ListaDiscos } from './Agora';
+import { ContainersDia } from './Containers';
+
+const TOP_CONTAINERS = 6;
 
 interface Serie {
-  chave: keyof ServidorPonto;
+  chave: string;
   nome: string;
   cor: string;
   tracejada?: boolean;
@@ -28,7 +31,7 @@ interface Serie {
 interface GraficoProps {
   titulo: string;
   subtitulo?: string;
-  pontos: ServidorPonto[];
+  pontos: object[];
   series: Serie[];
   formatar: (v: number) => string;
   formatarEixo?: (v: number) => string;
@@ -82,6 +85,32 @@ function Grafico({
       </Box>
     </SectionCard>
   );
+}
+
+/**
+ * Junta as séries dos containers escolhidos numa linha por horário ({horario, c0, c1, ...}). As chaves são
+ * posições e não nomes, porque o Recharts trataria um ponto no nome do container como caminho.
+ */
+function porHorario(series: SerieContainer[], nomes: string[], campo: 'cpu' | 'memoria'): object[] {
+  const linhas = new Map<string, Record<string, string | number | null>>();
+  nomes.forEach((nome, i) => {
+    series
+      .find((s) => s.nome === nome)
+      ?.pontos.forEach((p) => {
+        const linha = linhas.get(p.horario) ?? { horario: p.horario };
+        linha[`c${i}`] = p[campo];
+        linhas.set(p.horario, linha);
+      });
+  });
+  return [...linhas.values()].sort((a, b) => String(a.horario).localeCompare(String(b.horario)));
+}
+
+function maiores(containers: ContainerDia[], valor: (c: ContainerDia) => number | null): string[] {
+  return containers
+    .filter((c) => (valor(c) ?? 0) > 0)
+    .sort((a, b) => (valor(b) ?? 0) - (valor(a) ?? 0))
+    .slice(0, TOP_CONTAINERS)
+    .map((c) => c.nome);
 }
 
 const pctEixo = (v: number) => `${v}%`;
@@ -171,6 +200,8 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
   }
 
   const s = colors.chart.series;
+  const topCpu = maiores(dia.containers, (c) => c.cpuMedia);
+  const topMem = maiores(dia.containers, (c) => c.memMedia);
   const doisPorLinha = {
     display: 'grid',
     gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' },
@@ -246,6 +277,34 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
         formatarEixo={(v) => numero(v, 1)}
         series={[{ chave: 'carga', nome: 'Carga', cor: s[4] }]}
       />
+
+      {dia.containers.length > 0 && (
+        <>
+          <Box sx={doisPorLinha}>
+            {topCpu.length > 0 && (
+              <Grafico
+                titulo="CPU por container"
+                subtitulo={`Os ${topCpu.length} que mais usaram · % do servidor inteiro`}
+                pontos={porHorario(dia.serieContainers, topCpu, 'cpu')}
+                formatar={(v) => pct(v)}
+                formatarEixo={pctEixo}
+                series={topCpu.map((nome, i) => ({ chave: `c${i}`, nome, cor: s[i % s.length] }))}
+              />
+            )}
+            {topMem.length > 0 && (
+              <Grafico
+                titulo="Memória por container"
+                subtitulo={`Os ${topMem.length} que mais usaram`}
+                pontos={porHorario(dia.serieContainers, topMem, 'memoria')}
+                formatar={(v) => bytes(v)}
+                formatarEixo={(v) => bytes(v, 0).replace(' ', '')}
+                series={topMem.map((nome, i) => ({ chave: `c${i}`, nome, cor: s[i % s.length] }))}
+              />
+            )}
+          </Box>
+          <ContainersDia containers={dia.containers} />
+        </>
+      )}
     </Box>
   );
 }

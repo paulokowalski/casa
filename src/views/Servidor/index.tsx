@@ -5,6 +5,7 @@ import { PageHeader } from '../../components/ui/PageHeader';
 import { servidorService } from '../../services/servidor';
 import type { ServidorAgora, ServidorDia, ServidorResumoDia } from '../../types/servidor';
 import { Agora } from './Agora';
+import { ContainersAgora } from './Containers';
 import { HistoricoDia } from './HistoricoDia';
 import { TabelaDias } from './TabelaDias';
 import { diasAtras, duracao, isoLocal } from './formatos';
@@ -127,6 +128,7 @@ export function ServidorView() {
         </Box>
         {erroAgora && <Alert severity="warning">{erroAgora}</Alert>}
         <Agora agora={agora} carregando={carregandoAgora} />
+        <ContainersAgora containers={agora?.containers ?? []} carregando={carregandoAgora} />
       </Box>
 
       <Box component="section" aria-labelledby="titulo-dia" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

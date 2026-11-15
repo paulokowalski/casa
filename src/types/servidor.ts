@@ -6,6 +6,25 @@ export interface ServidorDisco {
   pct: number;
 }
 
+export type SaudeContainer = 'saudavel' | 'doente' | 'iniciando' | null;
+
+export interface ServidorContainer {
+  nome: string;
+  imagem: string;
+  estado: string;
+  status: string | null;
+  saude: SaudeContainer;
+  cpuPct: number | null;
+  memUsada: number | null;
+  memLimite: number | null;
+  memPct: number | null;
+  redeRecebidaBps: number | null;
+  redeEnviadaBps: number | null;
+  discoLeituraBps: number | null;
+  discoEscritaBps: number | null;
+  processos: number | null;
+}
+
 export interface ServidorAgora {
   lidoEm: string;
   host: string;
@@ -20,6 +39,7 @@ export interface ServidorAgora {
   discos: ServidorDisco[];
   rede: { interfaceRede: string; recebidaBps: number; enviadaBps: number }[];
   discoIo: { leituraBps: number; escritaBps: number };
+  containers: ServidorContainer[];
 }
 
 export interface Faixa {
@@ -58,11 +78,36 @@ export interface ServidorPonto {
   discoEscritaBps: number;
 }
 
+export interface ContainerDia {
+  nome: string;
+  imagem: string;
+  estado: string;
+  status: string | null;
+  saude: SaudeContainer;
+  minutos: number;
+  minutosRodando: number;
+  cpuMedia: number | null;
+  cpuMax: number | null;
+  memMedia: number | null;
+  memMax: number | null;
+  redeRecebidaBytes: number | null;
+  redeEnviadaBytes: number | null;
+  discoLidoBytes: number | null;
+  discoEscritoBytes: number | null;
+}
+
+export interface SerieContainer {
+  nome: string;
+  pontos: { horario: string; cpu: number | null; memoria: number | null }[];
+}
+
 export interface ServidorDia {
   data: string;
   resumo: ServidorEstatisticas;
   serie: ServidorPonto[];
   discos: ServidorDisco[];
+  containers: ContainerDia[];
+  serieContainers: SerieContainer[];
 }
 
 export interface ServidorResumoDia {

@@ -79,3 +79,25 @@ export function diasAtras(n: number): string {
   d.setDate(d.getDate() - n);
   return isoLocal(d);
 }
+
+/** Situação de um container: rótulo curto e cor. */
+export function situacaoContainer(estado: string, saude: string | null): { rotulo: string; tom: Tone } {
+  if (estado === 'running') {
+    if (saude === 'doente') return { rotulo: 'com problema', tom: 'error' };
+    if (saude === 'iniciando') return { rotulo: 'iniciando', tom: 'info' };
+    return { rotulo: saude === 'saudavel' ? 'saudável' : 'rodando', tom: 'success' };
+  }
+  if (estado === 'restarting') return { rotulo: 'reiniciando', tom: 'warning' };
+  if (estado === 'paused') return { rotulo: 'pausado', tom: 'warning' };
+  if (estado === 'created') return { rotulo: 'criado', tom: 'neutral' };
+  if (estado === 'dead') return { rotulo: 'com erro', tom: 'error' };
+  return { rotulo: 'parado', tom: 'neutral' };
+}
+
+/** 1380 → "23h"; 1395 → "23h 15min"; 45 → "45min". */
+export function minutosLegivel(min: number): string {
+  const h = Math.floor(min / 60);
+  const m = Math.round(min % 60);
+  if (h === 0) return `${m}min`;
+  return m === 0 ? `${h}h` : `${h}h ${m}min`;
+}
