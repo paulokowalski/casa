@@ -14,6 +14,48 @@ export interface ServidorDisco {
   /** só no histórico do dia */
   temperaturaMedia: number | null;
   temperaturaMax: number | null;
+  /** só na leitura ao vivo; nula sem SMART (ex.: eMMC) */
+  saude?: SaudeDisco | null;
+}
+
+export type SituacaoDisco = 'boa' | 'atencao' | 'critica';
+
+export interface AlertaDisco {
+  nivel: 'critico' | 'atencao' | 'info';
+  mensagem: string;
+}
+
+/** Saúde pelo SMART, avaliada na API. */
+export interface SaudeDisco {
+  situacao: SituacaoDisco;
+  alertas: AlertaDisco[];
+  lidoEm: string | null;
+  aprovado: boolean | null;
+  horasLigado: number | null;
+  vezesLigado: number | null;
+  temperaturaMinVida: number | null;
+  temperaturaMaxVida: number | null;
+  /** máximo recomendado pelo fabricante */
+  temperaturaLimite: number | null;
+  temperaturaLimiteAbsoluto: number | null;
+  vezesAcimaLimite: number | null;
+  setoresRealocados: number | null;
+  setoresPendentes: number | null;
+  setoresIrrecuperaveis: number | null;
+  errosNaoCorrigidos: number | null;
+  errosComunicacao: number | null;
+  ciclosCabeca: number | null;
+  nvme: {
+    desgaste: number | null;
+    reservaDisponivel: number | null;
+    reservaMinima: number | null;
+    errosMidia: number | null;
+    desligamentosInesperados: number | null;
+    minutosAcimaAviso: number | null;
+    minutosAcimaCritico: number | null;
+    bytesEscritos: number | null;
+    bytesLidos: number | null;
+  } | null;
 }
 
 export type SaudeContainer = 'saudavel' | 'doente' | 'iniciando' | null;
