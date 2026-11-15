@@ -15,16 +15,17 @@ export const API_URLS = {
 
   AUTH_LOGIN: '/v1/auth/login',
   AUTH_ME: '/v1/auth/me',
-  AUTH_SENHA: '/v1/auth/senha',
 
   PESSOAS: '/v1/pessoas',
   PESSOA_ID: (id: Valor) => `/v1/pessoas/${id}`,
 
-  DESPESA: (ano: Valor, mes: Valor, pessoa: Valor) => `/v1/despesas/${ano}/${mes}${query({ pessoa })}`,
   DESPESA_SEM_MES: (ano: Valor, pessoa: Valor) => `/v1/despesas/${ano}${query({ pessoa })}`,
 
   COMPRA: (ano: Valor, mes: Valor, pessoa: Valor, cartao: Valor, ultimaParcela: Valor) =>
     `/v1/compras/parcelas/${ano}/${mes}${query({ pessoa, cartao, ultimaParcela })}`,
+  COMPRA_PERIODO: (de: string, ate: string, pessoa: Valor, cartao: Valor) =>
+    `/v1/compras/parcelas${query({ de, ate, pessoa, cartao })}`,
+  COMPRAS: (pessoa: Valor, cartao: Valor) => `/v1/compras${query({ pessoa, cartao })}`,
   COMPRA_ID: (id?: Valor) => (id ? `/v1/compras/${id}` : `/v1/compras`),
 
   CONTAS: '/v1/contas',
