@@ -1,6 +1,9 @@
 import { api, apiErrorMessage } from './api';
 import { API_URLS } from '../config/urls';
 import type { CompraInput, CompraRegistro, DespesaMes, Item, Parcela } from '../types/financas';
+import type { MesRef } from '../lib/financas/parcelas';
+
+const competencia = (r: MesRef) => `${r.ano}-${String(r.mes).padStart(2, '0')}`;
 
 export const TODOS = 'TODOS';
 
@@ -53,7 +56,20 @@ export const comprasService = {
     }
   },
 
-  todas: () => listaSegura<CompraRegistro>(API_URLS.COMPRA_ID()),
+  /** Parcelas de todos os meses de `de` até `ate` (inclusive) numa única chamada. Em erro, devolve []. */
+  async parcelasDoPeriodo(de: MesRef, ate: MesRef, pessoa: string, cartao = TODOS): Promise<Parcela[]> {
+    try {
+      const res = await api.get<{ compras?: Parcela[] }>(
+        API_URLS.COMPRA_PERIODO(competencia(de), competencia(ate), pessoa, cartao || TODOS),
+      );
+      return res.data?.compras ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /** Compras da pessoa (e do cartão, se informado), já filtradas no backend. */
+  todas: (pessoa: string, cartao = TODOS) => listaSegura<CompraRegistro>(API_URLS.COMPRAS(pessoa, cartao || TODOS)),
 
   async criar(dados: CompraInput): Promise<void> {
     try {
@@ -81,15 +97,6 @@ export const comprasService = {
 };
 
 export const despesasService = {
-  async doMes(ano: string, mes: string, pessoa: string): Promise<DespesaMes | null> {
-    try {
-      const res = await api.get<DespesaMes>(API_URLS.DESPESA(ano, mes, pessoa));
-      return res.data ?? null;
-    } catch {
-      return null;
-    }
-  },
-
   async doAno(ano: string, pessoa: string): Promise<Record<string, DespesaMes>> {
     try {
       const res = await api.get<{ despesasPorMes?: Record<string, DespesaMes> }>(API_URLS.DESPESA_SEM_MES(ano, pessoa));

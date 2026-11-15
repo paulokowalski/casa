@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { comprasService, TODOS } from '../services/financas';
 import { useFiltrosCompra, type FiltrosSelecionados } from '../hooks/useFiltrosCompra';
 import { calcularAnalise, type Analise } from '../lib/financas/analise';
-import { idxParaRef, mesIdx } from '../lib/financas/parcelas';
+import { idxParaRef, mesIdx, partesData } from '../lib/financas/parcelas';
 import type { MesFuturo } from '../lib/financas/proximosMeses';
 import type { CompraInput, CompraRegistro, Parcela } from '../types/financas';
 
@@ -27,6 +27,22 @@ interface Consulta extends FiltrosSelecionados {
 }
 
 const GestaoCartaoContext = createContext<GestaoCartaoValue | null>(null);
+
+const MESES_ANTERIORES = 3;
+const MESES_SEGUINTES = 12;
+
+function agruparPorMes(parcelas: Parcela[]): Map<number, Parcela[]> {
+  const porMes = new Map<number, Parcela[]>();
+  for (const p of parcelas) {
+    const d = partesData(p.dataParcela);
+    if (!d) continue;
+    const i = mesIdx({ ano: d.ano, mes: d.mes });
+    const lista = porMes.get(i);
+    if (lista) lista.push(p);
+    else porMes.set(i, [p]);
+  }
+  return porMes;
+}
 
 const chaveOrcamento = (pessoa: string) => `casa.gestaoFinanceira.orcamento.${(pessoa || 'geral').toUpperCase()}`;
 
@@ -59,52 +75,35 @@ export function GestaoCartaoProvider({ children }: Readonly<{ children: ReactNod
     const f = consulta;
     setOrcamento(lerOrcamento(f.pessoa));
     setLoading(true);
+    setProximos(null);
     const idx = mesIdx({ ano: Number(f.ano), mes: Number(f.mes) });
-    const anteriores = [1, 2, 3].map((i) => idxParaRef(idx - i));
     const filtrarUltima = f.ultimaParcela !== TODOS;
+    // Uma chamada traz dos 3 meses anteriores aos 12 seguintes; os meses são separados aqui.
     Promise.all([
-      comprasService.parcelasDoMesSeguro(f.ano, f.mes, f.pessoa, f.cartao),
-      Promise.all(anteriores.map((r) => comprasService.parcelasDoMesSeguro(r.ano, r.mes, f.pessoa, f.cartao))),
-      comprasService.todas(),
+      comprasService.parcelasDoPeriodo(
+        idxParaRef(idx - MESES_ANTERIORES),
+        idxParaRef(idx + MESES_SEGUINTES),
+        f.pessoa,
+        f.cartao,
+      ),
+      comprasService.todas(f.pessoa, f.cartao),
       filtrarUltima
         ? comprasService.parcelasDoMes(f.ano, f.mes, f.pessoa, f.cartao, f.ultimaParcela).catch(() => [])
         : Promise.resolve(null),
     ])
-      .then(([atual, ant, todas, soUltima]) => {
+      .then(([periodo, todas, soUltima]) => {
         if (!ativo) return;
-        const pessoa = f.pessoa.toUpperCase();
-        const cartao = f.cartao.toUpperCase();
-        setParcelasMes(atual);
-        setParcelasAnteriores(ant);
-        setFiltradas(soUltima);
-        setRegistros(
-          todas.filter(
-            (r) =>
-              r.nomePessoaCompra?.toUpperCase() === pessoa &&
-              (cartao === TODOS || r.nomeCartao?.toUpperCase() === cartao),
-          ),
+        const porMes = agruparPorMes(periodo);
+        const doMes = (i: number) => porMes.get(i) ?? [];
+        setParcelasMes(doMes(idx));
+        setParcelasAnteriores(Array.from({ length: MESES_ANTERIORES }, (_, i) => doMes(idx - 1 - i)));
+        setProximos(
+          Array.from({ length: MESES_SEGUINTES }, (_, i) => ({ idx: idx + 1 + i, parcelas: doMes(idx + 1 + i) })),
         );
+        setFiltradas(soUltima);
+        setRegistros(todas);
       })
       .finally(() => ativo && setLoading(false));
-    return () => {
-      ativo = false;
-    };
-  }, [consulta, versao]);
-
-  useEffect(() => {
-    if (!consulta) return;
-    let ativo = true;
-    setProximos(null);
-    const idx = mesIdx({ ano: Number(consulta.ano), mes: Number(consulta.mes) });
-    const indices = Array.from({ length: 12 }, (_, i) => idx + 1 + i);
-    Promise.all(
-      indices.map((i) => {
-        const r = idxParaRef(i);
-        return comprasService
-          .parcelasDoMesSeguro(r.ano, r.mes, consulta.pessoa, consulta.cartao)
-          .then((parcelas) => ({ idx: i, parcelas }));
-      }),
-    ).then((meses) => ativo && setProximos(meses));
     return () => {
       ativo = false;
     };
