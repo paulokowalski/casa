@@ -113,6 +113,19 @@ function maiores(containers: ContainerDia[], valor: (c: ContainerDia) => number 
     .map((c) => c.nome);
 }
 
+/** Uma linha por horário com a temperatura de cada disco ({horario, d0, d1, ...}). */
+function temperaturasDosDiscos(dia: ServidorDia): object[] {
+  const linhas = new Map<string, Record<string, string | number | null>>();
+  dia.serieDiscos.forEach((disco, i) =>
+    disco.pontos.forEach((p) => {
+      const linha = linhas.get(p.horario) ?? { horario: p.horario };
+      linha[`d${i}`] = p.temperatura;
+      linhas.set(p.horario, linha);
+    }),
+  );
+  return [...linhas.values()].sort((a, b) => String(a.horario).localeCompare(String(b.horario)));
+}
+
 const pctEixo = (v: number) => `${v}%`;
 const grausEixo = (v: number) => `${v}°`;
 const taxaEixo = (v: number) => bytes(v, 0).replace(' ', '');
@@ -173,6 +186,7 @@ function Resumo({ dia }: Readonly<{ dia: ServidorDia }>) {
         <Total rotulo="Disco escrito" valor={bytes(r.discoEscritoBytes)} />
         <Total rotulo="Swap máximo" valor={pct(r.swapMax)} />
         <Total rotulo="iowait médio" valor={pct(r.iowaitMedia)} />
+        <Total rotulo="Discos (pico)" valor={graus(r.discoTemperaturaMax)} />
       </Box>
     </SectionCard>
   );
@@ -212,8 +226,8 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 }, opacity: carregando ? 0.6 : 1 }}>
       <Box sx={doisPorLinha}>
         <Resumo dia={dia} />
-        <SectionCard title="Discos" subtitle="Última medição do dia">
-          <ListaDiscos discos={dia.discos} />
+        <SectionCard title="Discos" subtitle="Espaço na última medição do dia e temperatura máxima">
+          <ListaDiscos discos={dia.discos} doDia />
         </SectionCard>
       </Box>
 
@@ -277,6 +291,19 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
         formatarEixo={(v) => numero(v, 1)}
         series={[{ chave: 'carga', nome: 'Carga', cor: s[4] }]}
       />
+
+      {dia.serieDiscos.length > 0 && (
+        <Grafico
+          titulo="Temperatura dos discos"
+          subtitulo={`SMART a cada 5 minutos · HDs: ideal abaixo de ${LIMITES.hd.aviso} °C`}
+          pontos={temperaturasDosDiscos(dia)}
+          dominio={['auto', 'auto']}
+          limite={LIMITES.hd.aviso}
+          formatar={graus}
+          formatarEixo={grausEixo}
+          series={dia.serieDiscos.map((d, i) => ({ chave: `d${i}`, nome: d.nome, cor: s[i % s.length] }))}
+        />
+      )}
 
       {dia.containers.length > 0 && (
         <>

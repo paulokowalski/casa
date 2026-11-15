@@ -5,7 +5,7 @@ import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { StatusPill } from '../../components/ui/StatusPill';
 import { formatDateBR } from '../../utils/format';
 import type { ServidorResumoDia } from '../../types/servidor';
-import { bytes, graus, numero, pct, tomTemperatura, tomUso } from './formatos';
+import { bytes, graus, numero, pct, tomTemperatura, tomTemperaturaDisco, tomUso } from './formatos';
 
 const DIA_SEMANA = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' });
 
@@ -97,6 +97,19 @@ export function TabelaDias({ dias, carregando, selecionado, onSelecionar }: Read
         />
       ),
     },
+    {
+      id: 'discos',
+      header: 'Discos pico',
+      align: 'right',
+      render: (d) =>
+        d.resumo.discoTemperaturaMax === null ? (
+          '—'
+        ) : (
+          <StatusPill size="sm" tone={tomTemperaturaDisco(d.resumo.discoTemperaturaMax, 'hdd')}>
+            {graus(d.resumo.discoTemperaturaMax)}
+          </StatusPill>
+        ),
+    },
     { id: 'carga', header: 'Carga pico', align: 'right', render: (d) => numero(d.resumo.carga.max) },
     {
       id: 'rede',
@@ -129,7 +142,7 @@ export function TabelaDias({ dias, carregando, selecionado, onSelecionar }: Read
         rows={dias}
         getRowKey={(d) => d.data}
         loading={carregando}
-        minWidth={960}
+        minWidth={1060}
         defaultRowsPerPage={10}
         emptyMessage="Ainda não há estatísticas gravadas."
         rowSx={(d) => (d.data === selecionado ? { bgcolor: 'action.selected' } : undefined)}

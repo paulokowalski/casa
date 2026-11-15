@@ -10,7 +10,7 @@ import { StatusPill } from '../../components/ui/StatusPill';
 import { EmptyState } from '../../components/ui/EmptyState';
 import type { Tone } from '../../styles/tokens';
 import type { ServidorAgora, ServidorDisco } from '../../types/servidor';
-import { bytes, graus, numero, pct, taxa, tomCarga, tomTemperatura, tomUso } from './formatos';
+import { bytes, graus, numero, pct, taxa, tomCarga, tomTemperatura, tomTemperaturaDisco, tomUso } from './formatos';
 
 const corBarra: Record<Tone, 'success' | 'warning' | 'error' | 'primary' | 'inherit'> = {
   success: 'success',
@@ -52,14 +52,47 @@ function Linha({ rotulo, valor, children }: Readonly<{ rotulo: ReactNode; valor:
   );
 }
 
-export function ListaDiscos({ discos }: Readonly<{ discos: ServidorDisco[] }>) {
+function TemperaturaDisco({ disco, doDia }: Readonly<{ disco: ServidorDisco; doDia?: boolean }>) {
+  const valor = doDia ? disco.temperaturaMax : disco.temperatura;
+  if (valor !== null && valor !== undefined) {
+    return (
+      <StatusPill
+        size="sm"
+        tone={tomTemperaturaDisco(valor, disco.tipo)}
+        title={doDia ? `Média do dia ${graus(disco.temperaturaMedia)}` : (disco.modelo ?? undefined)}
+      >
+        {doDia ? 'máx ' : ''}
+        {graus(valor)}
+      </StatusPill>
+    );
+  }
+  if (!doDia && disco.estadoTemperatura === 'repouso') {
+    return (
+      <StatusPill size="sm" tone="neutral" title="Disco parado; não foi acordado só para ler a temperatura">
+        em repouso
+      </StatusPill>
+    );
+  }
+  return null;
+}
+
+export function ListaDiscos({ discos, doDia }: Readonly<{ discos: ServidorDisco[]; doDia?: boolean }>) {
   if (discos.length === 0) return <EmptyState message="Nenhum disco medido." compact />;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       {discos.map((d) => (
         <Linha
           key={d.nome}
-          rotulo={d.nome}
+          rotulo={
+            <Box
+              component="span"
+              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
+              title={d.modelo ?? undefined}
+            >
+              {d.nome}
+              <TemperaturaDisco disco={d} doDia={doDia} />
+            </Box>
+          }
           valor={
             <>
               {pct(d.pct)}{' '}
@@ -86,6 +119,9 @@ export function Agora({ agora, carregando }: Readonly<{ agora: ServidorAgora | n
   const semDados = !agora && carregando;
   const nucleos = agora?.cpu.nucleos.length ?? 0;
   const temp = (sensor: string) => agora?.temperaturas.find((t) => t.sensor === sensor)?.celsius;
+  const discoMaisQuente = agora?.discos
+    .filter((d) => d.temperatura !== null)
+    .reduce<ServidorDisco | null>((a, d) => (!a || (d.temperatura ?? 0) > (a.temperatura ?? 0) ? d : a), null);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 } }}>
@@ -116,7 +152,16 @@ export function Agora({ agora, carregando }: Readonly<{ agora: ServidorAgora | n
           tone={tomTemperatura(agora?.temperaturaMax)}
           loading={semDados}
           value={graus(agora?.temperaturaMax)}
-          footer={agora && temp('soc') !== undefined ? `SoC ${graus(temp('soc'))} · maior sensor` : 'maior sensor'}
+          footer={
+            agora
+              ? [
+                  temp('soc') !== undefined ? `SoC ${graus(temp('soc'))}` : 'maior sensor',
+                  discoMaisQuente ? `discos até ${graus(discoMaisQuente.temperatura)}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              : undefined
+          }
         />
         <KpiCard
           label="Carga (load)"
@@ -191,7 +236,7 @@ export function Agora({ agora, carregando }: Readonly<{ agora: ServidorAgora | n
           )}
         </SectionCard>
 
-        <SectionCard title="Discos" subtitle="Espaço usado">
+        <SectionCard title="Discos" subtitle="Espaço usado e temperatura">
           {semDados ? <Skeleton variant="rounded" height={180} /> : <ListaDiscos discos={agora?.discos ?? []} />}
         </SectionCard>
 

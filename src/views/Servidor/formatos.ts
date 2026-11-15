@@ -45,7 +45,19 @@ export function duracao(segundos: number): string {
 export const LIMITES = {
   uso: { aviso: 80, critico: 90 },
   temperatura: { aviso: 70, critico: 85 },
+  /** HDs: os fabricantes recomendam ficar abaixo de ~50 °C; acima de 60 °C a vida útil cai. */
+  hd: { aviso: 50, critico: 60 },
+  /** SSD/NVMe aguentam mais; o controlador começa a reduzir a velocidade perto de 80 °C. */
+  ssd: { aviso: 70, critico: 80 },
 } as const;
+
+export function tomTemperaturaDisco(valor: number | null | undefined, tipo: string | null | undefined): Tone {
+  if (valor === null || valor === undefined) return 'neutral';
+  const l = tipo === 'hdd' || !tipo ? LIMITES.hd : LIMITES.ssd;
+  if (valor >= l.critico) return 'error';
+  if (valor >= l.aviso) return 'warning';
+  return 'success';
+}
 
 export function tomUso(valor: number | null | undefined): Tone {
   if (valor === null || valor === undefined) return 'neutral';

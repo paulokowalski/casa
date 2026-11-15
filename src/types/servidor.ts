@@ -1,9 +1,19 @@
+export type TipoDisco = 'nvme' | 'ssd' | 'hdd';
+
 export interface ServidorDisco {
   nome: string;
   caminho: string;
   total: number;
   usado: number;
   pct: number;
+  modelo: string | null;
+  tipo: TipoDisco | null;
+  temperatura: number | null;
+  /** ativo, repouso (disco parado, não foi acordado para ler) ou sem_dados; nulo sem SMART */
+  estadoTemperatura: 'ativo' | 'repouso' | 'sem_dados' | null;
+  /** só no histórico do dia */
+  temperaturaMedia: number | null;
+  temperaturaMax: number | null;
 }
 
 export type SaudeContainer = 'saudavel' | 'doente' | 'iniciando' | null;
@@ -60,6 +70,7 @@ export interface ServidorEstatisticas {
   redeEnviadaBytes: number | null;
   discoLidoBytes: number | null;
   discoEscritoBytes: number | null;
+  discoTemperaturaMax: number | null;
 }
 
 export interface ServidorPonto {
@@ -108,6 +119,7 @@ export interface ServidorDia {
   discos: ServidorDisco[];
   containers: ContainerDia[];
   serieContainers: SerieContainer[];
+  serieDiscos: { nome: string; pontos: { horario: string; temperatura: number | null }[] }[];
 }
 
 export interface ServidorResumoDia {
