@@ -1,16 +1,6 @@
 import { alpha, createTheme } from '@mui/material/styles';
 import { fontFamily, palette, radius, shadow, surface, text } from './tokens';
 
-export const ESCALA_DESKTOP = 0.75;
-
-const escalaAtiva = () =>
-  typeof window !== 'undefined' && Number(getComputedStyle(document.documentElement).zoom || 1) !== 1;
-
-function ajustarLarguraMenu(paper: HTMLElement) {
-  const min = parseFloat(paper.style.minWidth);
-  if (min && escalaAtiva()) paper.style.minWidth = `${min * ESCALA_DESKTOP}px`;
-}
-
 export const theme = createTheme({
   breakpoints: {
     values: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 },
@@ -55,11 +45,6 @@ export const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         html: { WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' },
-        '@media (min-width: 1200px)': {
-          html: { zoom: ESCALA_DESKTOP },
-          '.MuiPopover-root, .MuiPopper-root': { zoom: 1 / ESCALA_DESKTOP },
-          '.MuiPopover-paper > *, .MuiTooltip-tooltip': { zoom: ESCALA_DESKTOP },
-        },
         body: { backgroundColor: surface.background, fontVariantNumeric: 'tabular-nums' },
         '*, *::before, *::after': { boxSizing: 'border-box' },
         '::selection': { backgroundColor: palette.brand[100] },
@@ -129,7 +114,6 @@ export const theme = createTheme({
                 '& .MuiMenuItem-root': { textTransform: 'uppercase' },
               },
             },
-            transition: { onEntering: ajustarLarguraMenu },
           },
         },
       },
