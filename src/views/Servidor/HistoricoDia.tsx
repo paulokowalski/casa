@@ -15,7 +15,8 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { axisProps, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
 import { colors } from '../../styles/colors';
 import type { ContainerDia, SerieContainer, ServidorDia } from '../../types/servidor';
-import { bytes, graus, LIMITES, numero, pct, taxa } from './formatos';
+import { bytes, graus, LIMITES, ms, numero, pct, taxa } from './formatos';
+import { ListaEventos } from './Host';
 import { ListaDiscos } from './Agora';
 import { ContainersDia } from './Containers';
 
@@ -127,6 +128,84 @@ function temperaturasDosDiscos(dia: ServidorDia): object[] {
 }
 
 const pctEixo = (v: number) => `${v}%`;
+const msEixo = (v: number) => `${v}ms`;
+
+/** Série do servidor com a NPU do host (mesmos blocos de 5 minutos). */
+function comNpu(dia: ServidorDia): object[] {
+  const npu = new Map(dia.serieHost.map((p) => [p.horario, p.npu]));
+  return dia.serie.map((p) => ({ ...p, npu: npu.get(p.horario) ?? null }));
+}
+
+function ResumoHost({ dia }: Readonly<{ dia: ServidorDia }>) {
+  const h = dia.resumoHost;
+  const r = dia.resumo;
+  return (
+    <SectionCard title="Sistema no dia" subtitle="Internet, DNS, alertas, backup, pressão e discos">
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.5, fontSize: '0.8125rem' }}>
+        {h ? (
+          <>
+            <Total
+              rotulo="Internet fora"
+              valor={h.minutosSemInternet === 0 ? 'nenhum minuto' : `${h.minutosSemInternet} min`}
+            />
+            <Total
+              rotulo="Latência internet média · pico"
+              valor={`${ms(h.internetLatencia.media)} · ${ms(h.internetLatencia.max)}`}
+            />
+            <Total
+              rotulo="DNS falhando"
+              valor={h.minutosDnsFalhando === 0 ? 'nenhum minuto' : `${h.minutosDnsFalhando} min`}
+            />
+            <Total
+              rotulo="Tailscale offline"
+              valor={h.minutosTailscaleOffline === 0 ? 'nenhum minuto' : `${h.minutosTailscaleOffline} min`}
+            />
+            <Total
+              rotulo="Minutos com alerta"
+              valor={`${h.minutosComAlerta} min (máx. ${h.alertasMax} ao mesmo tempo)`}
+            />
+            <Total
+              rotulo="Disco desmontado"
+              valor={h.minutosDiscoDesmontado === 0 ? 'nenhum minuto' : `${h.minutosDiscoDesmontado} min`}
+            />
+            <Total
+              rotulo="Backup mais atrasado"
+              valor={h.backupIdadeMaxHoras === null ? '—' : `${h.backupIdadeMaxHoras.toLocaleString('pt-BR')} h`}
+            />
+            <Total rotulo="Containers reiniciados" valor={String(h.containersReinicios ?? 0)} />
+            <Total rotulo="Eventos (erros)" valor={`${h.eventos} (${h.eventosErro})`} />
+            <Total rotulo="NPU média · pico" valor={`${pct(h.npu.media)} · ${pct(h.npu.max)}`} />
+          </>
+        ) : (
+          <Box sx={{ gridColumn: '1 / -1' }}>
+            <Typography variant="caption">Sem amostras do host neste dia (coleta começou em 15/11/2026).</Typography>
+          </Box>
+        )}
+        <Total
+          rotulo="Pressão CPU · mem · I/O (pico)"
+          valor={`${pct(r.pressaoCpu?.max)} · ${pct(r.pressaoMemoria?.max)} · ${pct(r.pressaoIo?.max)}`}
+        />
+        <Total rotulo="GPU média · pico" valor={`${pct(r.gpu?.media)} · ${pct(r.gpu?.max)}`} />
+        <Total
+          rotulo="CPU limitada por calor"
+          valor={
+            r.minutosCpuLimitada === null
+              ? '—'
+              : r.minutosCpuLimitada === 0
+                ? 'nunca'
+                : `${r.minutosCpuLimitada} min (até ${pct(r.cpuLimiteMin, 0)})`
+          }
+        />
+        <Total
+          rotulo="Latência disco média · pico"
+          valor={`${ms(r.discoLatencia?.media)} · ${ms(r.discoLatencia?.max)}`}
+        />
+        <Total rotulo="Disco mais ocupado (pico)" valor={pct(r.discoOcupacaoMax)} />
+        <Total rotulo="Erros de rede" valor={r.redeErros === null ? '—' : r.redeErros.toLocaleString('pt-BR')} />
+      </Box>
+    </SectionCard>
+  );
+}
 const grausEixo = (v: number) => `${v}°`;
 const taxaEixo = (v: number) => bytes(v, 0).replace(' ', '');
 
@@ -232,6 +311,16 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
       </Box>
 
       <Box sx={doisPorLinha}>
+        <ResumoHost dia={dia} />
+        <SectionCard
+          title="Eventos do dia"
+          subtitle="Backups, alertas, quedas, discos, containers, logins, kernel e boots"
+        >
+          <ListaEventos eventos={dia.eventos} vazio="Nenhum evento neste dia." />
+        </SectionCard>
+      </Box>
+
+      <Box sx={doisPorLinha}>
         <Grafico
           titulo="CPU e memória"
           subtitulo="Média a cada 5 minutos"
@@ -283,6 +372,60 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
           ]}
         />
       </Box>
+      <Box sx={doisPorLinha}>
+        <Grafico
+          titulo="Pressão (espera por recurso)"
+          subtitulo="PSI: % do tempo com tarefa esperando · acima de 10% há disputa"
+          pontos={dia.serie}
+          limite={10}
+          formatar={(v) => pct(v)}
+          formatarEixo={pctEixo}
+          series={[
+            { chave: 'pressaoCpu', nome: 'CPU', cor: s[0] },
+            { chave: 'pressaoMemoria', nome: 'Memória', cor: s[4] },
+            { chave: 'pressaoIo', nome: 'Disco (I/O)', cor: s[7] },
+          ]}
+        />
+        <Grafico
+          titulo="Latência e ocupação dos discos"
+          subtitulo="Tempo médio por operação · disco mais ocupado em %"
+          pontos={dia.serie}
+          limite={30}
+          formatar={(v) => ms(v)}
+          formatarEixo={msEixo}
+          series={[
+            { chave: 'discoLatenciaMs', nome: 'Latência média', cor: s[9] },
+            { chave: 'discoLatenciaMaxMs', nome: 'Pior minuto', cor: s[5], tracejada: true },
+          ]}
+        />
+        <Grafico
+          titulo="GPU, NPU e limite da CPU"
+          subtitulo="Uso da GPU e NPU · limite de frequência da CPU (abaixo de 100% = calor)"
+          pontos={comNpu(dia)}
+          dominio={[0, 100]}
+          formatar={(v) => pct(v)}
+          formatarEixo={pctEixo}
+          series={[
+            { chave: 'gpu', nome: 'GPU', cor: s[2] },
+            { chave: 'npu', nome: 'NPU', cor: s[6] },
+            { chave: 'cpuLimite', nome: 'Limite CPU', cor: s[3], tracejada: true },
+          ]}
+        />
+        <Grafico
+          titulo="Internet"
+          subtitulo="Ping a 1.1.1.1, roteador e DNS (Pi-hole) a cada 5 minutos"
+          pontos={dia.serieHost}
+          formatar={(v) => ms(v)}
+          formatarEixo={msEixo}
+          series={[
+            { chave: 'internetMs', nome: 'Internet', cor: s[0] },
+            { chave: 'internetMaxMs', nome: 'Internet (pico)', cor: s[1], tracejada: true },
+            { chave: 'gatewayMs', nome: 'Roteador', cor: s[2] },
+            { chave: 'dnsMs', nome: 'DNS', cor: s[4] },
+          ]}
+        />
+      </Box>
+
       <Grafico
         titulo="Carga do sistema"
         subtitulo="Load average de 1 minuto (acima do número de núcleos há fila de processos)"

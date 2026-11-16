@@ -113,3 +113,67 @@ export function minutosLegivel(min: number): string {
   if (h === 0) return `${m}min`;
   return m === 0 ? `${h}h` : `${h}h ${m}min`;
 }
+
+/** Milissegundos: 0,8 ms / 12 ms / 1,2 s. */
+export function ms(valor: number | null | undefined): string {
+  if (valor === null || valor === undefined || !Number.isFinite(valor)) return '—';
+  if (valor >= 1000) return `${(valor / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} s`;
+  return `${valor.toLocaleString('pt-BR', { maximumFractionDigits: valor < 10 ? 1 : 0 })} ms`;
+}
+
+/** Pressão (PSI some, % do tempo com tarefa esperando): até 10% é normal; acima de 25% há disputa séria. */
+export function tomPressao(valor: number | null | undefined): Tone {
+  if (valor === null || valor === undefined) return 'neutral';
+  if (valor >= 25) return 'error';
+  if (valor >= 10) return 'warning';
+  return 'success';
+}
+
+/** Latência média por operação de disco: HDs USB passam de 20 ms sob carga; acima de 100 ms algo está errado. */
+export function tomLatencia(valor: number | null | undefined): Tone {
+  if (valor === null || valor === undefined) return 'neutral';
+  if (valor >= 100) return 'error';
+  if (valor >= 30) return 'warning';
+  return 'success';
+}
+
+/** Limite de frequência da CPU (% do máximo): abaixo de 100 o kernel está segurando por calor. */
+export function tomLimiteCpu(valor: number | null | undefined): Tone {
+  if (valor === null || valor === undefined) return 'neutral';
+  if (valor < 70) return 'error';
+  if (valor < 99.5) return 'warning';
+  return 'success';
+}
+
+/** Idade de um backup: até 26 h ok (roda 1x por dia), até 28 h atenção, depois atrasado. */
+export function tomIdadeBackup(segundos: number | null | undefined): Tone {
+  if (segundos === null || segundos === undefined) return 'error';
+  const h = segundos / 3600;
+  if (h > 28) return 'error';
+  if (h > 26) return 'warning';
+  return 'success';
+}
+
+/** "há 5 min", "há 3 h", "há 2 dias" (ou "em 3 h" para datas futuras). */
+export function relativo(iso: string | null | undefined, agora = Date.now()): string {
+  if (!iso) return '—';
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return '—';
+  const seg = Math.round((t - agora) / 1000);
+  const abs = Math.abs(seg);
+  let txt: string;
+  if (abs < 60) txt = 'menos de 1 min';
+  else if (abs < 3600) txt = `${Math.round(abs / 60)} min`;
+  else if (abs < 86400 * 2) txt = `${Math.round(abs / 3600)} h`;
+  else txt = `${Math.round(abs / 86400)} dias`;
+  if (abs < 60) return seg >= 0 ? 'em instantes' : 'agora';
+  return seg >= 0 ? `em ${txt}` : `há ${txt}`;
+}
+
+/** "15/11 14:05" no fuso do navegador. */
+export function dataHora(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}

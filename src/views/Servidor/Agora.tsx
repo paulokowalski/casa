@@ -4,13 +4,31 @@ import DeveloperBoardOutlinedIcon from '@mui/icons-material/DeveloperBoardOutlin
 import MemoryOutlinedIcon from '@mui/icons-material/MemoryOutlined';
 import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
 import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
+import HourglassBottomOutlinedIcon from '@mui/icons-material/HourglassBottomOutlined';
+import ViewInArOutlinedIcon from '@mui/icons-material/ViewInArOutlined';
+import WhatshotOutlinedIcon from '@mui/icons-material/WhatshotOutlined';
+import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 import { KpiCard } from '../../components/ui/KpiCard';
 import { SectionCard } from '../../components/ui/SectionCard';
 import { StatusPill } from '../../components/ui/StatusPill';
 import { EmptyState } from '../../components/ui/EmptyState';
 import type { Tone } from '../../styles/tokens';
 import type { ServidorAgora, ServidorDisco } from '../../types/servidor';
-import { bytes, graus, numero, pct, taxa, tomCarga, tomTemperatura, tomTemperaturaDisco, tomUso } from './formatos';
+import {
+  bytes,
+  graus,
+  ms,
+  numero,
+  pct,
+  taxa,
+  tomCarga,
+  tomLatencia,
+  tomLimiteCpu,
+  tomPressao,
+  tomTemperatura,
+  tomTemperaturaDisco,
+  tomUso,
+} from './formatos';
 
 const corBarra: Record<Tone, 'success' | 'warning' | 'error' | 'primary' | 'inherit'> = {
   success: 'success',
@@ -115,13 +133,38 @@ const grade4 = {
   gap: { xs: 1.5, md: 2.5 },
 } as const;
 
-export function Agora({ agora, carregando }: Readonly<{ agora: ServidorAgora | null; carregando: boolean }>) {
+/** Maior pressão (PSI some) entre CPU, memória e I/O, com o nome do recurso. */
+function maiorPressao(p: ServidorAgora['pressao'] | undefined): { valor: number | null; recurso: string } {
+  if (!p) return { valor: null, recurso: '' };
+  const itens: [string, number | null][] = [
+    ['CPU', p.cpu],
+    ['memória', p.memoria],
+    ['disco (I/O)', p.io],
+  ];
+  return itens.reduce<{ valor: number | null; recurso: string }>(
+    (a, [recurso, v]) => (v !== null && (a.valor === null || v > a.valor) ? { valor: v, recurso } : a),
+    { valor: null, recurso: '' },
+  );
+}
+
+export function Agora({
+  agora,
+  carregando,
+  npuPct,
+}: Readonly<{ agora: ServidorAgora | null; carregando: boolean; npuPct?: number[] }>) {
   const semDados = !agora && carregando;
   const nucleos = agora?.cpu.nucleos.length ?? 0;
   const temp = (sensor: string) => agora?.temperaturas.find((t) => t.sensor === sensor)?.celsius;
   const discoMaisQuente = agora?.discos
     .filter((d) => d.temperatura !== null)
     .reduce<ServidorDisco | null>((a, d) => (!a || (d.temperatura ?? 0) > (a.temperatura ?? 0) ? d : a), null);
+  const pressao = maiorPressao(agora?.pressao);
+  const discoMaisOcupado = agora?.discosAtividade.reduce<ServidorAgora['discosAtividade'][number] | null>(
+    (a, d) => (!a || d.ocupacaoPct > a.ocupacaoPct ? d : a),
+    null,
+  );
+  const npuMedia = npuPct && npuPct.length > 0 ? npuPct.reduce((a, b) => a + b, 0) / npuPct.length : null;
+  const limitados = agora?.clusters.filter((c) => c.limitePct !== null && c.limitePct < 99.5) ?? [];
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 } }}>
@@ -173,6 +216,61 @@ export function Agora({ agora, carregando }: Readonly<{ agora: ServidorAgora | n
             agora
               ? `5 min ${numero(agora.carga.min5)} · 15 min ${numero(agora.carga.min15)} · ${agora.carga.processos} processos`
               : undefined
+          }
+        />
+      </Box>
+
+      <Box sx={grade4}>
+        <KpiCard
+          label="Pressão (espera)"
+          icon={<HourglassBottomOutlinedIcon />}
+          tone={tomPressao(pressao.valor)}
+          loading={semDados}
+          value={pct(pressao.valor)}
+          footer={
+            agora
+              ? `CPU ${pct(agora.pressao.cpu)} · mem ${pct(agora.pressao.memoria)} · I/O ${pct(agora.pressao.io)}`
+              : undefined
+          }
+        />
+        <KpiCard
+          label="Limite da CPU"
+          icon={<WhatshotOutlinedIcon />}
+          tone={tomLimiteCpu(agora?.cpuLimitePct)}
+          loading={semDados}
+          value={agora?.cpuLimitePct === null ? '—' : pct(agora?.cpuLimitePct, 0)}
+          footer={
+            agora
+              ? limitados.length > 0
+                ? `segurada por calor: ${limitados.map((c) => `CPU ${c.nucleos.join(',')} até ${c.limiteMhz} MHz`).join(' · ')}`
+                : 'frequência máxima liberada (sem redução por calor)'
+              : undefined
+          }
+        />
+        <KpiCard
+          label="Latência dos discos"
+          icon={<StorageOutlinedIcon />}
+          tone={tomLatencia(agora?.discoLatenciaMs)}
+          loading={semDados}
+          value={agora?.discoLatenciaMs === null ? 'ocioso' : ms(agora?.discoLatenciaMs)}
+          footer={
+            agora && discoMaisOcupado
+              ? `mais ocupado: ${discoMaisOcupado.disco} ${pct(discoMaisOcupado.ocupacaoPct, 0)}${
+                  agora.redeErros > 0 ? ` · ${agora.redeErros} erro(s) de rede` : ''
+                }`
+              : undefined
+          }
+        />
+        <KpiCard
+          label="GPU · NPU"
+          icon={<ViewInArOutlinedIcon />}
+          tone={tomUso(Math.max(agora?.gpuPct ?? 0, npuMedia ?? 0))}
+          loading={semDados}
+          value={`${pct(agora?.gpuPct, 0)} · ${pct(npuMedia, 0)}`}
+          footer={
+            npuPct && npuPct.length > 0
+              ? `NPU por núcleo: ${npuPct.map((n) => `${n}%`).join(' / ')}`
+              : 'NPU sem leitura'
           }
         />
       </Box>

@@ -50,4 +50,6 @@ export const API_URLS = {
   SERVIDOR_AGORA: '/v1/servidor/agora',
   SERVIDOR_DIA: '/v1/servidor/dia',
   SERVIDOR_DIAS: '/v1/servidor/dias',
+  SERVIDOR_HOST: '/v1/servidor/host',
+  SERVIDOR_EVENTOS: '/v1/servidor/eventos',
 };

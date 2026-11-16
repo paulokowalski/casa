@@ -5,7 +5,7 @@ import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { StatusPill } from '../../components/ui/StatusPill';
 import { formatDateBR } from '../../utils/format';
 import type { ServidorResumoDia } from '../../types/servidor';
-import { bytes, graus, numero, pct, tomTemperatura, tomTemperaturaDisco, tomUso } from './formatos';
+import { bytes, graus, numero, pct, tomPressao, tomTemperatura, tomTemperaturaDisco, tomUso } from './formatos';
 
 const DIA_SEMANA = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' });
 
@@ -112,6 +112,52 @@ export function TabelaDias({ dias, carregando, selecionado, onSelecionar }: Read
     },
     { id: 'carga', header: 'Carga pico', align: 'right', render: (d) => numero(d.resumo.carga.max) },
     {
+      id: 'pressao',
+      header: 'Pressão pico',
+      align: 'right',
+      render: (d) => {
+        const p = [d.resumo.pressaoCpu?.max, d.resumo.pressaoMemoria?.max, d.resumo.pressaoIo?.max].filter(
+          (v): v is number => v !== null && v !== undefined,
+        );
+        if (p.length === 0) return '—';
+        const max = Math.max(...p);
+        return (
+          <StatusPill size="sm" tone={tomPressao(max)}>
+            {pct(max, 0)}
+          </StatusPill>
+        );
+      },
+    },
+    {
+      id: 'internet',
+      header: 'Internet fora',
+      align: 'right',
+      render: (d) =>
+        !d.host ? (
+          '—'
+        ) : (
+          <StatusPill
+            size="sm"
+            tone={d.host.minutosSemInternet === 0 ? 'success' : d.host.minutosSemInternet > 10 ? 'error' : 'warning'}
+          >
+            {d.host.minutosSemInternet} min
+          </StatusPill>
+        ),
+    },
+    {
+      id: 'eventos',
+      header: 'Eventos (erros)',
+      align: 'right',
+      render: (d) =>
+        !d.host ? (
+          '—'
+        ) : (
+          <StatusPill size="sm" tone={d.host.eventosErro > 0 ? 'error' : 'neutral'}>
+            {d.host.eventos} ({d.host.eventosErro})
+          </StatusPill>
+        ),
+    },
+    {
       id: 'rede',
       header: 'Rede ↓ / ↑',
       align: 'right',
@@ -142,7 +188,7 @@ export function TabelaDias({ dias, carregando, selecionado, onSelecionar }: Read
         rows={dias}
         getRowKey={(d) => d.data}
         loading={carregando}
-        minWidth={1060}
+        minWidth={1340}
         defaultRowsPerPage={10}
         emptyMessage="Ainda não há estatísticas gravadas."
         rowSx={(d) => (d.data === selecionado ? { bgcolor: 'action.selected' } : undefined)}

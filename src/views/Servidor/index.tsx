@@ -3,16 +3,20 @@ import { Alert, Box, IconButton, TextField, Tooltip, Typography } from '@mui/mat
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { servidorService } from '../../services/servidor';
-import type { ServidorAgora, ServidorDia, ServidorResumoDia } from '../../types/servidor';
+import type { EventoServidor, ServidorAgora, ServidorDia, ServidorHost, ServidorResumoDia } from '../../types/servidor';
 import { Agora } from './Agora';
 import { ContainersAgora } from './Containers';
 import { SaudeDiscos } from './SaudeDiscos';
 import { HistoricoDia } from './HistoricoDia';
 import { TabelaDias } from './TabelaDias';
+import { Host } from './Host';
 import { diasAtras, duracao, isoLocal } from './formatos';
 
 const ATUALIZAR_AGORA_MS = 15_000;
 const ATUALIZAR_HISTORICO_MS = 5 * 60_000;
+/** O host grava o status uma vez por minuto. */
+const ATUALIZAR_HOST_MS = 60_000;
+const DIAS_DE_EVENTOS = 7;
 const DIAS_NA_TABELA = 30;
 
 /** Repete a função enquanto a aba está visível e roda de novo assim que ela volta a aparecer. */
@@ -41,6 +45,11 @@ export function ServidorView() {
   const [carregandoAgora, setCarregandoAgora] = useState(true);
   const [erroAgora, setErroAgora] = useState<string | null>(null);
 
+  const [host, setHost] = useState<ServidorHost | null>(null);
+  const [carregandoHost, setCarregandoHost] = useState(true);
+  const [erroHost, setErroHost] = useState<string | null>(null);
+  const [eventos, setEventos] = useState<EventoServidor[]>([]);
+
   const [dia, setDia] = useState<ServidorDia | null>(null);
   const [carregandoDia, setCarregandoDia] = useState(true);
   const [dias, setDias] = useState<ServidorResumoDia[]>([]);
@@ -56,6 +65,21 @@ export function ServidorView() {
       })
       .catch((e: Error) => setErroAgora(e.message))
       .finally(() => setCarregandoAgora(false));
+  }, []);
+
+  const lerHost = useCallback(() => {
+    servidorService
+      .host()
+      .then((h) => {
+        setHost(h);
+        setErroHost(null);
+      })
+      .catch((e: Error) => setErroHost(e.message))
+      .finally(() => setCarregandoHost(false));
+    servidorService
+      .eventos(diasAtras(DIAS_DE_EVENTOS - 1), isoLocal(new Date()))
+      .then(setEventos)
+      .catch(() => undefined);
   }, []);
 
   const lerDia = useCallback(() => {
@@ -83,11 +107,13 @@ export function ServidorView() {
   }, []);
 
   useRepetir(lerAgora, ATUALIZAR_AGORA_MS);
+  useRepetir(lerHost, ATUALIZAR_HOST_MS);
   useRepetir(lerDia, ATUALIZAR_HISTORICO_MS);
   useRepetir(lerDias, ATUALIZAR_HISTORICO_MS);
 
   const atualizarTudo = () => {
     lerAgora();
+    lerHost();
     lerDia();
     lerDias();
   };
@@ -128,9 +154,30 @@ export function ServidorView() {
           </Typography>
         </Box>
         {erroAgora && <Alert severity="warning">{erroAgora}</Alert>}
-        <Agora agora={agora} carregando={carregandoAgora} />
+        <Agora agora={agora} carregando={carregandoAgora} npuPct={host?.npu?.nucleosPct} />
         <SaudeDiscos discos={agora?.discos ?? []} carregando={carregandoAgora} />
         <ContainersAgora containers={agora?.containers ?? []} carregando={carregandoAgora} />
+      </Box>
+
+      <Box
+        component="section"
+        aria-labelledby="titulo-sistema"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+      >
+        <Box
+          sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}
+        >
+          <Typography id="titulo-sistema" component="h2" variant="h4">
+            Sistema
+          </Typography>
+          <Typography variant="caption">
+            {host
+              ? `Lido pelo host às ${host.lidoEm.slice(11, 16)} · atualiza a cada minuto`
+              : 'Atualiza a cada minuto'}
+          </Typography>
+        </Box>
+        {erroHost && <Alert severity="warning">{erroHost}</Alert>}
+        <Host host={host} carregando={carregandoHost} eventos={eventos} />
       </Box>
 
       <Box component="section" aria-labelledby="titulo-dia" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
