@@ -31,7 +31,7 @@ export const colors = {
     series: chartPalette,
     primary: palette.brand[600],
     primarySoft: palette.brand[200],
-    secondary: '#5ab0f6',
+    secondary: chartPalette[1],
     success: palette.success[600],
     warning: palette.warning[500],
     error: palette.error[600],

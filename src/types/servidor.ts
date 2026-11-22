@@ -215,6 +215,21 @@ export interface ServidorResumoDia {
 
 // ---- status do host (timer casa-monitor-host) ----
 
+/** Aparelho da tailnet; handshake e bytes são só do tráfego com este servidor. */
+export interface AparelhoTailscale {
+  id: string;
+  nome: string;
+  so: string;
+  ip: string;
+  dono: string | null;
+  online: boolean;
+  ultimoVisto: string | null;
+  ultimoHandshake: string | null;
+  recebidos: number;
+  enviados: number;
+  criado: string | null;
+}
+
 export type NivelEvento = 'info' | 'sucesso' | 'atencao' | 'erro';
 
 export interface EventoServidor {
@@ -311,7 +326,15 @@ export interface ServidorHost {
     internet: { online: boolean; latenciaMs: number | null };
     gateway: { ip: string; latenciaMs: number | null };
     dns: { ok: boolean; tempoMs: number };
-    tailscale: { estado: string; online: boolean; ip: string; pares: number; paresOnline: number } | null;
+    tailscale: {
+      estado: string;
+      online: boolean;
+      ip: string;
+      usuario?: string | null;
+      pares: number;
+      paresOnline: number;
+      aparelhos?: AparelhoTailscale[];
+    } | null;
   };
   loginsSsh: { quando: string; usuario: string; origem: string; metodo: string }[];
   npu?: { nucleosPct: number[] };
@@ -320,4 +343,174 @@ export interface ServidorHost {
     espaco: { tipo: string; total: number; ativos: number; tamanho: number; recuperavel: number }[];
   };
   inodes?: { ponto: string; total: number; usados: number; pct: number }[];
+}
+
+// ---- internet da casa (timers casa-monitor-internet e casa-monitor-velocidade) ----
+
+export interface PingAlvo {
+  id: 'roteador' | 'modem' | 'provedor' | 'cloudflare' | 'google' | 'cloudflare6' | string;
+  nome: string;
+  alvo: string;
+  perdaPct: number;
+  minMs: number | null;
+  mediaMs: number | null;
+  maxMs: number | null;
+  jitterMs: number | null;
+}
+
+export interface DnsServidor {
+  id: string;
+  nome: string;
+  servidor: string;
+  ok: boolean;
+  tempoMs: number | null;
+}
+
+export interface TesteVelocidade {
+  testadoEm: string;
+  ok: boolean;
+  downloadMbps: number | null;
+  uploadMbps: number | null;
+  latenciaMs: number | null;
+  jitterMs: number | null;
+  /** latência durante o download: bem acima da sem carga = bufferbloat */
+  latenciaCargaMs: number | null;
+  bytes: number | null;
+  erro: string | null;
+}
+
+export interface InternetAgora {
+  lidoEm: string;
+  desatualizado: boolean;
+  online: boolean;
+  interface: {
+    nome: string;
+    gateway: string | null;
+    ipLocal: string | null;
+    velocidadeMbps: number | null;
+    duplex: string | null;
+    estado: string | null;
+    ipv6Global: boolean;
+    recebidos: number | null;
+    enviados: number | null;
+    erros: number;
+    descartados: number;
+  } | null;
+  ping: PingAlvo[];
+  dns: DnsServidor[];
+  publico: {
+    ip: string | null;
+    ipv6: string | null;
+    provedor: string | null;
+    asn: number | null;
+    cidade: string | null;
+    regiao: string | null;
+    pais: string | null;
+    servidorCloudflare: string | null;
+    verificadoEm: string | null;
+    erro: string | null;
+  } | null;
+  pihole: {
+    ok: boolean;
+    erro?: string;
+    bloqueio?: string;
+    consultas24h?: number;
+    bloqueadas24h?: number;
+    bloqueadasPct?: number;
+    doCache24h?: number;
+    encaminhadas24h?: number;
+    consultasPorSegundo?: number;
+    clientesAtivos?: number;
+    dominiosNaLista?: number;
+    upstreams?: { nome: string; ip: string; porta: number; consultas: number; tempoMs: number | null }[];
+  } | null;
+  /** último teste de velocidade */
+  velocidade: TesteVelocidade | null;
+}
+
+export interface ResumoInternet {
+  amostras: number;
+  minutosOffline: number;
+  ping: Faixa;
+  jitterMedio: number | null;
+  perdaMedia: number | null;
+  minutosComPerda: number;
+  roteadorMedio: number | null;
+  modemMedio: number | null;
+  googleMedio: number | null;
+  dnsPiholeMedio: number | null;
+  minutosDnsFalhando: number;
+  dnsCloudflareMedio: number | null;
+  ipsPublicos: number;
+  testes: number;
+  download: Faixa;
+  upload: Faixa;
+}
+
+export interface PontoInternet {
+  horario: string;
+  roteadorMs: number | null;
+  modemMs: number | null;
+  cloudflareMs: number | null;
+  cloudflareMaxMs: number | null;
+  googleMs: number | null;
+  jitterMs: number | null;
+  perdaPct: number | null;
+  offlinePct: number;
+  dnsPiholeMs: number | null;
+  dnsCloudflareMs: number | null;
+  dnsGoogleMs: number | null;
+}
+
+export interface InternetDia {
+  data: string;
+  resumo: ResumoInternet;
+  serie: PontoInternet[];
+  testes: TesteVelocidade[];
+}
+
+// ---- ventilação do servidor (ventoinhas na tomada do Home Assistant) ----
+
+export interface LimiteVentilacao {
+  liga: number | null;
+  desliga: number | null;
+}
+
+export interface LeituraVentilacao {
+  /** on, off, unavailable (tomada fora do ar) ou unknown */
+  tomada: string;
+  precisa: boolean | null;
+  automatica: boolean | null;
+  soc: number | null;
+  /** HD mais quente; 0 = todos em repouso */
+  hds: number | null;
+  nvme: number | null;
+  limiteSoc: LimiteVentilacao | null;
+  limiteHds: LimiteVentilacao | null;
+  limiteNvme: LimiteVentilacao | null;
+}
+
+export interface VentilacaoAgora {
+  recebidoEm: string;
+  desatualizado: boolean;
+  leitura: LeituraVentilacao;
+  desde: string | null;
+  minutosLigadaHoje: number;
+  minutosComDadosHoje: number;
+}
+
+export interface VentilacaoResumoDia {
+  data: string;
+  minutosLigada: number;
+  minutosComDados: number;
+  vezesLigou: number;
+  maxSoc: number | null;
+  maxHds: number | null;
+  maxNvme: number | null;
+}
+
+export interface VentilacaoDia {
+  resumo: VentilacaoResumoDia;
+  periodos: { inicio: string; fim: string; minutos: number }[];
+  pontos: { horario: string; ligada: number | null; soc: number | null; hds: number | null; nvme: number | null }[];
 }

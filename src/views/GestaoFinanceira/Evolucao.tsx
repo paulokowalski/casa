@@ -13,10 +13,15 @@ import {
 import { SectionCard } from '../../components/ui/SectionCard';
 import { axisProps, compactNumber, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
 import { useGestaoFinanceira } from '../../contexts/GestaoFinanceiraContext';
-import { palette } from '../../styles/tokens';
+import { chartPalette, palette } from '../../styles/tokens';
 import { formatCurrency } from '../../utils/format';
 
-const COR = { contas: palette.brand[600], contasSoft: palette.brand[200], cartao: '#5ab0f6', cartaoSoft: '#c7e3fc' };
+const COR = {
+  contas: palette.brand[600],
+  contasSoft: palette.brand[200],
+  cartao: chartPalette[1],
+  cartaoSoft: '#2a3d63',
+};
 
 function Legenda({ cor, texto, tracejado }: Readonly<{ cor: string; texto: string; tracejado?: boolean }>) {
   return (
@@ -43,7 +48,7 @@ export function Evolucao() {
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
           <Legenda cor={COR.contas} texto="Contas fixas" />
           <Legenda cor={COR.cartao} texto="Cartão" />
-          {v?.renda ? <Legenda cor="#12b76a" texto="Renda" tracejado /> : null}
+          {v?.renda ? <Legenda cor={palette.success[600]} texto="Renda" tracejado /> : null}
         </Box>
       }
       sx={{ height: '100%' }}
@@ -70,7 +75,13 @@ export function Evolucao() {
                 ]}
               />
               {v.renda ? (
-                <ReferenceLine zIndex={250} y={v.renda} stroke="#12b76a" strokeDasharray="6 4" strokeWidth={1.5} />
+                <ReferenceLine
+                  zIndex={250}
+                  y={v.renda}
+                  stroke={palette.success[600]}
+                  strokeDasharray="6 4"
+                  strokeWidth={1.5}
+                />
               ) : null}
               <Bar dataKey="contas" stackId="t" maxBarSize={40}>
                 {v.serie.map((p, i) => (

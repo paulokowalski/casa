@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Box, Paper, Typography, type SxProps, type Theme } from '@mui/material';
+import { shadow } from '../../styles/tokens';
 
 interface SectionCardProps {
   title?: ReactNode;
@@ -31,7 +32,7 @@ export function SectionCard({
       sx={[
         {
           borderRadius: 3,
-          boxShadow: '0 1px 2px rgba(16,24,40,.05)',
+          boxShadow: shadow.xs,
           minWidth: 0,
           overflow: 'hidden',
           display: 'flex',

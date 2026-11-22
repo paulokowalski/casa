@@ -19,10 +19,10 @@ import { axisProps, compactNumber, gridProps, yAxisProps } from '../../component
 import { useGestaoCartao } from '../../contexts/GestaoCartaoContext';
 import { calcularProximosMeses, type ProximosMeses as Dados } from '../../lib/financas/proximosMeses';
 import { rotuloMesAno, rotuloMesLongo } from '../../lib/financas/parcelas';
-import { palette, tones } from '../../styles/tokens';
+import { palette, shadow, tones } from '../../styles/tokens';
 import { formatCurrency, formatPercent } from '../../utils/format';
 
-const COR_LIVRE = { fill: tones.success.bg, stroke: '#6ce9a6' };
+const COR_LIVRE = { fill: tones.success.bg, stroke: tones.success.border };
 const COR_PARCELAS = palette.brand[600];
 
 function Numero({ rotulo, valor, rodape }: Readonly<{ rotulo: string; valor: string; rodape: string }>) {
@@ -76,7 +76,7 @@ function Dica({ active, payload }: TooltipContentProps) {
         bgcolor: 'background.paper',
         border: `1px solid ${palette.gray[200]}`,
         borderRadius: 2.5,
-        boxShadow: '0 12px 16px -4px rgba(16,24,40,.08)',
+        boxShadow: shadow.lg,
         px: 1.75,
         py: 1.5,
         minWidth: 200,

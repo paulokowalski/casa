@@ -16,13 +16,13 @@ import { axisProps, compactNumber, gridProps, yAxisProps } from '../../component
 import { useGestaoFinanceira } from '../../contexts/GestaoFinanceiraContext';
 import type { Futuro as Dados, PontoFuturo } from '../../lib/financas/futuro';
 import { rotuloMesLongo } from '../../lib/financas/parcelas';
-import { palette, tones } from '../../styles/tokens';
+import { chartPalette, palette, shadow, tones } from '../../styles/tokens';
 import { formatCurrency } from '../../utils/format';
 
 const COR = {
   contas: palette.brand[600],
-  parcelas: '#5ab0f6',
-  renda: '#12b76a',
+  parcelas: chartPalette[1],
+  renda: palette.success[600],
 };
 
 function Legenda({ cor, texto, tipo }: Readonly<{ cor: string; texto: string; tipo?: 'linha' }>) {
@@ -63,7 +63,7 @@ function Dica({ active, payload }: TooltipContentProps) {
         bgcolor: 'background.paper',
         border: `1px solid ${palette.gray[200]}`,
         borderRadius: 2.5,
-        boxShadow: '0 12px 16px -4px rgba(16,24,40,.08)',
+        boxShadow: shadow.lg,
         px: 1.75,
         py: 1.5,
         minWidth: 220,

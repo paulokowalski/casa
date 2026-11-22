@@ -6,7 +6,7 @@ import { useGestaoFinanceira } from '../../contexts/GestaoFinanceiraContext';
 import { chartPalette, palette } from '../../styles/tokens';
 import { formatCurrency, formatPercent } from '../../utils/format';
 
-const COR_CARTAO = '#5ab0f6';
+const COR_CARTAO = chartPalette[1];
 const coresGrupos = chartPalette.filter((c) => c !== COR_CARTAO);
 
 export function ParaOndeVai() {
@@ -77,7 +77,7 @@ export function ParaOndeVai() {
   );
 }
 
-const CORES_REGRA = [palette.brand[600], COR_CARTAO, '#12b76a'];
+const CORES_REGRA = [palette.brand[600], COR_CARTAO, palette.success[600]];
 
 export function Equilibrio() {
   const { visao: v, loading } = useGestaoFinanceira();

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Box, Paper, Skeleton, Typography } from '@mui/material';
-import type { Tone } from '../../styles/tokens';
+import { shadow, type Tone } from '../../styles/tokens';
 import { IconBadge } from './IconBadge';
 
 interface KpiCardProps {
@@ -14,10 +14,7 @@ interface KpiCardProps {
 
 export function KpiCard({ label, value, icon, tone = 'brand', footer, loading }: Readonly<KpiCardProps>) {
   return (
-    <Paper
-      variant="outlined"
-      sx={{ borderRadius: 3, boxShadow: '0 1px 2px rgba(16,24,40,.05)', p: { xs: 2, md: 2.5 }, minWidth: 0 }}
-    >
+    <Paper variant="outlined" sx={{ borderRadius: 3, boxShadow: shadow.xs, p: { xs: 2, md: 2.5 }, minWidth: 0 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minHeight: 32 }}>
         {icon && <IconBadge tone={tone}>{icon}</IconBadge>}
         <Typography variant="subtitle2" component="h3" sx={{ lineHeight: 1.3 }}>

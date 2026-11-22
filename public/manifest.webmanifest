@@ -1,0 +1,20 @@
+{
+  "name": "Kowalski House",
+  "short_name": "Casa",
+  "description": "Gestão da casa e crescimento das crianças",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#17171c",
+  "theme_color": "#17171c",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Crianças", "url": "/crescimento", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Álbum", "url": "/crescimento?aba=album", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

@@ -26,3 +26,6 @@ Claude outputs/
 *.iml
 *.tsbuildinfo
 dist/
+
+# testes E2E (site gerado, resultados e capturas de tela)
+/e2e/.saida

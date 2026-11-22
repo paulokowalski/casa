@@ -6,7 +6,7 @@ import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { useAuth } from '../../contexts/AuthContext';
-import { palette } from '../../styles/tokens';
+import { palette, text } from '../../styles/tokens';
 
 const DESTAQUES = [
   'Cartão, contas e renda separados por pessoa',
@@ -73,7 +73,7 @@ export function LoginView() {
               height: 36,
               borderRadius: 2,
               bgcolor: palette.brand[600],
-              color: '#fff',
+              color: text.inverse,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -81,11 +81,14 @@ export function LoginView() {
           >
             <HomeRoundedIcon sx={{ fontSize: 21 }} />
           </Box>
-          <Typography sx={{ fontWeight: 700, color: '#fff' }}>Kowalski House</Typography>
+          <Typography sx={{ fontWeight: 700, color: palette.sidebar.textActive }}>Kowalski House</Typography>
         </Box>
 
         <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', gap: 3, maxWidth: 420 }}>
-          <Typography component="p" sx={{ color: '#fff', fontSize: '2rem', fontWeight: 700, lineHeight: 1.2 }}>
+          <Typography
+            component="p"
+            sx={{ color: palette.sidebar.textActive, fontSize: '2rem', fontWeight: 700, lineHeight: 1.2 }}
+          >
             Suas finanças da casa, só para você.
           </Typography>
           <Box

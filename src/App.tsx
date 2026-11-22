@@ -14,6 +14,7 @@ const Energia = lazy(() => import('./views/Energia').then((m) => ({ default: m.E
 const Pessoas = lazy(() => import('./views/Pessoa').then((m) => ({ default: m.PessoaView })));
 const Crescimento = lazy(() => import('./modulos/crescimento/telas').then((m) => ({ default: m.CrescimentoView })));
 const Servidor = lazy(() => import('./views/Servidor').then((m) => ({ default: m.ServidorView })));
+const Passagens = lazy(() => import('./views/Passagens').then((m) => ({ default: m.PassagensView })));
 
 function RotaProtegida() {
   const { usuario } = useAuth();
@@ -60,6 +61,14 @@ export default function App() {
               element={
                 <SoAdmin>
                   <Servidor />
+                </SoAdmin>
+              }
+            />
+            <Route
+              path="/passagens"
+              element={
+                <SoAdmin>
+                  <Passagens />
                 </SoAdmin>
               }
             />

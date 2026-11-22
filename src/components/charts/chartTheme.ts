@@ -22,7 +22,7 @@ export const gridProps = {
 
 export const tooltipProps = {
   contentStyle: {
-    background: palette.white,
+    background: surface.paper,
     border: `1px solid ${surface.border}`,
     borderRadius: radius.md,
     boxShadow: shadow.lg,

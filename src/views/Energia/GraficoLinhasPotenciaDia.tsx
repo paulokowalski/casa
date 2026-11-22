@@ -11,6 +11,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { axisProps, compactNumber, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
 import { useEnergia, type PotenciaPonto } from '../../contexts/EnergiaContext';
 import { colors } from '../../styles/colors';
+import { surface } from '../../styles/tokens';
 import { MONTHS_PT, formatNumber } from '../../utils/format';
 
 const minutos = (h: string) => {
@@ -124,7 +125,7 @@ export function GraficoLinhasPotenciaDia({ diaSelecionado }: Readonly<{ diaSelec
                     x={resumo.pico.horario}
                     y={resumo.pico.potencia}
                     r={5}
-                    fill="#fff"
+                    fill={surface.paper}
                     stroke={colors.chart.primary}
                     strokeWidth={2.5}
                   />

@@ -4,8 +4,8 @@ import { SectionCard } from '../../components/ui/SectionCard';
 import { StatusPill } from '../../components/ui/StatusPill';
 import { EmptyState } from '../../components/ui/EmptyState';
 import type { Tone } from '../../styles/tokens';
-import type { EventoServidor, NivelEvento, ServidorHost, UnidadeHost } from '../../types/servidor';
-import { bytes, dataHora, ms, pct, relativo, tomIdadeBackup, tomUso } from './formatos';
+import type { AparelhoTailscale, EventoServidor, NivelEvento, ServidorHost, UnidadeHost } from '../../types/servidor';
+import { bytes, dataHora, pct, relativo, tomIdadeBackup, tomUso } from './formatos';
 
 const grade = {
   display: 'grid',
@@ -37,7 +37,7 @@ const ROTULO_TIPO: Record<string, string> = {
 };
 
 /** Linha rótulo · valor, com o valor opcionalmente numa pílula colorida. */
-function Item({
+export function Item({
   rotulo,
   valor,
   tom,
@@ -65,7 +65,7 @@ function Item({
   );
 }
 
-function Subtitulo({ children }: Readonly<{ children: ReactNode }>) {
+export function Subtitulo({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <Typography variant="caption" component="p" sx={{ mt: 0.5, fontWeight: 600 }}>
       {children}
@@ -141,39 +141,78 @@ function Alertas({ h }: Readonly<{ h: ServidorHost }>) {
   );
 }
 
-function Rede({ h }: Readonly<{ h: ServidorHost }>) {
-  const r = h.rede;
+/** Handshake WireGuard com o servidor mais novo que isso = aparelho trocando tráfego com ele agora. */
+const ACESSO_RECENTE_MS = 3 * 60 * 1000;
+
+function acessandoAgora(a: AparelhoTailscale): boolean {
+  if (!a.ultimoHandshake) return false;
+  return Date.now() - new Date(a.ultimoHandshake).getTime() < ACESSO_RECENTE_MS;
+}
+
+/** Acessando agora primeiro, depois online, depois offline (o visto mais recentemente antes). */
+function ordemAparelho(a: AparelhoTailscale): number {
+  if (acessandoAgora(a)) return 0;
+  return a.online ? 1 : 2;
+}
+
+function AparelhosVpn({ aparelhos, eu }: Readonly<{ aparelhos: AparelhoTailscale[]; eu?: string | null }>) {
+  if (aparelhos.length === 0) return null;
+  const lista = [...aparelhos].sort(
+    (a, b) =>
+      ordemAparelho(a) - ordemAparelho(b) ||
+      (b.ultimoVisto ?? '').localeCompare(a.ultimoVisto ?? '') ||
+      a.nome.localeCompare(b.nome),
+  );
   return (
-    <SectionCard title="Internet e rede" subtitle="Ping a 1.1.1.1, roteador, DNS do Pi-hole e Tailscale">
-      <Box sx={coluna}>
-        <Item
-          rotulo="Internet"
-          valor={r.internet.online ? ms(r.internet.latenciaMs) : 'fora do ar'}
-          tom={!r.internet.online ? 'error' : (r.internet.latenciaMs ?? 0) > 80 ? 'warning' : 'success'}
-        />
-        <Item
-          rotulo={`Roteador (${r.gateway.ip || '—'})`}
-          valor={r.gateway.latenciaMs === null ? 'sem resposta' : ms(r.gateway.latenciaMs)}
-          tom={r.gateway.latenciaMs === null ? 'error' : r.gateway.latenciaMs > 20 ? 'warning' : 'success'}
-        />
-        <Item
-          rotulo="DNS (Pi-hole)"
-          valor={r.dns.ok ? ms(r.dns.tempoMs) : 'falhando'}
-          tom={!r.dns.ok ? 'error' : r.dns.tempoMs > 500 ? 'warning' : 'success'}
-        />
-        {r.tailscale ? (
+    <>
+      <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5 }}>
+        Aparelhos na VPN
+      </Typography>
+      {lista.map((a) => {
+        const acessando = acessandoAgora(a);
+        const outroDono = a.dono && a.dono !== eu ? ` · ${a.dono}` : '';
+        let valor: string;
+        let tom: Tone;
+        if (acessando) {
+          valor = 'acessando agora';
+          tom = 'info';
+        } else if (a.online) {
+          valor = a.ultimoHandshake ? `online · acessou ${relativo(a.ultimoHandshake)}` : 'online';
+          tom = 'success';
+        } else {
+          valor = a.ultimoVisto ? `offline · visto ${relativo(a.ultimoVisto)}` : 'offline';
+          tom = 'neutral';
+        }
+        return (
           <Item
-            rotulo={`Tailscale (${r.tailscale.ip})`}
-            valor={
-              r.tailscale.online
-                ? `online · ${r.tailscale.paresOnline}/${r.tailscale.pares} aparelhos`
-                : r.tailscale.estado
-            }
-            tom={r.tailscale.online ? 'success' : 'error'}
+            key={a.id}
+            rotulo={`${a.nome} · ${a.so}${outroDono}`}
+            valor={valor}
+            tom={tom}
+            dica={`${a.ip} · trocados com o servidor desde a última conexão: ${bytes(a.recebidos + a.enviados)}`}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+/** Tailscale: estado deste servidor na tailnet e os aparelhos que acessam por ela. */
+export function Vpn({ h }: Readonly<{ h: ServidorHost }>) {
+  const t = h.rede.tailscale;
+  return (
+    <SectionCard title="VPN (Tailscale)" subtitle="Acesso de fora de casa a este servidor">
+      <Box sx={coluna}>
+        {t ? (
+          <Item
+            rotulo={`Este servidor (${t.ip})`}
+            valor={t.online ? `online · ${t.paresOnline}/${t.pares} aparelhos` : t.estado}
+            tom={t.online ? 'success' : 'error'}
           />
         ) : (
           <Item rotulo="Tailscale" valor="sem leitura" tom="neutral" />
         )}
+        {t?.aparelhos && <AparelhosVpn aparelhos={t.aparelhos} eu={t.usuario} />}
       </Box>
     </SectionCard>
   );
@@ -439,7 +478,6 @@ export function Host({
       <Box sx={grade}>
         <Alertas h={host} />
         <Backup h={host} />
-        <Rede h={host} />
         <Servicos h={host} />
         <Montagens h={host} />
         <Atualizacoes h={host} />
@@ -449,7 +487,7 @@ export function Host({
       </Box>
       <SectionCard
         title="Eventos"
-        subtitle="Últimos 7 dias: backups, alertas, quedas, discos, containers, logins e boots"
+        subtitle="Últimos 7 dias: backups, alertas, quedas, discos, containers, logins, acessos pela VPN e boots"
       >
         <ListaEventos eventos={eventos} vazio="Nenhum evento registrado nos últimos 7 dias." />
       </SectionCard>

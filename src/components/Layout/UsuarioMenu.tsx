@@ -49,7 +49,10 @@ export function UsuarioMenu({ variante }: Readonly<{ variante: 'sidebar' | 'comp
       >
         <AvatarUsuario nome={usuario.nome} />
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography noWrap sx={{ color: '#fff', fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.3 }}>
+          <Typography
+            noWrap
+            sx={{ color: palette.sidebar.textActive, fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.3 }}
+          >
             {usuario.nome}
           </Typography>
           <Typography noWrap sx={{ color: palette.sidebar.textMuted, fontSize: '0.75rem' }}>
@@ -61,7 +64,7 @@ export function UsuarioMenu({ variante }: Readonly<{ variante: 'sidebar' | 'comp
             aria-label="Sair"
             onClick={sair}
             size="small"
-            sx={{ color: palette.sidebar.textMuted, '&:hover': { color: '#fff' } }}
+            sx={{ color: palette.sidebar.textMuted, '&:hover': { color: palette.sidebar.textActive } }}
           >
             <LogoutRoundedIcon fontSize="small" />
           </IconButton>

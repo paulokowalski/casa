@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Box, Fab, Tooltip } from '@mui/material';
-import { layout } from '../../styles/tokens';
+import { layout, shadow } from '../../styles/tokens';
 
 interface FloatingActionProps {
   label: string;
@@ -62,7 +62,7 @@ export function FloatingAction({ label, icon, onClick, atalho = 'n' }: Readonly<
             fontSize: '0.9375rem',
             fontWeight: 600,
             textTransform: 'none',
-            boxShadow: '0 12px 24px -6px rgba(29,78,216,.45), 0 4px 8px -2px rgba(16,24,40,.12)',
+            boxShadow: shadow.lg,
             '& .rotulo': { display: { xs: 'none', sm: 'inline' } },
           }}
         >

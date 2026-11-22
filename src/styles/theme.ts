@@ -1,17 +1,18 @@
+import '@fontsource-variable/baloo-2';
 import { alpha, createTheme } from '@mui/material/styles';
-import { fontFamily, palette, radius, shadow, surface, text } from './tokens';
+import { fontFamily, fontFamilyTitulo, palette, radius, shadow, surface, text } from './tokens';
 
 export const theme = createTheme({
   breakpoints: {
     values: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 },
   },
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
       main: palette.brand[600],
       light: palette.brand[500],
       dark: palette.brand[700],
-      contrastText: palette.white,
+      contrastText: text.inverse,
     },
     secondary: { main: palette.gray[700] },
     success: { main: palette.success[600], light: palette.success[50], dark: palette.success[700] },
@@ -27,10 +28,10 @@ export const theme = createTheme({
   typography: {
     fontFamily,
     fontSize: 14,
-    h1: { fontSize: '1.875rem', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.25 },
-    h2: { fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.3 },
-    h3: { fontSize: '1.25rem', fontWeight: 600, lineHeight: 1.35 },
-    h4: { fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.4 },
+    h1: { fontFamily: fontFamilyTitulo, fontSize: '2rem', fontWeight: 800, lineHeight: 1.2 },
+    h2: { fontFamily: fontFamilyTitulo, fontSize: '1.625rem', fontWeight: 800, lineHeight: 1.2 },
+    h3: { fontFamily: fontFamilyTitulo, fontSize: '1.375rem', fontWeight: 700, lineHeight: 1.25 },
+    h4: { fontFamily: fontFamilyTitulo, fontSize: '1.25rem', fontWeight: 700, lineHeight: 1.3 },
     h5: { fontSize: '1rem', fontWeight: 600, lineHeight: 1.45 },
     h6: { fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.45 },
     subtitle1: { fontSize: '0.9375rem', fontWeight: 500 },
@@ -44,7 +45,7 @@ export const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        html: { WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' },
+        html: { WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', colorScheme: 'dark' },
         body: { backgroundColor: surface.background, fontVariantNumeric: 'tabular-nums' },
         '*, *::before, *::after': { boxSizing: 'border-box' },
         '::selection': { backgroundColor: palette.brand[100] },
@@ -68,7 +69,7 @@ export const theme = createTheme({
         outlined: {
           borderColor: surface.borderStrong,
           color: palette.gray[700],
-          backgroundColor: palette.white,
+          backgroundColor: surface.paper,
           boxShadow: shadow.xs,
           '&:hover': { borderColor: surface.borderStrong, backgroundColor: palette.gray[50] },
           variants: [
@@ -84,13 +85,13 @@ export const theme = createTheme({
       },
     },
     MuiFab: {
-      styleOverrides: { root: { boxShadow: `0 8px 20px ${alpha(palette.brand[600], 0.35)}`, borderRadius: radius.xl } },
+      styleOverrides: { root: { boxShadow: `0 8px 20px ${alpha(palette.brand[600], 0.25)}`, borderRadius: radius.xl } },
     },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
           borderRadius: radius.md,
-          backgroundColor: palette.white,
+          backgroundColor: surface.subtle,
           '& .MuiOutlinedInput-notchedOutline': { borderColor: surface.borderStrong },
           '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: palette.gray[400] },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: palette.brand[300], borderWidth: 1 },
@@ -161,8 +162,14 @@ export const theme = createTheme({
     MuiTooltip: {
       defaultProps: { arrow: true },
       styleOverrides: {
-        tooltip: { backgroundColor: palette.gray[900], fontSize: '0.75rem', fontWeight: 500, borderRadius: radius.sm },
-        arrow: { color: palette.gray[900] },
+        tooltip: {
+          backgroundColor: palette.gray[300],
+          color: text.primary,
+          fontSize: '0.75rem',
+          fontWeight: 500,
+          borderRadius: radius.sm,
+        },
+        arrow: { color: palette.gray[300] },
       },
     },
     MuiAlert: {

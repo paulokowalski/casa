@@ -52,4 +52,14 @@ export const API_URLS = {
   SERVIDOR_DIAS: '/v1/servidor/dias',
   SERVIDOR_HOST: '/v1/servidor/host',
   SERVIDOR_EVENTOS: '/v1/servidor/eventos',
+  SERVIDOR_INTERNET: '/v1/servidor/internet',
+  SERVIDOR_INTERNET_DIA: '/v1/servidor/internet/dia',
+  SERVIDOR_INTERNET_VELOCIDADE: '/v1/servidor/internet/velocidade',
+  SERVIDOR_VENTILACAO: '/v1/servidor/ventilacao',
+  SERVIDOR_VENTILACAO_DIA: '/v1/servidor/ventilacao/dia',
+  SERVIDOR_VENTILACAO_DIAS: '/v1/servidor/ventilacao/dias',
+
+  PASSAGENS: '/v1/passagens',
+  PASSAGENS_ROTAS: '/v1/passagens/rotas',
+  PASSAGENS_ROTA_ID: (id: Valor) => `/v1/passagens/rotas/${id}`,
 };

@@ -13,7 +13,7 @@ import {
   useTheme,
 } from '@mui/material';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import { layout, palette } from '../../styles/tokens';
+import { layout, palette, text } from '../../styles/tokens';
 import { useAuth } from '../../contexts/AuthContext';
 import { findNavItem, navegacao, type NavItem, type NavSection } from './navigation';
 import { UsuarioMenu } from './UsuarioMenu';
@@ -30,7 +30,7 @@ function Logo({ compact }: Readonly<{ compact?: boolean }>) {
           height: 32,
           borderRadius: 2,
           bgcolor: palette.brand[600],
-          color: '#fff',
+          color: text.inverse,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -41,7 +41,9 @@ function Logo({ compact }: Readonly<{ compact?: boolean }>) {
       </Box>
       {!compact && (
         <Box sx={{ minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem', color: '#fff', lineHeight: 1.2 }}>
+          <Typography
+            sx={{ fontWeight: 700, fontSize: '0.9375rem', color: palette.sidebar.textActive, lineHeight: 1.2 }}
+          >
             Kowalski House
           </Typography>
           <Typography sx={{ fontSize: '0.75rem', color: palette.sidebar.textMuted }}>Gestão residencial</Typography>
@@ -108,10 +110,13 @@ function Sidebar({ pathname, sections }: Readonly<{ pathname: string; sections: 
                   fontSize: '0.875rem',
                   fontWeight: 500,
                   textDecoration: 'none',
-                  color: active ? '#fff' : palette.sidebar.text,
+                  color: active ? palette.sidebar.textActive : palette.sidebar.text,
                   bgcolor: active ? palette.sidebar.active : 'transparent',
                   '& svg': { fontSize: 20, color: active ? palette.sidebar.accent : 'inherit' },
-                  '&:hover': { bgcolor: active ? palette.sidebar.active : palette.sidebar.hover, color: '#fff' },
+                  '&:hover': {
+                    bgcolor: active ? palette.sidebar.active : palette.sidebar.hover,
+                    color: palette.sidebar.textActive,
+                  },
                   '&:focus-visible': { outline: `2px solid ${palette.sidebar.accent}`, outlineOffset: 2 },
                 }}
               >
@@ -169,7 +174,7 @@ function Rail({ pathname, items }: Readonly<{ pathname: string; items: NavItem[]
                 color: active ? palette.sidebar.accent : palette.sidebar.text,
                 bgcolor: active ? palette.sidebar.active : 'transparent',
                 '& svg': { fontSize: 22 },
-                '&:hover': { bgcolor: palette.sidebar.hover, color: '#fff' },
+                '&:hover': { bgcolor: palette.sidebar.hover, color: palette.sidebar.textActive },
                 '&:focus-visible': { outline: `2px solid ${palette.sidebar.accent}`, outlineOffset: 2 },
               }}
             >
@@ -204,7 +209,7 @@ function MobileChrome({ pathname, items }: Readonly<{ pathname: string; items: N
               height: 30,
               borderRadius: 2,
               bgcolor: palette.brand[600],
-              color: '#fff',
+              color: text.inverse,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

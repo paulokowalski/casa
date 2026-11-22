@@ -6,6 +6,7 @@ import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import ChildCareOutlinedIcon from '@mui/icons-material/ChildCareOutlined';
+import FlightTakeoffOutlinedIcon from '@mui/icons-material/FlightTakeoffOutlined';
 
 export interface NavItem {
   label: string;
@@ -39,6 +40,18 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Família',
     items: [{ label: 'Crescimento', shortLabel: 'Crianças', to: '/crescimento', icon: <ChildCareOutlinedIcon /> }],
+  },
+  {
+    label: 'Viagens',
+    items: [
+      {
+        label: 'Passagens',
+        shortLabel: 'Passagens',
+        to: '/passagens',
+        icon: <FlightTakeoffOutlinedIcon />,
+        adminOnly: true,
+      },
+    ],
   },
   {
     label: 'Cadastros',

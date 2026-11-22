@@ -14,13 +14,19 @@ import { SectionCard } from '../../components/ui/SectionCard';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { axisProps, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
 import { colors } from '../../styles/colors';
-import type { ContainerDia, SerieContainer, ServidorDia } from '../../types/servidor';
+import type { ContainerDia, SerieContainer, ServidorDia, ServidorResumoDia } from '../../types/servidor';
 import { bytes, graus, LIMITES, ms, numero, pct, taxa } from './formatos';
 import { ListaEventos } from './Host';
 import { ListaDiscos } from './Agora';
 import { ContainersDia } from './Containers';
 
 const TOP_CONTAINERS = 6;
+
+const doisPorLinha = {
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' },
+  gap: { xs: 2, md: 2.5 },
+} as const;
 
 interface Serie {
   chave: string;
@@ -38,9 +44,12 @@ interface GraficoProps {
   formatarEixo?: (v: number) => string;
   dominio?: [number | 'auto', number | 'auto'];
   limite?: number;
+  altura?: { xs: number; md: number };
+  /** marca cada ponto (séries esparsas, ex.: testes de velocidade) */
+  comPontos?: boolean;
 }
 
-function Grafico({
+export function Grafico({
   titulo,
   subtitulo,
   pontos,
@@ -49,10 +58,12 @@ function Grafico({
   formatarEixo,
   dominio,
   limite,
+  altura = { xs: 200, md: 240 },
+  comPontos = false,
 }: Readonly<GraficoProps>) {
   return (
     <SectionCard title={titulo} subtitle={subtitulo}>
-      <Box sx={{ height: { xs: 200, md: 240 } }}>
+      <Box sx={{ height: altura }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={pontos} margin={{ top: 8, right: 8, left: -4, bottom: 0 }}>
             <CartesianGrid {...gridProps} />
@@ -76,7 +87,7 @@ function Grafico({
                 stroke={s.cor}
                 strokeWidth={s.tracejada ? 1.5 : 2}
                 strokeDasharray={s.tracejada ? '4 3' : undefined}
-                dot={false}
+                dot={comPontos ? { r: 2.5 } : false}
                 connectNulls
                 isAnimationActive={false}
               />
@@ -293,32 +304,20 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
   }
 
   const s = colors.chart.series;
-  const topCpu = maiores(dia.containers, (c) => c.cpuMedia);
-  const topMem = maiores(dia.containers, (c) => c.memMedia);
-  const doisPorLinha = {
-    display: 'grid',
-    gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, minmax(0, 1fr))' },
-    gap: { xs: 2, md: 2.5 },
-  } as const;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 }, opacity: carregando ? 0.6 : 1 }}>
       <Box sx={doisPorLinha}>
         <Resumo dia={dia} />
-        <SectionCard title="Discos" subtitle="Espaço na última medição do dia e temperatura máxima">
-          <ListaDiscos discos={dia.discos} doDia />
-        </SectionCard>
+        <ResumoHost dia={dia} />
       </Box>
 
-      <Box sx={doisPorLinha}>
-        <ResumoHost dia={dia} />
-        <SectionCard
-          title="Eventos do dia"
-          subtitle="Backups, alertas, quedas, discos, containers, logins, kernel e boots"
-        >
-          <ListaEventos eventos={dia.eventos} vazio="Nenhum evento neste dia." />
-        </SectionCard>
-      </Box>
+      <SectionCard
+        title="Eventos do dia"
+        subtitle="Backups, alertas, quedas, discos, containers, logins, kernel e boots"
+      >
+        <ListaEventos eventos={dia.eventos} vazio="Nenhum evento neste dia." />
+      </SectionCard>
 
       <Box sx={doisPorLinha}>
         <Grafico
@@ -361,19 +360,6 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
           ]}
         />
         <Grafico
-          titulo="Disco"
-          subtitulo="Leitura e escrita somando os discos"
-          pontos={dia.serie}
-          formatar={taxa}
-          formatarEixo={taxaEixo}
-          series={[
-            { chave: 'discoLeituraBps', nome: 'Leitura', cor: s[9] },
-            { chave: 'discoEscritaBps', nome: 'Escrita', cor: s[7] },
-          ]}
-        />
-      </Box>
-      <Box sx={doisPorLinha}>
-        <Grafico
           titulo="Pressão (espera por recurso)"
           subtitulo="PSI: % do tempo com tarefa esperando · acima de 10% há disputa"
           pontos={dia.serie}
@@ -384,18 +370,6 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
             { chave: 'pressaoCpu', nome: 'CPU', cor: s[0] },
             { chave: 'pressaoMemoria', nome: 'Memória', cor: s[4] },
             { chave: 'pressaoIo', nome: 'Disco (I/O)', cor: s[7] },
-          ]}
-        />
-        <Grafico
-          titulo="Latência e ocupação dos discos"
-          subtitulo="Tempo médio por operação · disco mais ocupado em %"
-          pontos={dia.serie}
-          limite={30}
-          formatar={(v) => ms(v)}
-          formatarEixo={msEixo}
-          series={[
-            { chave: 'discoLatenciaMs', nome: 'Latência média', cor: s[9] },
-            { chave: 'discoLatenciaMaxMs', nome: 'Pior minuto', cor: s[5], tracejada: true },
           ]}
         />
         <Grafico
@@ -412,69 +386,141 @@ export function HistoricoDia({ dia, carregando }: Readonly<{ dia: ServidorDia | 
           ]}
         />
         <Grafico
-          titulo="Internet"
-          subtitulo="Ping a 1.1.1.1, roteador e DNS (Pi-hole) a cada 5 minutos"
-          pontos={dia.serieHost}
-          formatar={(v) => ms(v)}
-          formatarEixo={msEixo}
-          series={[
-            { chave: 'internetMs', nome: 'Internet', cor: s[0] },
-            { chave: 'internetMaxMs', nome: 'Internet (pico)', cor: s[1], tracejada: true },
-            { chave: 'gatewayMs', nome: 'Roteador', cor: s[2] },
-            { chave: 'dnsMs', nome: 'DNS', cor: s[4] },
-          ]}
+          titulo="Carga do sistema"
+          subtitulo="Load average de 1 minuto (acima do número de núcleos há fila de processos)"
+          pontos={dia.serie}
+          formatar={(v) => numero(v)}
+          formatarEixo={(v) => numero(v, 1)}
+          series={[{ chave: 'carga', nome: 'Carga', cor: s[4] }]}
         />
       </Box>
+    </Box>
+  );
+}
 
-      <Grafico
-        titulo="Carga do sistema"
-        subtitulo="Load average de 1 minuto (acima do número de núcleos há fila de processos)"
-        pontos={dia.serie}
-        formatar={(v) => numero(v)}
-        formatarEixo={(v) => numero(v, 1)}
-        series={[{ chave: 'carga', nome: 'Carga', cor: s[4] }]}
-      />
+function SemAmostras({ titulo }: Readonly<{ titulo: string }>) {
+  return (
+    <SectionCard title={titulo}>
+      <EmptyState message="Nenhuma amostra gravada neste dia. A coleta acontece a cada minuto." />
+    </SectionCard>
+  );
+}
 
-      {dia.serieDiscos.length > 0 && (
+/** Temperatura de cada disco no dia, pico diário dos últimos dias, latência e espaço. */
+export function HistoricoDiscos({
+  dia,
+  carregando,
+  dias,
+}: Readonly<{ dia: ServidorDia | null; carregando: boolean; dias: ServidorResumoDia[] }>) {
+  if (carregando && !dia) return <Skeleton variant="rounded" height={320} />;
+  if (!dia || dia.resumo.amostras === 0) return <SemAmostras titulo="Temperatura dos discos" />;
+
+  const s = colors.chart.series;
+  const picos = [...dias]
+    .filter((d) => d.resumo.discoTemperaturaMax !== null)
+    .sort((a, b) => a.data.localeCompare(b.data))
+    .map((d) => ({ horario: d.data.slice(8, 10) + '/' + d.data.slice(5, 7), pico: d.resumo.discoTemperaturaMax }));
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 }, opacity: carregando ? 0.6 : 1 }}>
+      {dia.serieDiscos.length > 0 ? (
         <Grafico
           titulo="Temperatura dos discos"
-          subtitulo={`SMART a cada 5 minutos · HDs: ideal abaixo de ${LIMITES.hd.aviso} °C`}
+          subtitulo={`SMART a cada 5 minutos · HDs: ideal abaixo de ${LIMITES.hd.aviso} °C (linha) · NVMe/SSD até ${LIMITES.ssd.aviso} °C · disco em repouso não é lido`}
           pontos={temperaturasDosDiscos(dia)}
           dominio={['auto', 'auto']}
           limite={LIMITES.hd.aviso}
           formatar={graus}
           formatarEixo={grausEixo}
           series={dia.serieDiscos.map((d, i) => ({ chave: `d${i}`, nome: d.nome, cor: s[i % s.length] }))}
+          altura={{ xs: 240, md: 320 }}
         />
+      ) : (
+        <SectionCard title="Temperatura dos discos">
+          <EmptyState message="Nenhuma leitura de temperatura dos discos neste dia." />
+        </SectionCard>
       )}
+      <Box sx={doisPorLinha}>
+        <SectionCard title="Discos no dia" subtitle="Espaço na última medição do dia · temperatura média e máxima">
+          <ListaDiscos discos={dia.discos} doDia />
+        </SectionCard>
+        {picos.length > 1 ? (
+          <Grafico
+            titulo="Pico de temperatura por dia"
+            subtitulo={`Disco mais quente em cada um dos últimos ${picos.length} dias`}
+            pontos={picos}
+            dominio={['auto', 'auto']}
+            limite={LIMITES.hd.aviso}
+            formatar={graus}
+            formatarEixo={grausEixo}
+            series={[{ chave: 'pico', nome: 'Pico', cor: s[5] }]}
+          />
+        ) : (
+          <SectionCard title="Pico de temperatura por dia">
+            <EmptyState message="Ainda não há dias suficientes." compact />
+          </SectionCard>
+        )}
+      </Box>
+      <Grafico
+        titulo="Latência e ocupação dos discos"
+        subtitulo="Tempo médio por operação · acima de 30 ms (linha) o disco está lento"
+        pontos={dia.serie}
+        limite={30}
+        formatar={(v) => ms(v)}
+        formatarEixo={msEixo}
+        series={[
+          { chave: 'discoLatenciaMs', nome: 'Latência média', cor: s[9] },
+          { chave: 'discoLatenciaMaxMs', nome: 'Pior minuto', cor: s[5], tracejada: true },
+        ]}
+      />
+      <Grafico
+        titulo="Leitura e escrita"
+        subtitulo="Somando os discos"
+        pontos={dia.serie}
+        formatar={taxa}
+        formatarEixo={taxaEixo}
+        series={[
+          { chave: 'discoLeituraBps', nome: 'Leitura', cor: s[9] },
+          { chave: 'discoEscritaBps', nome: 'Escrita', cor: s[7] },
+        ]}
+      />
+    </Box>
+  );
+}
 
-      {dia.containers.length > 0 && (
-        <>
-          <Box sx={doisPorLinha}>
-            {topCpu.length > 0 && (
-              <Grafico
-                titulo="CPU por container"
-                subtitulo={`Os ${topCpu.length} que mais usaram · % do servidor inteiro`}
-                pontos={porHorario(dia.serieContainers, topCpu, 'cpu')}
-                formatar={(v) => pct(v)}
-                formatarEixo={pctEixo}
-                series={topCpu.map((nome, i) => ({ chave: `c${i}`, nome, cor: s[i % s.length] }))}
-              />
-            )}
-            {topMem.length > 0 && (
-              <Grafico
-                titulo="Memória por container"
-                subtitulo={`Os ${topMem.length} que mais usaram`}
-                pontos={porHorario(dia.serieContainers, topMem, 'memoria')}
-                formatar={(v) => bytes(v)}
-                formatarEixo={(v) => bytes(v, 0).replace(' ', '')}
-                series={topMem.map((nome, i) => ({ chave: `c${i}`, nome, cor: s[i % s.length] }))}
-              />
-            )}
-          </Box>
-          <ContainersDia containers={dia.containers} />
-        </>
-      )}
+/** CPU e memória por container no dia e a tabela do dia. */
+export function HistoricoContainers({ dia, carregando }: Readonly<{ dia: ServidorDia | null; carregando: boolean }>) {
+  if (carregando && !dia) return <Skeleton variant="rounded" height={320} />;
+  if (!dia || dia.containers.length === 0) return <SemAmostras titulo="Containers no dia" />;
+
+  const s = colors.chart.series;
+  const topCpu = maiores(dia.containers, (c) => c.cpuMedia);
+  const topMem = maiores(dia.containers, (c) => c.memMedia);
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 2.5 }, opacity: carregando ? 0.6 : 1 }}>
+      <Box sx={doisPorLinha}>
+        {topCpu.length > 0 && (
+          <Grafico
+            titulo="CPU por container"
+            subtitulo={`Os ${topCpu.length} que mais usaram · % do servidor inteiro`}
+            pontos={porHorario(dia.serieContainers, topCpu, 'cpu')}
+            formatar={(v) => pct(v)}
+            formatarEixo={pctEixo}
+            series={topCpu.map((nome, i) => ({ chave: `c${i}`, nome, cor: s[i % s.length] }))}
+          />
+        )}
+        {topMem.length > 0 && (
+          <Grafico
+            titulo="Memória por container"
+            subtitulo={`Os ${topMem.length} que mais usaram`}
+            pontos={porHorario(dia.serieContainers, topMem, 'memoria')}
+            formatar={(v) => bytes(v)}
+            formatarEixo={(v) => bytes(v, 0).replace(' ', '')}
+            series={topMem.map((nome, i) => ({ chave: `c${i}`, nome, cor: s[i % s.length] }))}
+          />
+        )}
+      </Box>
+      <ContainersDia containers={dia.containers} />
     </Box>
   );
 }

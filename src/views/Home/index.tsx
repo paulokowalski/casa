@@ -42,7 +42,7 @@ import { IconBadge } from '../../components/ui/IconBadge';
 import { StatusPill, TrendPill } from '../../components/ui/StatusPill';
 import { axisProps, gridProps, tooltipProps, yAxisProps } from '../../components/charts/chartTheme';
 import { colors } from '../../styles/colors';
-import { palette, type Tone } from '../../styles/tokens';
+import { palette, surface, type Tone } from '../../styles/tokens';
 import { MONTHS_PT, MONTHS_SHORT_PT, formatCurrency, formatNumber, parseCurrency } from '../../utils/format';
 import { TARIFA_PADRAO, useDashboardData, type Cambio, type InsightDia } from './useDashboardData';
 
@@ -367,7 +367,7 @@ export function Home() {
                       x={d.solarHoje.pico.horario}
                       y={d.solarHoje.pico.potencia}
                       r={5}
-                      fill="#fff"
+                      fill={surface.paper}
                       stroke={colors.chart.primary}
                       strokeWidth={2.5}
                     />

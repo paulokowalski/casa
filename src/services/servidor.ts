@@ -1,6 +1,18 @@
 import { api, apiErrorMessage } from './api';
 import { API_URLS } from '../config/urls';
-import type { EventoServidor, ServidorAgora, ServidorDia, ServidorHost, ServidorResumoDia } from '../types/servidor';
+import type {
+  EventoServidor,
+  InternetAgora,
+  InternetDia,
+  ServidorAgora,
+  ServidorDia,
+  ServidorHost,
+  ServidorResumoDia,
+  TesteVelocidade,
+  VentilacaoAgora,
+  VentilacaoDia,
+  VentilacaoResumoDia,
+} from '../types/servidor';
 
 async function comErro<T>(promessa: Promise<{ data: T }>, mensagem: string): Promise<T> {
   try {
@@ -29,5 +41,34 @@ export const servidorService = {
     comErro(
       api.get<ServidorResumoDia[]>(API_URLS.SERVIDOR_DIAS, { params: { de, ate } }),
       'Não foi possível carregar as estatísticas diárias.',
+    ),
+
+  internet: () => comErro(api.get<InternetAgora>(API_URLS.SERVIDOR_INTERNET), 'Não foi possível ler a internet agora.'),
+
+  internetDia: (data: string) =>
+    comErro(
+      api.get<InternetDia>(API_URLS.SERVIDOR_INTERNET_DIA, { params: { data } }),
+      'Não foi possível carregar a internet do dia.',
+    ),
+
+  velocidade: (de: string, ate: string) =>
+    comErro(
+      api.get<TesteVelocidade[]>(API_URLS.SERVIDOR_INTERNET_VELOCIDADE, { params: { de, ate } }),
+      'Não foi possível carregar os testes de velocidade.',
+    ),
+
+  ventilacao: () =>
+    comErro(api.get<VentilacaoAgora>(API_URLS.SERVIDOR_VENTILACAO), 'Não foi possível ler a ventilação agora.'),
+
+  ventilacaoDia: (data: string) =>
+    comErro(
+      api.get<VentilacaoDia>(API_URLS.SERVIDOR_VENTILACAO_DIA, { params: { data } }),
+      'Não foi possível carregar a ventilação do dia.',
+    ),
+
+  ventilacaoDias: (de: string, ate: string) =>
+    comErro(
+      api.get<VentilacaoResumoDia[]>(API_URLS.SERVIDOR_VENTILACAO_DIAS, { params: { de, ate } }),
+      'Não foi possível carregar o tempo ligada por dia.',
     ),
 };

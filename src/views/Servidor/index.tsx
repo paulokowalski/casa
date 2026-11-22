@@ -1,5 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, Box, IconButton, TextField, Tooltip, Typography } from '@mui/material';
+import { useCallback, useState } from 'react';
+import { Secao } from './Secao';
+import { Internet } from './Internet';
+import { Ventilacao } from './Ventilacao';
+import { useRepetir } from './useRepetir';
+import { useSearchParams } from 'react-router-dom';
+import { Box, IconButton, Tab, Tabs, TextField, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { servidorService } from '../../services/servidor';
@@ -7,7 +12,8 @@ import type { EventoServidor, ServidorAgora, ServidorDia, ServidorHost, Servidor
 import { Agora } from './Agora';
 import { ContainersAgora } from './Containers';
 import { SaudeDiscos } from './SaudeDiscos';
-import { HistoricoDia } from './HistoricoDia';
+import { HistoricoContainers, HistoricoDia, HistoricoDiscos } from './HistoricoDia';
+import { formatDateBR } from '../../utils/format';
 import { TabelaDias } from './TabelaDias';
 import { Host } from './Host';
 import { diasAtras, duracao, isoLocal } from './formatos';
@@ -19,27 +25,31 @@ const ATUALIZAR_HOST_MS = 60_000;
 const DIAS_DE_EVENTOS = 7;
 const DIAS_NA_TABELA = 30;
 
-/** Repete a função enquanto a aba está visível e roda de novo assim que ela volta a aparecer. */
-function useRepetir(fn: () => void, intervaloMs: number) {
-  useEffect(() => {
-    fn();
-    const timer = window.setInterval(() => {
-      if (!document.hidden) fn();
-    }, intervaloMs);
-    const aoVoltar = () => {
-      if (!document.hidden) fn();
-    };
-    document.addEventListener('visibilitychange', aoVoltar);
-    return () => {
-      window.clearInterval(timer);
-      document.removeEventListener('visibilitychange', aoVoltar);
-    };
-  }, [fn, intervaloMs]);
-}
+const ABAS = [
+  { id: 'geral', rotulo: 'Visão geral' },
+  { id: 'internet', rotulo: 'Internet' },
+  { id: 'discos', rotulo: 'Discos' },
+  { id: 'ventilacao', rotulo: 'Ventilação' },
+  { id: 'containers', rotulo: 'Containers' },
+  { id: 'sistema', rotulo: 'Sistema' },
+  { id: 'historico', rotulo: 'Histórico' },
+] as const;
+type Aba = (typeof ABAS)[number]['id'];
 
 export function ServidorView() {
   const hoje = isoLocal(new Date());
   const [data, setData] = useState(hoje);
+  const [params, setParams] = useSearchParams();
+  const aba: Aba = ABAS.find((a) => a.id === params.get('aba'))?.id ?? 'geral';
+  const irPara = (v: Aba) =>
+    setParams(
+      (p) => {
+        if (v === 'geral') p.delete('aba');
+        else p.set('aba', v);
+        return p;
+      },
+      { replace: true },
+    );
 
   const [agora, setAgora] = useState<ServidorAgora | null>(null);
   const [carregandoAgora, setCarregandoAgora] = useState(true);
@@ -111,16 +121,38 @@ export function ServidorView() {
   useRepetir(lerDia, ATUALIZAR_HISTORICO_MS);
   useRepetir(lerDias, ATUALIZAR_HISTORICO_MS);
 
+  // as abas Internet e Ventilação leem os próprios dados: o contador avisa que o botão foi apertado
+  const [pedidoAtualizar, setPedidoAtualizar] = useState(0);
   const atualizarTudo = () => {
     lerAgora();
     lerHost();
     lerDia();
     lerDias();
+    setPedidoAtualizar((n) => n + 1);
   };
 
   const subtitulo = agora
     ? [agora.host, agora.modelo, `ligado há ${duracao(agora.uptimeSegundos)}`].filter(Boolean).join(' · ')
     : 'CPU, memória, temperatura, discos e rede';
+
+  const seletorDia = (
+    <TextField
+      size="small"
+      type="date"
+      label="Dia"
+      value={data}
+      onChange={(e) => e.target.value && setData(e.target.value)}
+      slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: hoje } }}
+      sx={{ width: 170 }}
+    />
+  );
+  const lidoAgora = agora
+    ? `Lido às ${agora.lidoEm.slice(11, 19)} · atualiza a cada 15 s${agora.kernel ? ` · kernel ${agora.kernel}` : ''}`
+    : 'Atualiza a cada 15 s';
+  const lidoHost = host
+    ? `Lido pelo host às ${host.lidoEm.slice(11, 16)} · atualiza a cada minuto`
+    : 'Atualiza a cada minuto';
+  const doDia = data === hoje ? 'Hoje' : `Dia ${formatDateBR(data)}`;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 } }}>
@@ -137,71 +169,82 @@ export function ServidorView() {
         }
       />
 
-      <Box
-        component="section"
-        aria-labelledby="titulo-agora"
-        sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+      <Tabs
+        value={aba}
+        onChange={(_e, v: Aba) => irPara(v)}
+        variant="scrollable"
+        allowScrollButtonsMobile
+        sx={{ borderBottom: 1, borderColor: 'divider', mt: { xs: -1, md: -1.5 } }}
       >
-        <Box
-          sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}
-        >
-          <Typography id="titulo-agora" component="h2" variant="h4">
-            Agora
-          </Typography>
-          <Typography variant="caption">
-            {agora ? `Lido às ${agora.lidoEm.slice(11, 19)} · atualiza a cada 15 s` : 'Atualiza a cada 15 s'}
-            {agora?.kernel ? ` · kernel ${agora.kernel}` : ''}
-          </Typography>
-        </Box>
-        {erroAgora && <Alert severity="warning">{erroAgora}</Alert>}
-        <Agora agora={agora} carregando={carregandoAgora} npuPct={host?.npu?.nucleosPct} />
-        <SaudeDiscos discos={agora?.discos ?? []} carregando={carregandoAgora} />
-        <ContainersAgora containers={agora?.containers ?? []} carregando={carregandoAgora} />
-      </Box>
+        {ABAS.map((a) => (
+          <Tab key={a.id} value={a.id} label={a.rotulo} sx={{ minWidth: 72 }} />
+        ))}
+      </Tabs>
 
-      <Box
-        component="section"
-        aria-labelledby="titulo-sistema"
-        sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
-      >
-        <Box
-          sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}
-        >
-          <Typography id="titulo-sistema" component="h2" variant="h4">
-            Sistema
-          </Typography>
-          <Typography variant="caption">
-            {host
-              ? `Lido pelo host às ${host.lidoEm.slice(11, 16)} · atualiza a cada minuto`
-              : 'Atualiza a cada minuto'}
-          </Typography>
-        </Box>
-        {erroHost && <Alert severity="warning">{erroHost}</Alert>}
-        <Host host={host} carregando={carregandoHost} eventos={eventos} />
-      </Box>
+      {aba === 'geral' && (
+        <Secao id="geral" titulo="Agora" info={lidoAgora} erro={erroAgora}>
+          <Agora agora={agora} carregando={carregandoAgora} npuPct={host?.npu?.nucleosPct} />
+        </Secao>
+      )}
 
-      <Box component="section" aria-labelledby="titulo-dia" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, flexWrap: 'wrap' }}
-        >
-          <Typography id="titulo-dia" component="h2" variant="h4">
-            Histórico do dia
-          </Typography>
-          <TextField
-            size="small"
-            type="date"
-            label="Dia"
-            value={data}
-            onChange={(e) => e.target.value && setData(e.target.value)}
-            slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: hoje } }}
-            sx={{ width: 170 }}
-          />
-        </Box>
-        {erroHistorico && <Alert severity="warning">{erroHistorico}</Alert>}
-        <HistoricoDia dia={dia} carregando={carregandoDia} />
-      </Box>
+      {aba === 'internet' && (
+        <Internet
+          data={data}
+          seletorDia={seletorDia}
+          tituloDia={doDia}
+          host={host}
+          eventos={eventos}
+          pedidoAtualizar={pedidoAtualizar}
+        />
+      )}
 
-      <TabelaDias dias={dias} carregando={carregandoDias} selecionado={data} onSelecionar={setData} />
+      {aba === 'discos' && (
+        <>
+          <Secao id="discos-agora" titulo="Agora" info={lidoAgora} erro={erroAgora}>
+            <SaudeDiscos discos={agora?.discos ?? []} carregando={carregandoAgora} />
+          </Secao>
+          <Secao id="discos-dia" titulo={doDia} acao={seletorDia} erro={erroHistorico}>
+            <HistoricoDiscos dia={dia} carregando={carregandoDia} dias={dias} />
+          </Secao>
+        </>
+      )}
+
+      {aba === 'ventilacao' && (
+        <Ventilacao
+          data={data}
+          seletorDia={seletorDia}
+          tituloDia={doDia}
+          onSelecionarDia={setData}
+          discos={agora?.discos ?? []}
+          pedidoAtualizar={pedidoAtualizar}
+        />
+      )}
+
+      {aba === 'containers' && (
+        <>
+          <Secao id="containers-agora" titulo="Agora" info={lidoAgora} erro={erroAgora}>
+            <ContainersAgora containers={agora?.containers ?? []} carregando={carregandoAgora} />
+          </Secao>
+          <Secao id="containers-dia" titulo={doDia} acao={seletorDia} erro={erroHistorico}>
+            <HistoricoContainers dia={dia} carregando={carregandoDia} />
+          </Secao>
+        </>
+      )}
+
+      {aba === 'sistema' && (
+        <Secao id="sistema" titulo="Sistema" info={lidoHost} erro={erroHost}>
+          <Host host={host} carregando={carregandoHost} eventos={eventos} />
+        </Secao>
+      )}
+
+      {aba === 'historico' && (
+        <>
+          <Secao id="historico-dia" titulo={doDia} acao={seletorDia} erro={erroHistorico}>
+            <HistoricoDia dia={dia} carregando={carregandoDia} />
+          </Secao>
+          <TabelaDias dias={dias} carregando={carregandoDias} selecionado={data} onSelecionar={setData} />
+        </>
+      )}
     </Box>
   );
 }
