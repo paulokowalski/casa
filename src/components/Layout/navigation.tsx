@@ -5,6 +5,7 @@ import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import ChildCareOutlinedIcon from '@mui/icons-material/ChildCareOutlined';
 
 export interface NavItem {
   label: string;
@@ -34,6 +35,10 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Casa',
     items: [{ label: 'Energia Solar', shortLabel: 'Energia', to: '/energia', icon: <WbSunnyOutlinedIcon /> }],
+  },
+  {
+    label: 'Família',
+    items: [{ label: 'Crescimento', shortLabel: 'Crianças', to: '/crescimento', icon: <ChildCareOutlinedIcon /> }],
   },
   {
     label: 'Cadastros',
