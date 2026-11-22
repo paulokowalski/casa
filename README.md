@@ -27,6 +27,7 @@ geração de energia solar e cadastro de pessoas. Consome a [`casa-api`](../casa
 | `/gestao-cartao`     | Gestão de Cartão             | Gastos do mês por pessoa/cartão, saúde financeira, insights, gráficos (categoria, cartão, dia da semana, maiores gastos), próximos 12 meses, cadastro/edição/cancelamento de parcelas, exportação em PDF                                                                                                                                                                                       |
 | `/gestao-financeira` | Gestão Financeira            | Contas fixas, financiamentos e cartão juntos: regra 50/30/20 sobre a renda, evolução de 12 meses, previsão de custo e sobra, onde economizar                                                                                                                                                                                                                                                   |
 | `/energia`           | Energia Solar                | Geração dos painéis por dia, mês e ano                                                                                                                                                                                                                                                                                                                                                         |
+| `/crescimento`       | Crescimento                  | Crianças da família: início (aviso de mêsversário, medidas, agenda, fotos), álbum (mêsversários, primeiras vezes, momentos especiais, cartão para compartilhar), diário, curvas da OMS, marcos e vacinas. Módulo em `src/modulos/crescimento`                                                                                                                                                  |
 | `/pessoa`            | Pessoas (só admin)           | Quem tem compras no sistema e quem pode entrar (senha, papel, ativo)                                                                                                                                                                                                                                                                                                                           |
 | `/servidor`          | Saúde do Servidor (só admin) | CPU (total e por núcleo), memória, swap, temperaturas (placa e discos), carga, discos, rede e containers Docker ao vivo (a cada 15 s); histórico de um dia em gráficos a cada 5 min, com CPU/memória por container e o tempo que cada um ficou fora do ar; estatísticas diárias dos últimos 30 dias. Os dados vêm de `/v1/servidor/*` do casa-api, que grava uma amostra por minuto no MariaDB |
 
@@ -100,6 +101,7 @@ docker compose up -d --build casa
 src/
 ├── index.tsx / App.tsx   # Providers globais, rotas e proteção por login
 ├── views/                # Uma pasta por tela (Home, GestaoCartao, GestaoFinanceira, Energia, Pessoa, Servidor, Login)
+├── modulos/crescimento/  # Módulo independente (API /v1/crescimento): tipos, api, diálogos e telas
 ├── components/
 │   ├── Layout/           # Menu lateral/inferior, cabeçalho, menu do usuário
 │   ├── ui/               # Componentes genéricos (KpiCard, DataTable, Modal, PageHeader…)
@@ -121,6 +123,10 @@ src/
 - **Cada tela grande tem um context** (`GestaoCartaoContext`, `GestaoFinanceiraContext`) que busca os
   dados uma vez e expõe o resultado já calculado para os componentes da tela.
 
+**Módulo crescimento:** fica todo em `src/modulos/crescimento` e usa do casa só o cliente axios (`services/api`),
+alguns componentes de `components/ui`, o `ToastContext` e o adaptador `diretorio.ts` (lista de usuários para convidar).
+Para virar um app separado, leve a pasta e troque esses pontos.
+
 ## Integração com a API
 
 - `services/api.ts` cria a instância do axios com `VITE_API_BASE_URL` e envia o token salvo como
@@ -140,3 +146,20 @@ src/
   parcela, conta, lançamento, competência).
 - Toda URL nova vai em `config/urls.ts`; toda chamada nova, num service de `services/`.
 - Formatação com Prettier e lint com ESLint (`npm run check` precisa passar).
+
+## Histórico de versões
+
+Cada commit gera uma versão (major.minor.patch). A mais recente fica no topo.
+
+### 0.2.0 — 22/11/2026
+
+Novo módulo Crescimento para acompanhar as crianças da família. Ele reúne num lugar só o álbum de fotos dos mêsversários, o diário, as curvas da OMS, os marcos do desenvolvimento, as vacinas e resumos mensais feitos por IA.
+
+- Nova tela Crescimento (/crescimento) na seção Família do menu. Permite criar a família, convidar membros com permissão (PUT/DELETE /v1/crescimento/familias/{id}/membros) e cadastrar crianças com sexo e dados do nascimento.
+- Nova aba Início com as últimas medidas e seus percentis, a agenda de compromissos (GET /v1/crescimento/criancas/{id}/agenda) e sugestões de brincadeiras.
+- Nova aba Diário com a linha do tempo paginada (GET …/linha-do-tempo), filtro por tipo e opção de mostrar só registros com fotos. Permite registrar medições, consultas com retorno e fotos (endpoints …/registros e …/fotos).
+- Nova aba Curvas com os gráficos de peso, comprimento e perímetro cefálico sobre as curvas da OMS, com faixas P3 a P97 e tabela de percentis (GET …/curvas/{indicador}).
+- Nova aba Álbum em carrossel, com momentos por mês e momentos especiais, foto de capa e peso do dia. O momento pode ser compartilhado ou baixado como cartão em JPEG (endpoints …/album e …/album/especiais).
+- Novas abas Marcos e Vacinas para marcar os marcos atingidos, com data e anotação, e registrar as doses aplicadas e as vacinas extras, com lote e local (endpoints …/marcos e …/vacinas).
+- Novo resumo do mês de vida gerado por IA, com conversa de perguntas e respostas sobre o mês (endpoints …/resumos/{mes} e …/resumos/{mes}/perguntas).
+- Nginx ajustado para aceitar o envio de fotos de até 30 MB (client_max_body_size 30m e proxy_request_buffering off); a configuração precisa ser aplicada no servidor. Adicionadas as fontes Inter, Baloo 2 e Caveat e a opção confirmDisabled no ConfirmDialog.

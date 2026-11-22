@@ -9,6 +9,8 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   destructive?: boolean;
   loading?: boolean;
+  /** desabilita só o botão de confirmar (ex.: falta digitar a confirmação) */
+  confirmDisabled?: boolean;
   error?: string | null;
   onConfirm: () => void;
   onClose: () => void;
@@ -22,6 +24,7 @@ export function ConfirmDialog({
   confirmLabel = 'Confirmar',
   destructive,
   loading,
+  confirmDisabled,
   error,
   onConfirm,
   onClose,
@@ -42,7 +45,7 @@ export function ConfirmDialog({
             variant="contained"
             color={destructive ? 'error' : 'primary'}
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || confirmDisabled}
             startIcon={loading ? <CircularProgress size={16} color="inherit" /> : undefined}
           >
             {confirmLabel}

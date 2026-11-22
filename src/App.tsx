@@ -12,6 +12,7 @@ const GestaoCartao = lazy(() => import('./views/GestaoCartao').then((m) => ({ de
 const GestaoFinanceira = lazy(() => import('./views/GestaoFinanceira').then((m) => ({ default: m.GestaoFinanceira })));
 const Energia = lazy(() => import('./views/Energia').then((m) => ({ default: m.EnergiaWithProvider })));
 const Pessoas = lazy(() => import('./views/Pessoa').then((m) => ({ default: m.PessoaView })));
+const Crescimento = lazy(() => import('./modulos/crescimento/telas').then((m) => ({ default: m.CrescimentoView })));
 const Servidor = lazy(() => import('./views/Servidor').then((m) => ({ default: m.ServidorView })));
 
 function RotaProtegida() {
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/gestao-cartao" element={<GestaoCartao />} />
             <Route path="/gestao-financeira" element={<GestaoFinanceira />} />
             <Route path="/energia" element={<Energia />} />
+            <Route path="/crescimento" element={<Crescimento />} />
             <Route
               path="/pessoa"
               element={
