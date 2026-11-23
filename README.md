@@ -74,16 +74,17 @@ sirvam também fora do container.
 
 ## Scripts
 
-| Comando                           | O que faz                                                |
-| --------------------------------- | -------------------------------------------------------- |
-| `npm run dev`                     | Servidor de desenvolvimento (Vite) na porta 3000         |
-| `npm run build`                   | Build de produção em `dist/`                             |
-| `npm run preview`                 | Serve o build localmente                                 |
-| `npm run typecheck`               | `tsc --noEmit`                                           |
-| `npm run lint` / `lint:fix`       | ESLint                                                   |
-| `npm run format` / `format:check` | Prettier                                                 |
-| `npm run check`                   | typecheck + lint + format:check (rode antes de commitar) |
-| `npm run e2e`                     | Testes de ponta a ponta (Playwright), ver abaixo         |
+| Comando                           | O que faz                                                                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                     | Servidor de desenvolvimento (Vite) na porta 3000                                                                      |
+| `npm run build`                   | Build de produção em `dist/`                                                                                          |
+| `npm run preview`                 | Serve o build localmente                                                                                              |
+| `npm run typecheck`               | `tsc --noEmit`                                                                                                        |
+| `npm run lint` / `lint:fix`       | ESLint                                                                                                                |
+| `npm run format` / `format:check` | Prettier                                                                                                              |
+| `npm run check`                   | typecheck + lint + format:check + sem-ia (rode antes de commitar)                                                     |
+| `npm run sem-ia`                  | Falha se o código, as páginas, o nginx ou as dependências citarem um serviço de IA (dados pessoais nunca vão para IA) |
+| `npm run e2e`                     | Testes de ponta a ponta (Playwright), ver abaixo                                                                      |
 
 ### Testes E2E
 
@@ -169,6 +170,15 @@ Para virar um app separado, leve a pasta e troque esses pontos.
 ## Histórico de versões
 
 Cada commit gera uma versão (major.minor.patch). A mais recente fica no topo.
+
+### 1.0.1 — 23/11/2026
+
+Esta versão adiciona uma verificação automática que impede o front de citar ou usar serviços de IA, para que dados pessoais nunca sejam enviados a eles.
+
+- Novo script scripts/sem-ia.mjs, que procura referências a serviços de IA (Anthropic, OpenAI, Gemini, Ollama, LangChain e outros) em src, public, index.html, nginx.conf, vite.config.ts, package.json e package-lock.json
+- Novo comando npm run sem-ia, incluído no npm run check e por isso executado em todo commit
+- A verificação falha e lista arquivo e linha de cada referência encontrada; também falha se src ou package.json não existirem, para não aprovar sem ter conferido nada
+- Ignorados na verificação: node_modules, dist, .saida e arquivos de imagem e fonte
 
 ### 1.0.0 — 23/11/2026
 

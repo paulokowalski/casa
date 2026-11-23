@@ -1,6 +1,6 @@
 {
   "name": "casa",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "engines": {
@@ -15,7 +15,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run typecheck && npm run lint && npm run format:check",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run sem-ia",
+    "sem-ia": "node scripts/sem-ia.mjs",
     "e2e": "bash e2e/rodar.sh"
   },
   "dependencies": {
