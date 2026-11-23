@@ -35,8 +35,9 @@ const Diario = lazy(() => import('./Diario').then((m) => ({ default: m.Diario })
 const Curvas = lazy(() => import('./Curvas').then((m) => ({ default: m.Curvas })));
 const MarcosTela = lazy(() => import('./Marcos').then((m) => ({ default: m.MarcosTela })));
 const VacinasTela = lazy(() => import('./Vacinas').then((m) => ({ default: m.VacinasTela })));
+const ExamesTela = lazy(() => import('./Exames').then((m) => ({ default: m.ExamesTela })));
 
-export type Aba = 'inicio' | 'album' | 'diario' | 'curvas' | 'marcos' | 'vacinas';
+export type Aba = 'inicio' | 'album' | 'diario' | 'curvas' | 'marcos' | 'vacinas' | 'exames';
 const ABAS: { id: Aba; rotulo: string }[] = [
   { id: 'inicio', rotulo: 'Início' },
   { id: 'album', rotulo: 'Álbum' },
@@ -44,6 +45,7 @@ const ABAS: { id: Aba; rotulo: string }[] = [
   { id: 'curvas', rotulo: 'Curvas' },
   { id: 'marcos', rotulo: 'Marcos' },
   { id: 'vacinas', rotulo: 'Vacinas' },
+  { id: 'exames', rotulo: 'Exames' },
 ];
 const ULTIMA = 'crescimento.ultimaCrianca';
 
@@ -93,7 +95,8 @@ function BoasVindas({ onCriada }: Readonly<{ onCriada: (f: Familia) => void }>) 
         Crescimento das crianças
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Fotos dos mêsversários, diário, curvas da OMS, marcos e vacinas, num lugar só. Comece dando um nome à família.
+        Fotos dos mêsversários, diário, curvas da OMS, marcos, vacinas e exames, num lugar só. Comece dando um nome à
+        família.
       </Typography>
       <Stack direction="row" spacing={1}>
         <TextField
@@ -297,6 +300,7 @@ export function CrescimentoView() {
             {props && aba === 'curvas' && <Curvas key={crianca.id} {...props} />}
             {props && aba === 'marcos' && <MarcosTela key={crianca.id} {...props} />}
             {props && aba === 'vacinas' && <VacinasTela key={crianca.id} {...props} />}
+            {props && aba === 'exames' && <ExamesTela key={crianca.id} {...props} />}
           </Suspense>
         </>
       )}

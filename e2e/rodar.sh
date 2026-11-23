@@ -68,7 +68,7 @@ done
 esperar "MariaDB" 90 docker exec "$MDB" mariadb -ucasa_monitor -p"$SENHA" casa_monitor -e 'select 1'
 
 # o nginx.conf do projeto manda /casa-api/ para "casa-api:8080": o container da API atende por esse nome na rede.
-# Sem envio de fotos nos testes: a pasta de fotos não precisa do arquivo de marcação.
+# A pasta de fotos e exames ganha o arquivo de marcação depois que a API sobe (o teste envia um exame).
 docker run -d --name "$API" --network "$REDE" --network-alias casa-api \
   -e SPRING_DATASOURCE_URL="jdbc:postgresql://$PG:5432/casa" -e SPRING_DATASOURCE_USERNAME=postgres \
   -e SPRING_DATASOURCE_PASSWORD="$SENHA" \
@@ -84,6 +84,7 @@ if ! esperar "casa-api" 150 docker exec "$API" sh -c 'wget -qO- http://127.0.0.1
   docker logs --tail 60 "$API" >&2
   exit 1
 fi
+docker exec "$API" sh -c 'mkdir -p /tmp/fotos-e2e && touch /tmp/fotos-e2e/.armazenamento-crescimento'
 
 echo "E2E: rodando os testes no navegador (Playwright $PLAYWRIGHT)..."
 docker run --rm --network "$REDE" --ipc=host -e CI=1 -e E2E_URL=http://web:3000 \

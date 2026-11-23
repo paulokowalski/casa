@@ -9,7 +9,6 @@ import { CarrosselAlbum } from '../CarrosselAlbum';
 import { Bloco, Carregando, Erro, Visualizador } from '../componentes';
 import { acento, cor, fonte, sombraFofa } from '../estilo';
 import { cm, dataCurta, gramas, kg, percentil, primeiroNome, quando } from '../formato';
-import { ResumoMesCartao } from '../ResumoMesCartao';
 import { useCarregar } from '../useCarregar';
 import type { Album, Chamada, Compromisso, Crianca, Faixa, FaixaMarcos, Foto, Lugar, Marcos, Resumo } from '../tipos';
 import type { PropsAba } from '.';
@@ -626,7 +625,6 @@ export function Inicio({ crianca, versao, alterou, ir }: Readonly<PropsAba>) {
       >
         <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 4, minWidth: 0 }}>
           <Medidas resumo={resumo} crianca={crianca} ir={ir} />
-          <ResumoMesCartao key={crianca.id} crianca={crianca} versao={versao} />
         </Box>
 
         <Box

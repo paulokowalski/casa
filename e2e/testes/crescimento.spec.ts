@@ -7,7 +7,7 @@ function diasAtras(n: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-test('cadastra criança e pesagem no diário; peso inválido trava o salvar', async ({ page }) => {
+test('cadastra criança, pesagem no diário e exame; peso inválido trava o salvar', async ({ page }) => {
   await entrar(page);
   await page.goto('/crescimento');
 
@@ -62,4 +62,31 @@ test('cadastra criança e pesagem no diário; peso inválido trava o salvar', as
   await expect(registro).toBeHidden();
 
   await expect(page.getByText(/5,100 kg/)).toBeVisible();
+
+  // exame em PDF: envia, aparece na lista e abre ao clicar (o arquivo vem com login, por um endereço blob:)
+  await page.getByRole('tab', { name: 'Exames' }).click();
+  await expect(page.getByText('Nenhum exame guardado')).toBeVisible();
+  await page.getByLabel('Arquivo do exame').setInputFiles({
+    name: 'hemograma_completo.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from('%PDF-1.4\n1 0 obj <<>> endobj\ntrailer <<>>\n%%EOF\n'),
+  });
+  const envio = page.getByRole('dialog', { name: 'Enviar exame' });
+  await expect(envio.getByLabel('Nome do exame')).toHaveValue('hemograma completo');
+  await envio.getByRole('button', { name: 'Enviar' }).click();
+  await expect(envio).toBeHidden();
+  await page.getByRole('button', { name: 'Ver exame hemograma completo' }).click();
+  const visor = page.getByRole('dialog', { name: 'hemograma completo' });
+  await expect(visor.getByRole('link', { name: 'Baixar' })).toHaveAttribute('href', /^blob:/);
+  await visor.getByRole('button', { name: 'Fechar' }).click();
+  await expect(visor).toBeHidden();
+
+  // excluir pede confirmação no diálogo do app
+  await page.getByRole('button', { name: 'Ver exame hemograma completo' }).click();
+  await visor.getByRole('button', { name: 'Excluir' }).click();
+  const confirmar = page.getByRole('dialog', { name: 'Excluir exame' });
+  await confirmar.getByRole('button', { name: 'Excluir' }).click();
+  await expect(confirmar).toBeHidden();
+  await expect(visor).toBeHidden();
+  await expect(page.getByText('Nenhum exame guardado')).toBeVisible();
 });

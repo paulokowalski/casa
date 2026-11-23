@@ -358,28 +358,23 @@ export interface Compromisso {
   referencias: string[];
 }
 
-export interface ResumoMes {
-  mes: number;
-  rotulo: string;
-  inicio: string;
-  fim: string;
-  texto: string;
-  perguntas: string[];
-  modelo: string | null;
-  geradoEm: string;
-  parcial: boolean;
-  conversa: PerguntaIa[];
-}
+export type TipoExame = 'PDF' | 'JPEG';
 
-export interface PerguntaIa {
+export interface Exame {
   id: string;
-  pergunta: string;
-  resposta: string;
-  feitaEm: string;
+  criancaId: string;
+  titulo: string;
+  data: string;
+  observacao: string | null;
+  nomeArquivo: string;
+  tipo: TipoExame;
+  bytes: number;
+  criadoEm: string;
+  jaExistia: boolean;
 }
 
-export interface ResumosMes {
-  disponivel: boolean;
-  mesAtual: number;
-  resumos: ResumoMes[];
+export interface ExameInput {
+  titulo: string;
+  data: string;
+  observacao?: string | null;
 }

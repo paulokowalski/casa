@@ -15,15 +15,14 @@ import type {
   Papel,
   Registro,
   RegistroInput,
-  PerguntaIa,
   Resumo,
-  ResumoMes,
-  ResumosMes,
   TipoRegistro,
   VacinaExtra,
   VacinaInput,
   Vacinas,
   Dose,
+  Exame,
+  ExameInput,
 } from './tipos';
 
 const BASE = '/v1/crescimento';
@@ -125,15 +124,26 @@ export const crescimentoApi = {
 
   agenda: (id: string) => chamar(api.get<Compromisso[]>(`${C(id)}/agenda`), 'Não foi possível carregar a agenda.'),
 
-  resumosMes: (id: string) =>
-    chamar(api.get<ResumosMes>(`${C(id)}/resumos`), 'Não foi possível carregar os resumos do mês.'),
-  gerarResumoMes: (id: string, mes: number) =>
-    chamar(api.post<ResumoMes>(`${C(id)}/resumos/${mes}`), 'Não foi possível gerar o resumo.'),
-  perguntarIa: (id: string, mes: number, pergunta: string) =>
+  exames: (id: string) => chamar(api.get<Exame[]>(`${C(id)}/exames`), 'Não foi possível carregar os exames.'),
+  enviarExame: (id: string, arquivo: File, dados: ExameInput) => {
+    const form = new FormData();
+    form.append('arquivo', arquivo);
+    form.append('titulo', dados.titulo);
+    form.append('data', dados.data);
+    if (dados.observacao) form.append('observacao', dados.observacao);
+    return chamar(
+      api.post<Exame>(`${C(id)}/exames`, form, { timeout: 120_000 }),
+      `Não foi possível enviar ${arquivo.name}.`,
+    );
+  },
+  atualizarExame: (id: string, exameId: string, dados: ExameInput) =>
+    chamar(api.put<Exame>(`${C(id)}/exames/${exameId}`, dados), 'Não foi possível salvar o exame.'),
+  excluirExame: (id: string, exameId: string) =>
+    chamar(api.delete<void>(`${C(id)}/exames/${exameId}`), 'Não foi possível excluir o exame.'),
+  /** O arquivo vem com o login (não há link público); a tela mostra com um endereço blob: local. */
+  arquivoExame: (id: string, exameId: string) =>
     chamar(
-      api.post<PerguntaIa>(`${C(id)}/resumos/${mes}/perguntas`, { pergunta }),
-      'Não foi possível enviar a pergunta.',
+      api.get<Blob>(`${C(id)}/exames/${exameId}/arquivo`, { responseType: 'blob', timeout: 120_000 }),
+      'Não foi possível abrir o exame.',
     ),
-  excluirPerguntaIa: (id: string, perguntaId: string) =>
-    chamar(api.delete<void>(`${C(id)}/resumos/perguntas/${perguntaId}`), 'Não foi possível apagar a pergunta.'),
 };
