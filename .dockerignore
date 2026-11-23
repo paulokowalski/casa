@@ -19,3 +19,7 @@ coverage
 *.swp
 *.swo
 *~ 
+# saída dos testes e2e (site gerado, relatórios do Playwright) não vai para a imagem
+e2e/.saida
+test-results
+playwright-report

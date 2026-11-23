@@ -58,11 +58,12 @@ VITE_API_BASE_URL=http://localhost:8080/casa-api/
 O servidor não tem Node; rode os comandos dentro da imagem oficial, usando o projeto montado:
 
 ```bash
-docker run --rm -v "$PWD":/app -w /app node:26 npm run check
+docker run --rm -v "$PWD":/app -w /app node:26-slim npm run check
 ```
 
-Use a imagem `node:26` (Debian), não a `-alpine`, para que os binários nativos do `node_modules`
-sirvam também fora do container.
+Use a imagem `node:26-slim` (Debian, glibc), não a `-alpine`, para que os binários nativos do `node_modules`
+sirvam também fora do container. É a mesma imagem dos testes do commit, do e2e e do `Dockerfile`: fica uma imagem
+do node só no disco.
 
 ## Configuração
 
@@ -105,7 +106,7 @@ containers no fim, para investigar). O hook pre-commit roda esses testes antes d
 docker compose up -d --build casa
 ```
 
-- O `Dockerfile` faz o build com `node:26-alpine` (passando `VITE_API_BASE_URL=/casa-api/`) e serve o
+- O `Dockerfile` faz o build com `node:26-slim` (passando `VITE_API_BASE_URL=/casa-api/`, com cache do npm entre builds) e serve o
   `dist/` com `nginx:1.30-alpine` na porta 3000.
 - `nginx.conf`:
   - Faz fallback de SPA para `index.html`, sem cache no HTML e com cache de 1 ano nos assets com hash.
@@ -170,6 +171,15 @@ Para virar um app separado, leve a pasta e troque esses pontos.
 ## Histórico de versões
 
 Cada commit gera uma versão (major.minor.patch). A mais recente fica no topo.
+
+### 1.0.2 — 23/11/2026
+
+A imagem Docker passa a ser gerada mais rápido e sem erro de permissão do nginx, usando a mesma base do Node dos testes.
+
+- Imagem de build do Dockerfile trocada de node:26-alpine para node:26-slim, a mesma usada nos testes do commit e nos testes e2e. Assim fica só uma imagem do Node no disco.
+- Cache do npm entre builds com BuildKit (RUN --mount=type=cache): sem mudança no package-lock, nenhum pacote é baixado de novo. O npm ci agora roda com --no-audit --no-fund. O build precisa do BuildKit ativo.
+- Corrigida a permissão do nginx para gravar o pid: o arquivo /run/nginx.pid é criado e entregue ao usuário nextjs, em vez de só /var/run.
+- Saída dos testes e2e (e2e/.saida, test-results e playwright-report) incluída no .dockerignore, para não entrar na imagem.
 
 ### 1.0.1 — 23/11/2026
 

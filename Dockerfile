@@ -1,10 +1,12 @@
-FROM node:26-alpine AS build
+# node:26-slim: a mesma imagem dos testes do commit e do e2e (uma imagem do node só no disco, em vez de três)
+FROM node:26-slim AS build
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN npm ci
+# cache do npm entre builds (BuildKit): sem mudança no package-lock, nada é baixado de novo
+RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 
 COPY . .
 
@@ -28,7 +30,8 @@ RUN chown -R nextjs:nodejs /usr/share/nginx/html && \
     chown -R nextjs:nodejs /var/cache/nginx && \
     chown -R nextjs:nodejs /var/log/nginx && \
     chown -R nextjs:nodejs /etc/nginx/conf.d && \
-    chown -R nextjs:nodejs /var/run
+    # /var/run é um atalho para /run: o nginx grava o pid em /run/nginx.pid e precisa poder escrever lá
+    touch /run/nginx.pid && chown -R nextjs:nodejs /run /run/nginx.pid
 
 USER nextjs
 
